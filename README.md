@@ -14,7 +14,7 @@ This PHP application automatically generates web forms to create, edit, view and
 * Direct your web browser to the app folder and be happy.
 
 ## Example Database and App
-An example can be seen in the `dbWebGen-demo` repository
+An example can be seen in the [dbWebGen-demo](https://github.com/eScienceCenter/dbWebGen-demo) repository
 
 ## License
 This code is licensed under the MIT license. See the [LICENSE](LICENSE) file.

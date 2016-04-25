@@ -66,6 +66,9 @@
 		$query = build_query($table_name, $table, $edit_id, MODE_EDIT, NULL, $params);		
 		
 		$db = db_connect();
+		if($db === false)
+			return proc_error('Cannot connect to DB.');
+		
 		$res = $db->prepare($query);
 		
 		if($res === FALSE)
@@ -212,6 +215,8 @@
 				if($field['lookup']['cardinality'] == CARDINALITY_SINGLE) {
 					echo "<div class='col-sm-7'><select $disabled $required_attr class='form-control' id='{$field_name}_dropdown' name='{$field_name}' data-placeholder='Click to select' $autofocus>\n";					
 					$db = db_connect();
+					if($db === false)
+						return proc_error('Cannot connect to DB.');
 					
 					$sql = sprintf("select %s val, %s txt from %s order by txt", 
 						db_esc($field['lookup']['field']), resolve_display_expression($field['lookup']['display']), $field['lookup']['table']);
@@ -496,6 +501,9 @@
 		
 		// FIRST INSERT THE RECORD
 		$db = db_connect();
+		if($db === false)
+			return proc_error('Cannot connect to DB.');
+		
 		$stmt = $db->prepare($sql);
 		if($stmt === FALSE)
 			return proc_error('SQL statement preparation failed.', $db);

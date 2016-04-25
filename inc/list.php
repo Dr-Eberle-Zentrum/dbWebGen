@@ -122,6 +122,9 @@
 		$search = build_search_term($table, 'd');
 		
 		$db = db_connect();	
+		if($db === false)
+			return proc_error('Cannot connect to DB.');
+		
 		$sql = 'SELECT COUNT(*) FROM ' . db_esc($table_name) . ' d' . ($search !== null ? " WHERE {$search['sql']}" : '');
 		#debug_log($sql);
 			

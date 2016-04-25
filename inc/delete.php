@@ -30,6 +30,9 @@
 		$sql .= $where;
 		
 		$db = db_connect();
+		if($db === false)
+			return proc_error('Cannot connect to DB.');
+		
 		$stmt = $db->prepare($sql);
 		
 		$upload_locations = array();
