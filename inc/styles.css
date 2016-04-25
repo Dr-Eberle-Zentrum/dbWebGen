@@ -1,0 +1,107 @@
+.form-group.required .control-label:after {
+  content:"*";
+  color:red;
+}
+
+.multiple-select-text {
+	margin-left: .33em;
+}
+
+.multiple-linkage {
+	margin-top: 5px;
+	margin-bottom: 5px;
+	border: 1px solid gray;
+	background-color: #f8f8f8;
+}
+
+div.multiple-select-ul {	
+	margin-top: .5em;
+	padding-left: 1.5em;
+}
+
+span.multiple-select-id {
+	padding-left: 1em;
+	color: #5f5f5f;
+}
+
+.clickable {
+	cursor: hand;
+}
+
+.null {
+	white-space: nowrap;
+	font-size: 75%;
+}
+
+
+.nowrap {
+	white-space: nowrap;
+}
+
+.fit {
+	white-space: nowrap;
+    width: 1%;
+}
+
+span.clipped_text {
+	display:none;
+}
+
+.pager-prev, .pager-next {
+	font-size: 1.5em;
+}
+
+.column-value {	
+	padding-top: .5em;	
+}
+
+.space-left {
+	margin-left: .5em;
+}
+
+.prefilled {
+	display:none
+}
+
+span.required-indicator {
+	color:red;
+	font-weight:bold;
+	font-size: 120%;
+}
+
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+
+.filename {
+	margin-left: 1em;
+}
+
+.sort-search {
+	font-size: 85%;
+	text-align: left;
+	white-space: nowrap;
+	display: inline-block;
+	width: 100%;
+}
+
+#search-popover .popover {
+	white-space: nowrap;
+	max-width: 450px;
+}
