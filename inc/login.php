@@ -61,6 +61,7 @@ END;
 	
 	//------------------------------------------------------------------------------------------
 	function session_init() {
+	// NOTE: there must not be any outputs to the output buffer in this method
 	//------------------------------------------------------------------------------------------
 		global $LOGIN;
 		global $APP;		
@@ -109,7 +110,6 @@ END;
 	function session_logout() {
 	//------------------------------------------------------------------------------------------		
 		header('Content-Type: text/plain');			
-		session_init();
 		
 		unset($_SESSION['user_id']);
 		unset($_SESSION['user_data']);

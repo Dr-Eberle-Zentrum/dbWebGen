@@ -29,6 +29,12 @@
 	}
 		
 	//------------------------------------------------------------------------------------------
+	function first($a) {
+	//------------------------------------------------------------------------------------------
+		return $a[0];
+	}
+	
+	//------------------------------------------------------------------------------------------
 	function __arr_str(&$a, $indent = 0) {
 	//------------------------------------------------------------------------------------------
 		$s = str_repeat(' ', $indent) . "[\n";
@@ -159,7 +165,6 @@
 		}
 		
 		#debug_log(arr_str($term));
-		
 		return $term;
 	}
 	
@@ -167,32 +172,6 @@
 	function debug_log($msg) {
 	//------------------------------------------------------------------------------------------
 		$_SESSION['msg'][] = "<div class='alert alert-info'>$msg</div>";
-	}
-	
-	//------------------------------------------------------------------------------------------
-	function build_main_menu(&$menu) {
-	//------------------------------------------------------------------------------------------
-		global $TABLES;
-		global $APP;
-		
-		$menu = array();
-		
-		$menu[0] = array('name' => 'New', 'items' => array());
-		if($APP['mainmenu_tables_autosort'])
-			uasort($TABLES, 'sort_tables_new');
-		foreach($TABLES as $table_name => $info)
-			if(in_array(MODE_NEW, $info['actions']))
-				$menu[0]['items'][] = array('label' => $info['item_name'], 'href' => "?table={$table_name}&mode=" . MODE_NEW);
-		
-		$menu[1] = array('name' => 'Browse & Edit', 'items' => array());
-		if($APP['mainmenu_tables_autosort'])
-			uasort($TABLES, 'sort_tables_list');
-		foreach($TABLES as $table_name => $info)
-			if(in_array(MODE_LIST, $info['actions']))
-				$menu[1]['items'][] = array('label' => $info['display_name'], 'href' => "?table={$table_name}&mode=" . MODE_LIST);
-			
-		if(isset($APP['menu_complete_proc']) && trim($APP['menu_complete_proc']) != '')
-			/*call_user_func*/ $APP['menu_complete_proc']($menu);
 	}
 	
 	//------------------------------------------------------------------------------------------
@@ -266,6 +245,107 @@
 		
 		else
 			return htmlspecialchars($text, ENT_COMPAT | ENT_HTML401);
+	}
+	
+	//------------------------------------------------------------------------------------------
+	function prepare_field_display_val(&$table, &$record, &$field, $col, $val) {
+	//------------------------------------------------------------------------------------------
+		global $TABLES;
+		global $APP;
+		
+		if($field['type'] == T_ENUM && $val !== NULL) {
+			$val = html($field['values'][$val]);
+		}
+		else if($field['type'] == T_PASSWORD) {
+			$val = '&bull;&bull;&bull;&bull;&bull;';
+		}		
+		else if($field['type'] == T_UPLOAD) {
+			$val = "<a href='". get_file_url($val, $field) ."'>$val</a>";
+		}
+		else if($field['type'] == T_LOOKUP && $field['lookup']['cardinality'] == CARDINALITY_SINGLE) {
+			/*if(isset($record[db_postfix_fieldname($col, FK_FIELD_POSTFIX, false)]) && $val === null) {
+				$val = '<span title="There is no display value for this referenced record, so its identifier is displayed here">' . html($record[db_postfix_fieldname($col, FK_FIELD_POSTFIX, false)]) . '</span>';
+			}
+			else*/ {
+				$href = http_build_query(array(
+					'table' => $field['lookup']['table'],
+					'mode' => MODE_VIEW,
+					$field['lookup']['field'] => isset($record[db_postfix_fieldname($col, FK_FIELD_POSTFIX, false)]) ? $record[db_postfix_fieldname($col, FK_FIELD_POSTFIX, false)] : $val
+				));
+				
+				$html_val = html($val);
+				$title = ''; $class = '';
+				if($html_val == '') {
+					$title = 'There is no display value for this referenced record, so its identifier is displayed here';
+					$html_val = html($record[db_postfix_fieldname($col, FK_FIELD_POSTFIX, false)]);
+					$class = 'dotted';
+				}
+			
+				$val = "<a class='$class' title='{$title}' href=\"?{$href}\">". $html_val ."</a>";
+			}
+		}
+		else if($field['type'] == T_LOOKUP && $field['lookup']['cardinality'] == CARDINALITY_MULTIPLE) {
+			if($val !== null && trim($val) != '') {
+				#debug_log($val);
+				//postgre 9.4+ >> [must go hand in hand with build_query function]
+				/*
+				$id_display_map = json_decode($val);
+				*/ 
+				//<< postgre 9.4+
+				
+				// postgre 9.2				
+				$temp_arr = json_decode($val);
+				$id_display_map = array();
+				for($i=0; $i<count($temp_arr[0]); $i++)
+					$id_display_map[$temp_arr[0][$i]] = $temp_arr[1][$i];
+				//<< postgre 9.2
+				
+				$linked_records = array();			
+				foreach($id_display_map as $id_val => $display_val) {
+					$params = array(
+						'mode' => MODE_VIEW
+					);
+					
+					if($field['lookup']['cardinality'] == CARDINALITY_MULTIPLE 
+						&& isset($TABLES[$field['linkage']['table']]) 
+						&& is_allowed($TABLES[$field['linkage']['table']], MODE_VIEW)) 
+					{
+						// display link to n:m table view (typically MODE_VIEW will be allowed when there are additional attributes to the n:m table, otherwise not)
+						$params['table'] = $field['linkage']['table'];
+						$params[$field['linkage']['fk_other']] = $id_val;
+						$params[$field['linkage']['fk_self']] = $record[$table['primary_key']['columns'][0]];
+					}
+					else {
+						// display link to linked item
+						$params['table'] = $field['lookup']['table'];
+						$params[$TABLES[$field['lookup']['table']]['primary_key']['columns'][0]] = $id_val;
+					}
+					
+					$href = http_build_query($params);						
+					
+					$html_val = html($display_val);					
+					$title = ''; $class = '';
+					if($html_val == '') {
+						$title = 'There is no display value for this referenced record, so its identifier is displayed here';
+						$html_val = html($id_val);
+						$class = 'dotted';
+					}
+				
+					$linked_records[] = "<a class='$class' title='{$title}' href=\"?{$href}\">". $html_val ."</a>";
+				}
+				$val = implode($linked_records, '; ');
+			}
+			else
+				$val = '';
+		}		
+		else {		
+			if($_GET['mode'] == MODE_VIEW)
+				$val = html($val);
+			else // MODE_LIST: limit chars to display
+				$val = html($val, $APP['max_text_len'], true);
+		}
+		
+		return $val;
 	}
 	
 	//------------------------------------------------------------------------------------------
@@ -400,6 +480,12 @@
 		return !isset($field['editable']) || $field['editable'] === true;
 	}
 	
+	//------------------------------------------------------------------------------------------
+	function is_field_trim(&$field) {
+	//------------------------------------------------------------------------------------------
+		return !isset($field['trim']) || $field['trim'] === true;
+	}
+	
 
 	//------------------------------------------------------------------------------------------
 	function is_allowed_create_new(&$field) {
@@ -447,13 +533,14 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
-	function db_esc($name) {
+	function db_esc($name, $qualifier = null) {
 	//------------------------------------------------------------------------------------------
 		global $DB;
 		
 		switch($DB['type']) {
 			case DB_POSTGRESQL:
 				$escape_char = '"';
+				$separator_char = '.';
 				break; 
 				
 			default:
@@ -463,7 +550,10 @@
 		if($name[0] == $escape_char)
 			return $name; // already escaped
 		
-		return $escape_char . $name . $escape_char;
+		if($qualifier !== null)
+			return $escape_char . $qualifier . $escape_char . $separator_char . $escape_char . $name . $escape_char;
+		else
+			return $escape_char . $name . $escape_char;
 	}
 	
 	//------------------------------------------------------------------------------------------
@@ -590,8 +680,9 @@
 	
 	//------------------------------------------------------------------------------------------	
 	function build_query($table_name, $table, $offset, $mode, $more_params, &$out_params) {
-	//------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------		
 		global $APP;
+		global $TABLES;
 		
 		$out_params = array();
 		
@@ -618,8 +709,8 @@
 						resolve_display_expression($field['lookup']['display']),
 						db_esc($field['lookup']['table']), db_esc($field['lookup']['field']),
 						db_esc($field_name), db_esc($field_name), db_esc($field_name), 
-						db_postfix_fieldname($field_name, '_raw', true)); 
-				}
+						db_postfix_fieldname($field_name, FK_FIELD_POSTFIX, true)); 
+				}				
 				else {
 					$cols .= db_esc($field_name);
 				}
@@ -631,16 +722,28 @@
 			//TODO: WORK WITH COMPOSITE FK_SELF AND FK_OTHER
 			if($field['type'] == T_LOOKUP && $field['lookup']['cardinality'] == CARDINALITY_MULTIPLE) {
 				if($mode == MODE_LIST || $mode == MODE_VIEW) {
-					$cols .= sprintf(
-						"(SELECT array_to_string(array_agg(%s), '; ') " .
+					// postgres 9.4+ >> (must go hand in hand with prepare_field_display_val function)
+					/*$cols .= sprintf(
+						"(SELECT json_object_agg(%s,%s) " .
 						'FROM %s other, %s link WHERE link.%s = t.%s AND other.%s = link.%s) %s',
-						resolve_display_expression($field['lookup']['display'], 'other'),
+						db_esc($TABLES[$field['lookup']['table']]['primary_key']['columns'][0]), resolve_display_expression($field['lookup']['display'], 'other'),
 						db_esc($field['lookup']['table']), db_esc($field['linkage']['table']),
 						db_esc($field['linkage']['fk_self']), db_esc($table['primary_key']['columns'][0]),
 						db_esc($field['lookup']['field']), db_esc($field['linkage']['fk_other']), db_esc($field_name));
+					*/
+					//<< postgres 9.4+
+					
+					// postgres 9.2 >>
+					$cols .= sprintf(
+						"(SELECT '[' || array_to_json(array_agg(%s)) || ',' || array_to_json(array_agg(%s)) || ']' " .
+						'FROM %s other, %s link WHERE link.%s = t.%s AND other.%s = link.%s) %s',
+						db_esc($field['lookup']['field'], 'other'), resolve_display_expression($field['lookup']['display'], 'other'),
+						db_esc($field['lookup']['table']), db_esc($field['linkage']['table']),
+						db_esc($field['linkage']['fk_self']), db_esc($table['primary_key']['columns'][0]),
+						db_esc($field['lookup']['field']), db_esc($field['linkage']['fk_other']), db_esc($field_name));
+					//<< postgres 9.2
 				}
-				else { // MODE_EDIT
-					#$cols .= sprintf("(SELECT array_to_string(array_agg(link.%s), '%s') ".
+				else { // MODE_EDIT					
 					$cols .= sprintf("(SELECT array_to_json(array_agg(link.%s)) ".
 							 "FROM %s link WHERE link.%s = ?) %s",
 							 db_esc($field['linkage']['fk_other']), 
@@ -662,7 +765,7 @@
 		if($mode == MODE_LIST || $mode == MODE_VIEW) {
 			$pk_fields = '';
 			foreach($table['primary_key']['columns'] as $pk)
-				$pk_fields .= sprintf(', %s %s', $pk, db_postfix_fieldname($pk, '_raw', true));
+				$pk_fields .= sprintf(', %s %s', $pk, db_postfix_fieldname($pk, FK_FIELD_POSTFIX, true));
 			
 			$cols .= $pk_fields;
 		}
@@ -715,6 +818,7 @@
 			$q .= " LIMIT ". $APP['page_size'] . " OFFSET $offset";
 		}
 		
+#		debug_log($q);
 		return $q;
 	}
 	

@@ -78,28 +78,7 @@
 			
 			echo "<div class='form-group'><label class='col-sm-3 control-label'>". html($fields[$col]['label']) . ":</label>\n";
 			
-			
-			if($fields[$col]['type'] == T_ENUM && $val !== NULL)
-				$val = html($fields[$col]['values'][$val]);
-			
-			else if($fields[$col]['type'] == T_PASSWORD)
-				$val = '&bull;&bull;&bull;&bull;&bull;';
-			
-			else if($fields[$col]['type'] == T_UPLOAD)
-				$val = "<a href='". get_file_url($val, $fields[$col]) ."'>$val</a>";
-
-			else if($fields[$col]['type'] == T_LOOKUP && $fields[$col]['lookup']['cardinality'] == CARDINALITY_SINGLE) {
-				$href = http_build_query(array(
-					'table' => $fields[$col]['lookup']['table'],
-					'mode' => MODE_VIEW,
-					$fields[$col]['lookup']['field'] => isset($record[db_postfix_fieldname($col, '_raw', false)]) ? $record[db_postfix_fieldname($col, '_raw', false)] : $val
-				));
-				
-				$val = "<a href=\"?{$href}\">". html($val) ."</a>";
-			}
-			
-			else
-				$val = html($val);
+			$val = prepare_field_display_val($table, $record, $fields[$col], $col, $val);
 			
 			echo "<div class='col-sm-9 column-value'>{$val}</div></div>\n";	
 		}

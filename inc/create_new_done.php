@@ -13,8 +13,6 @@
 			- "pk_value" the primary key value of the newly created record
 		*/
 	
-		session_init();
-		
 		if(!isset($_GET['table']) || !isset($_GET['lookup_table']) || !isset($_GET['lookup_field']) || !isset($_GET['pk_value']))
 			return proc_error('Invalid params');
 		

@@ -102,9 +102,7 @@ $(window).load(function() {
 			$(dropdown_id + " option[value='" + $(dropdown_id).val() + "']").each(function() { $(this).remove(); });			
 			
 			// reset dropdown selection
-			$(dropdown_id).val('').change();			
-						
-			// console.log($(hidden_input).val());
+			$(dropdown_id).val('').change();
 			
 			return false; // don't submit the form		
 		});	
@@ -115,7 +113,7 @@ $(window).load(function() {
 	// 
 	$('button[data-create-url]').click(function() {		
 		window.open($(this).data('create-url'), $(this).data('create-title'),
-			'location=0,menubar=0,resizable=1,width=400,height=600');
+			'scrollbars=1,location=0,menubar=0,resizable=1,width=400,height=600');
 	});		
 });
 
@@ -158,7 +156,7 @@ function remove_linked_item(e) {
 	
 	// remove the value from the hidden input
 	var list = parse_multiple_val($('input#' + field).val());
-	for(var i = 0; i < list.length - 1; i++) {
+	for(var i = 0; i < list.length; i++) {
 		if(list[i].toString() == removed_id.toString()) {
 			list.splice(i, 1);
 			break;
@@ -191,8 +189,7 @@ $(document).on('change', '.btn-file :file', function() {
 });
 $(document).ready(function() {
     $('.btn-file :file').on('fileselect', function(event, numFiles, label) {
-        var log = numFiles > 1 ? numFiles + ' files selected' : label;
-		//var input = $(this).parents('.input-group').find(':text');
+        var log = numFiles > 1 ? numFiles + ' files selected' : label;		
         $('span.filename#' + $(this).data('text')).text(log);
     });
 });

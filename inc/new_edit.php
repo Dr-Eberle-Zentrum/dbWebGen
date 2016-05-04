@@ -35,6 +35,13 @@
 		echo "<p>Fill the form fields and then press 'Save'. Fields indicated with <span class='required-indicator'>&#9733;</span> are required.</p>\n";
 		echo "<form class='form-horizontal' role='form' method='post' enctype='multipart/form-data'>\n";
 		
+		$submit_button = "<div class='form-group'>\n".
+			"<div class='col-sm-offset-3 col-sm-9'>\n".
+			"<input type='submit' class='btn btn-primary' value='Save' />\n";
+
+		if($_GET['mode'] == MODE_EDIT)
+			echo $submit_button. '</div></div>';
+		
 		$i = 0;
 		foreach($table['fields'] as $field_name => $field) {
 			if(!is_field_editable($field))
@@ -51,13 +58,11 @@
 			echo "</div>\n";
 		}
 		
-		echo "<div class='form-group'>\n".
-		 "<div class='col-sm-offset-3 col-sm-9'>\n".
-		 "<input type='submit' class='btn btn-primary' value='Save' />\n";
+		echo $submit_button;
 		if($_GET['mode'] == MODE_NEW)
 			"<input type='reset' class='btn btn-default' value='Clear Form' />\n";
         echo "</div>\n</div>\n</form>\n";
-		echo "<div style='padding-bottom:4em'>&nbsp;</div>";
+		echo "<div style='padding-bottom:4em'>&nbsp;</div>";		
 	}
 	
 	//------------------------------------------------------------------------------------------
@@ -281,7 +286,7 @@
 						if(in_array("{$obj->val}", $linked_items)) {
 							$items_div .= '<div class="multiple-select-item">' .
 								'<a role="button" onclick="remove_linked_item(this)" data-field="'. $field_name .'" data-id="' . $obj->val .'"><span class="glyphicon glyphicon-trash"></span></a>' .
-								'<span class="multiple-select-text">' . html($obj->txt)  . " ({$field['lookup']['field']}  ={$obj->val})</span></div>";
+								'<span class="multiple-select-text">' . html($obj->txt)  . " ({$field['lookup']['field']} = {$obj->val})</span></div>";
 						}
 						else
 							echo "<option value='{$obj->val}'>" . html($obj->txt) . " ({$field['lookup']['field']} = {$obj->val})</option>\n";
@@ -339,7 +344,7 @@
 		
 		
 		if($field['store'] & STORE_FOLDER) {
-			// make sure storage location ends with slash /
+			// make sure storage location ends with a slash /
 			$store_folder = $field['location'];
 			if(substr($field['location'], -1) != '/')
 				$store_folder .= '/';
@@ -352,6 +357,23 @@
 			
 			if($_GET['mode'] == MODE_NEW && file_exists($target_filename))
 				return proc_error('Cannot upload file, because a file with the same name already exists at the storage location.');
+						
+			// when editing, first we need to remove existing file if name is different
+			if($_GET['mode'] == MODE_EDIT) {
+				$where = array();
+				$params = array();
+				foreach($table['primary_key']['columns'] as $pk_col) {
+					$where[] = db_esc($pk_col) . ' = ?';
+					$params[] = $_GET[$pk_col];
+				}
+				
+				$sql = sprintf('SELECT %s FROM %s WHERE %s', 
+					db_esc($field_name), db_esc($_GET['table']), implode(' AND ', $where));
+					
+				$succ = db_get_single_val($sql, $params, $prev_filename);
+				if($succ && $prev_filename != $file['name'] && file_exists($store_folder . $prev_filename)) 
+					unlink($store_folder . $prev_filename);
+			}
 			
 			$moved = move_uploaded_file($file['tmp_name'], $target_filename);
 			if(!$moved)
@@ -431,6 +453,8 @@
 			}			
 			else if($field_info['type'] == T_LOOKUP && $field_info['lookup']['cardinality'] == CARDINALITY_MULTIPLE) {
 				$foreignkeys[$field_name] = get_linked_items($field_name);				
+				if(is_field_required($field_info) && count($foreignkeys[$field_name]) == 0)
+					return proc_error("Please provide at least one value for required field <b>{$field_info['label']}</b>");
 			}
 			else if($field_info['type'] == T_PASSWORD) {
 				if(isset($field_info['min_len']) && strlen($_POST[$field_name]) < $field_info['min_len'])
@@ -443,8 +467,8 @@
 				$values[] = isset($LOGIN['password_hash_func']) ? $LOGIN['password_hash_func']($_POST[$field_name]) : $_POST[$field_name];
 			}
 			else {
-				$columns[] = $field_name;	
-				$values[] = $_POST[$field_name];
+				$columns[] = $field_name;
+				$values[] = is_field_trim($field_info) ? trim($_POST[$field_name]) : $_POST[$field_name];
 			}
 		}
 
@@ -538,20 +562,82 @@
 					$question_marks[] = '?';
 				$question_marks = implode(', ', $question_marks);
 				
-				$sql = 'DELETE FROM ' . db_esc($table['fields'][$field_name]['linkage']['table']) .
+				// the "select" and "delete" parts of the SQL statement will be prepended later
+				$from_where = 'FROM ' . db_esc($table['fields'][$field_name]['linkage']['table']) .
 					' WHERE ' . db_esc($table['fields'][$field_name]['linkage']['fk_self']) . ' = ?';
 				
 				if($question_marks != '') {
-					$sql .= sprintf(' AND %s NOT IN (%s)', 
+					$from_where .= sprintf(' AND %s NOT IN (%s)', 
 						db_esc($table['fields'][$field_name]['linkage']['fk_other']), 
 						$question_marks);
 				}
 				
-				$stmt = $db->prepare($sql);
-				if($stmt === FALSE)
-					return proc_error("Preparing of updating of relationships failed for field {$field_name} (step 1).", $db);
-				if(FALSE === $stmt->execute( array_merge(array_values($id), $values) ))
+				// BEFORE_DELETE hooks >>
+				// TODO: this can lead to problems in world with heavy concurrent use.
+				// NOTE: if this block is changed, there will be effects on the after_delete hooks block
+				$linkage_table_name = $table['fields'][$field_name]['linkage']['table'];
+				
+				$linkage_table = null;
+				if(isset($TABLES[$linkage_table_name]))
+					$linkage_table = $TABLES[$linkage_table_name];
+				
+				$before_delete_hook = null;
+				if($linkage_table !== null 
+					&& isset($linkage_table['hooks']) 
+					&& isset($linkage_table['hooks']['before_delete']) 
+					&& trim($linkage_table['hooks']['before_delete']) != '')
+				{
+					$before_delete_hook = $linkage_table['hooks']['before_delete'];
+				}
+				
+				$after_delete_hook = null;
+				if($linkage_table !== null
+					&& isset($linkage_table['hooks']) 
+					&& isset($linkage_table['hooks']['after_delete']) 
+					&& trim($linkage_table['hooks']['after_delete']) != '')
+				{
+					$after_delete_hook = $linkage_table['hooks']['after_delete'];
+				}
+				
+				$has_delete_hooks = ($before_delete_hook !== null || $after_delete_hook !== null);			
+				$to_be_deleted = array();
+				
+				if($has_delete_hooks) {					
+					// first check which ones will be deleted
+					$select_stmt = $db->prepare('SELECT * ' . $from_where);
+					if($select_stmt === false)
+						return proc_error("Preparing of updating of relationships failed for field {$field_name} (step 0).", $db);				
+					if($select_stmt->execute(array_merge(array_values($id), $values)) === false)
+						return proc_error("Executing the updating of relationships failed for field {$field_name} (step 0).", $db);	
+
+					while($record = $select_stmt->fetch(PDO::FETCH_ASSOC)) {					
+						$pk_hash = array(
+							$table['fields'][$field_name]['linkage']['fk_self'] => $record[$table['fields'][$field_name]['linkage']['fk_self']],
+							$table['fields'][$field_name]['linkage']['fk_other'] => $record[$table['fields'][$field_name]['linkage']['fk_other']]
+						);
+						$to_be_deleted[] = $pk_hash;
+						// call before_delete hook, if any. be careful with this, because actual delete might fail
+						
+						if($before_delete_hook !== null)
+							$before_delete_hook ($table['fields'][$field_name]['linkage']['table'], $linkage_table, $pk_hash);
+					}
+				} // << BEFORE_DELETE hooks
+				
+				// ACTUAL DELETION >>
+				$delete_stmt = $db->prepare('DELETE ' . $from_where);				
+				if($delete_stmt === false)
+					return proc_error("Preparing of updating of relationships failed for field {$field_name} (step 1).", $db);				
+				if($delete_stmt->execute(array_merge(array_values($id), $values)) === false)
 					return proc_error("Executing the updating of relationships failed for field {$field_name} (step 1).", $db);
+				// << ACTUAL DELETION
+				
+				// AFTER_DELETE hook >>
+				if($after_delete_hook !== null) {										
+					foreach($to_be_deleted as $pk_hash) {
+						$after_delete_hook ($table['fields'][$field_name]['linkage']['table'], $linkage_table, $pk_hash);
+					}
+				}
+				// << AFTER_DELETE hook
 				
 				// determine which assoications in $values already exist, and remove them form $values
 				$the_table = db_esc($table['fields'][$field_name]['linkage']['table']);
@@ -562,9 +648,10 @@
 						$the_table, $the_fk_self, $the_fk_other);
 					
 					$stmt = $db->prepare($sql);
-					if($stmt === FALSE)
+					if($stmt === false)
 						return proc_error("Preparing of updating of relationships failed for field {$field_name} (step 2).", $db);
-					if(FALSE === $stmt->execute( array_merge( array_values($id), array( $values[$i] )) ))
+					
+					if($stmt->execute(array_merge(array_values($id), array($values[$i]))) === false)
 						return proc_error("Executing the updating of relationships failed for field {$field_name} (step 2).", $db);
 					
 					$cunt = $stmt->fetchColumn();
@@ -581,20 +668,51 @@
 			
 			$field_info = $table['fields'][$field];
 			
+			$ins_fields = array();
+			$ins_values = array();
+			
+			// convention: fk_other must be at the beginning, so for each SQL execution later the foreign key value can be set at array index 0
+			$ins_fields[] = db_esc($field_info['linkage']['fk_other']); 
+			$ins_values[] = ''; // will be replaced during execution
+			
 			//TODO UPDATE FOR COMPOSITE FK_SELF & FK_OTHER
-			$sql = 'INSERT INTO ' . db_esc($field_info['linkage']['table']) . 
-				'(' . db_esc($field_info['linkage']['fk_self']) . ', ' . db_esc($field_info['linkage']['fk_other']) .
-				') VALUES (?,?)';
-					
+			$ins_fields[] = db_esc($field_info['linkage']['fk_self']);			
+			$ins_values[] = first(array_values($id));
+			
+			// defaults of n:m linkage tables
+			if(isset($field_info['linkage']['defaults']) && is_array($field_info['linkage']['defaults'])) {
+				foreach($field_info['linkage']['defaults'] as $def_field => $def_value) {
+					$ins_fields[] = db_esc($def_field);
+					$ins_values[] = get_default($def_value);
+				}
+			}
+			
+			$ins_placeholders = array();
+			for($i = count($ins_values) - 1; $i >= 0; $i--)
+				$ins_placeholders[] = '?';
+			
+			$sql = sprintf('INSERT INTO %s (%s) VALUES (%s)',
+				db_esc($field_info['linkage']['table']),
+				implode(', ', $ins_fields),
+				implode(', ', $ins_placeholders));
+			
 			$stmt = $db->prepare($sql);
 			if($stmt === FALSE)
 				return proc_error('SQL linkage statement preparation failed.', $db);
 			
 			foreach($values as $value) { //TODO UPDATE FOR COMPOSITE FK_SELF & FK_OTHER
-				if(FALSE === $stmt->execute(array_merge(array_values($id), array( $value )))) //TODO: update for multiple keys
+				$ins_values[0] = $value;
+			
+				if(FALSE === $stmt->execute($ins_values))
 					return proc_error("New record was stored, but related records could not be set for '$field_name'", $db);				
 			}
 		}
+		
+		// call 'after_insert/update' hook functions
+		if($_GET['mode'] == MODE_NEW && isset($table['hooks']) && isset($table['hooks']['after_insert']))
+			$table['hooks']['after_insert']($table_name, $table, $id);
+		else if($_GET['mode'] == MODE_EDIT && isset($table['hooks']) && isset($table['hooks']['after_update']))
+			$table['hooks']['after_update']($table_name, $table, $id);
 		
 		if(is_popup()) {
 			$key = $table['primary_key']['columns'][0];			
@@ -607,12 +725,6 @@
 		
 		proc_success(sprintf('Record %s in the database.',
 			$_GET['mode'] == MODE_NEW ? 'stored' : 'updated')); // success
-		
-		// call 'after_insert/update' hook functions
-		if($_GET['mode'] == MODE_NEW && isset($table['hooks']) && isset($table['hooks']['after_insert']))
-			$table['hooks']['after_insert']($table_name, $table, $id);
-		else if($_GET['mode'] == MODE_EDIT && isset($table['hooks']) && isset($table['hooks']['after_update']))
-			$table['hooks']['after_update']($table_name, $table, $id);
 		
 		if(!isset($_SESSION['redirect'])) {
 			$new_keys = array();

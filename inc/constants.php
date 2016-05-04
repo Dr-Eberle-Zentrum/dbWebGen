@@ -23,6 +23,9 @@
 	// null value indicator for non-required dropdowns
 	define('NULL_OPTION', '__NULL__');
 	
+	// field name postfix for raw foreign key values (should create reasonably unique field name, i.e. no human assigned field should end with the same string)
+	define('FK_FIELD_POSTFIX', '__3ffz3h_k031n');
+	
 	// where to store uploaded filesize. can be binary or'ed
 	define('STORE_FOLDER', 0x1);
 	define('STORE_DB', 0x2); // TODO: not implemented yet
@@ -53,5 +56,5 @@
 	// pseudo modes
 	define('MODE_DELETE', 'delete');
 	define('MODE_CREATE_DONE', 'create_done');
-	define('MODE_LOGOUT', 'logout')
+	define('MODE_LOGOUT', 'logout');	
 ?>

@@ -99,7 +99,7 @@
 			No arguments.			
 		- initializer_proc: string (optional)
 			Name of a function called at the very beginnging of processing. The function is called only when there is a logged in user.
-			No arguments.
+			No arguments. NOTE: in some cases this function is NOT allowed to write anything to the output buffer!
 	======================================================================================================== */
 	$LOGIN = array(
 		'users_table' => 'users',
@@ -174,6 +174,8 @@
 					Foreign key field referencing this table
 				- fk_other: string 			
 					Foreign key field referencing the other table	
+				- defaults: array (optional)
+					Array of field defaults for non-key fields in the form FIELD_NAME => VALUE. For each field, occurrences of REPLACE_DYNAMIC_* strings (see config/constants.php) in VALUE are replaced with the current values.
 			- SRID: int (required only for type=T_POSTGIS_GEOM)
 				Spatial Reference ID of the Postgis geometry
 			- min_len: int (optional)

@@ -194,10 +194,13 @@
 			echo "</tr></thead><tbody>\n";
 						
 			while($record = $res->fetch(PDO::FETCH_ASSOC)) {				
-				$id_str = '';
-				foreach($table['primary_key']['columns'] as $pk)
-					// *_raw contains the raw value (not lookup display value) of referenced primary keys
-					$id_str .= "&amp;{$pk}=" . urlencode($record[db_postfix_fieldname($pk, '_raw', false)]);
+				#debug_log(arr_str($record));
+				$id_str = '';				
+				
+				foreach($table['primary_key']['columns'] as $pk) {					
+					// field with postfixed name contains the raw value (not lookup display value) of referenced primary keys
+					$id_str .= "&amp;{$pk}=" . urlencode($record[db_postfix_fieldname($pk, FK_FIELD_POSTFIX, false)]);
+				}
 								
 				echo "<tr><td class='fit'>\n";
 				$action_icons = '';
@@ -217,17 +220,7 @@
 					if(!isset($fields[$col]))
 						continue;
 					
-					if($fields[$col]['type'] == T_ENUM && $val !== NULL)
-						$val = html($fields[$col]['values'][$val]);
-
-					if($fields[$col]['type'] == T_PASSWORD)
-						$val = '&bull;&bull;&bull;&bull;&bull;';
-					
-					else if($fields[$col]['type'] == T_UPLOAD)
-						$val = "<a href='". get_file_url($val, $fields[$col]) ."'>$val</a>";
-						
-					else
-						$val = html($val, $APP['max_text_len'], true);
+					$val = prepare_field_display_val($table, $record, $fields[$col], $col, $val);
 					
 					echo "<td>{$val}</td>\n";
 				}

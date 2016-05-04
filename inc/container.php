@@ -10,19 +10,28 @@
 		
 		echo '<nav class="navbar navbar-default">' .
 			'<div class="container-fluid">' .
-			'<div class="navbar-header">'.
-			'<a class="navbar-brand" href="?">' . $APP['title'] . '</a>'.
-			'</div>';
+			'<div class="navbar-header">';
+			
+		
+		// collapsible
+		echo '<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>';			
+			
+		echo'<a class="navbar-brand" href="?">' . $APP['title'] . '</a></div>';
 
 		if(is_logged_in()) { 
 			build_main_menu($menu); 
+			echo '<div class="collapse navbar-collapse" id="main-navbar">';
 			echo '<ul class="nav navbar-nav">';
 			foreach($menu as $main_item) {
 				echo '<li><a class="dropdown-toggle" data-toggle="dropdown" href="#">' .
 					html($main_item['name']) . '<span class="caret"></span></a><ul class="dropdown-menu">';
 				
-				foreach($main_item['items'] as $sub_item)
-					echo "<li><a href='{$sub_item['href']}'>". html($sub_item['label']). "</a></li>\n";
+				foreach($main_item['items'] as $sub_item) {
+					if(is_string($sub_item)) // some separator or other shit
+						echo "$sub_item\n";
+					else
+						echo "<li><a href='{$sub_item['href']}'>". html($sub_item['label']). "</a></li>\n";
+				}
 				
 				echo '</ul></li>';
 			}
@@ -35,7 +44,33 @@
 				'<li><a href="#" id="logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li></ul>';
 		} 
 		
-		echo '</div></nav>';
+		echo '</div></div></nav>';
+	}
+	
+	//------------------------------------------------------------------------------------------
+	function build_main_menu(&$menu) {
+	//------------------------------------------------------------------------------------------
+		global $TABLES;
+		global $APP;
+		
+		$menu = array();
+		
+		$menu[0] = array('name' => 'New', 'items' => array());
+		if($APP['mainmenu_tables_autosort'])
+			uasort($TABLES, 'sort_tables_new');
+		foreach($TABLES as $table_name => $info)
+			if(in_array(MODE_NEW, $info['actions']))
+				$menu[0]['items'][] = array('label' => $info['item_name'], 'href' => "?table={$table_name}&mode=" . MODE_NEW);
+		
+		$menu[1] = array('name' => 'Browse & Edit', 'items' => array());
+		if($APP['mainmenu_tables_autosort'])
+			uasort($TABLES, 'sort_tables_list');
+		foreach($TABLES as $table_name => $info)
+			if(in_array(MODE_LIST, $info['actions']))
+				$menu[1]['items'][] = array('label' => $info['display_name'], 'href' => "?table={$table_name}&mode=" . MODE_LIST);
+			
+		if(isset($APP['menu_complete_proc']) && trim($APP['menu_complete_proc']) != '')
+			/*call_user_func*/ $APP['menu_complete_proc']($menu);
 	}
 	
 	//------------------------------------------------------------------------------------------

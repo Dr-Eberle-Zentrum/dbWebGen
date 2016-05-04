@@ -13,6 +13,8 @@
 	require_once ENGINE_PATH . 'inc/container.php';
 	require_once ENGINE_PATH . 'inc/login.php';
 	
+	session_init();
+	
 	// any special processing?
 	switch(safehash($_GET, 'mode', '')) {
 		case MODE_DELETE:
@@ -31,8 +33,7 @@
 			exit;
 	}
 	
-	ob_start();	
-	session_init();
+	ob_start();		
 ?>
 <!DOCTYPE html>
 <head>
