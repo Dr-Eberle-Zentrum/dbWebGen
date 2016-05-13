@@ -134,7 +134,7 @@
 				List of primary key fields. also if there is only one PK field, this needs to be an array
 			- sequence_name: string (required only if auto=true)
 				if auto = true, this becomes required and must reflect the sequence name that generates the new primary key value. 
-				If auto=false, this setting is ignored.				
+				If auto=false, this setting is ignored.					
 		- fields: array
 			Associative array with settings for each field. The key reflects the column name in the DB. The value is an array with several settings:
 			- label: string
@@ -151,8 +151,10 @@
 				Whether or not this field should be offered in the new/edit forms. For an automatically generated primary key field or some computed field, this should be set to false. Even with editable=false, the field will be displayed in MODE_LIST and MODE_VIEW. If it is desired to completely hide this field from the user, the field itself should not be set in the fields array
 			- help: string (optional)
 				Help text to display in the new/edit forms. Can contain HTML.
+			- show_setnull: bool (default: false)
+				Whether or not to show a checkbox allowing to explicitly set a NULL value for a non-required field (applies to input and textarea). Even if the checkbox is not shown, it is there and automatically checked/unchecked upon user input.
 			- default: string (optional)
-				Default value to set. All occurrences of REPLACE_DYNAMIC_* strings (see config/constants.php) are replaced with the current values.			
+				Default value to set. All occurrences of REPLACE_DYNAMIC_* strings (see config/constants.php) are replaced with the current values.	
 			- values: array (required only if type=T_ENUM)
 				Array of values for a T_ENUM type. An associative array with key reflecting the actual DB value, and value representing the label to display to the user, e.g. array(1 => 'January', 2 => 'February', ...)
 			- lookup: array	(required only if type=T_LOOKUP)
@@ -161,11 +163,16 @@
 					Whether this field is a foreign key in this very table (CARDINALTY_SINGLE), reflecting an 1:n relationship, or whether this relationship is actually represented in a separate table reflecting an m:n relationship (CARDINALITY_MULTIPLE). In the latter case, 'linkage' settings must be provided (see below)
 				- table: string
 					Name of the table referenced by this foreign key field
-				- field : string
+				- field: string
 					Field in the table referenced by this foreign key field (typically the primary key of the other table)
-				- display : string
+				- display: string
 					Since the foreign key is typically a numeric key, this setting can be used to define what to display to the user. Can be either a string literal representing a field name in the referenced table, e.g.: 'display' => 'lastname' 
 					Or it can be a hash array with 'columns' => array of columns, which is used in 'expression' => expression referring to indexes in 'columns' as %1, %2, etc., e.g.: 'display' => array('columns' => array('firstname', 'lastname'), 'expression' => "concat_ws(' ', %1 %2)" )		
+				- default: any type (optional)
+					Default option for this foreign key reference to select in MODE_NEW. The type should be automatically convertible to string
+				- related_label: string (optional)
+					Text to display in the "List Related" dropdown in MODE_VIEW of any record of the table referenced by this field (e.g. "Cars Sold By This Agent")
+					If missing, the label will be constructed automatically from the table's display name and the field's label. (e.g. "Cars Sales (As Agent)")
 			- linkage: array
 				If cardinality=CARDINALITY_MULTIPLE, we need to define here the m:n relationship table that links records from this table (via fk_self) with records of the other table (via fk_other)
 				- table: string
@@ -218,6 +225,14 @@
 					Foreign key field that links to this table from the n:m table
 			e.g. in table customers: 
 			'additional_steps' => array('orders' => array('label' => 'Orders of this customer', 'foreign_key': 'customer_id'))
+		- custom_actions: array (optional)
+			Array of arrays, each representing a custom action that is offered in particular viewing modes through particular buttons. Each custom action is an associative array consisting at least of the following keys:
+				- mode: string
+					Any of the MODE_* modes to which this action applies (currently only MODE_LIST implemented)
+				- handler: string
+					Name of a handler function that will be called for the current record. Arguments: (1) name of the current table (2) table info from this settings file (3) the record retrieved from the database using PDO::FETCH_ASSOC and (4) this very custom action hash, which means that any additional key/value pairs you add to this array will get passed to the handler function.
+		- list_in_related: bool (optional) (default: true)
+			In MODE_VIEW, there is a dropdown linking to tables where the current record is linked through a foreign key (T_LOOKUP). If you do not want this table to appear in this list at all, set this to true.
 	======================================================================================================== */
 	$TABLES = array(
 	);

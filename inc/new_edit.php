@@ -32,6 +32,7 @@
 				return false;
 		}
 		
+		echo "<p>{$table['description']}</p>\n";
 		echo "<p>Fill the form fields and then press 'Save'. Fields indicated with <span class='required-indicator'>&#9733;</span> are required.</p>\n";
 		echo "<form class='form-horizontal' role='form' method='post' enctype='multipart/form-data'>\n";
 		
@@ -101,14 +102,16 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
-	function render_setnull($field_name) {
+	function render_setnull($field_name, $field) {
 	//------------------------------------------------------------------------------------------			
 		global $APP;
 		
 		$is_checked = !isset($_POST["{$field_name}_null"]) || $_POST["{$field_name}_null"] == 'true';
 		$checked_attr = $is_checked? "checked='checked'" : '';
+		$visibility = (isset($field['show_setnull']) && $field['show_setnull'] === true ? '' : 'invisible');
+		
 		echo 
-			"<div class='checkbox col-sm-1'><label><input type='hidden' name='{$field_name}_null' value='false' />".
+			"<div class='checkbox col-sm-1 $visibility'><label><input type='hidden' name='{$field_name}_null' value='false' />".
 			"<input name='{$field_name}_null' type='checkbox' value='true' $checked_attr />{$APP['null_label']}</label></div>";
 	}
 	
@@ -152,13 +155,13 @@
 			case T_PASSWORD:
 				$width = get_input_size_class($field, $width);
 				echo "<div class='col-sm-$width'><input $disabled $required_attr type='password' class='form-control' id='{$field_name}' name='{$field_name}' maxlength='{$field['len']}' value='' $autofocus /></div>\n";
-				if(!$is_required) render_setnull($field_name);
+				if(!$is_required) render_setnull($field_name, $field);
 				break;
 			
 			case T_TEXT_LINE:
 				$width = get_input_size_class($field, $width);
 				echo "<div class='col-sm-$width'><input $disabled $required_attr type='text' class='form-control' id='{$field_name}' name='{$field_name}' maxlength='{$field['len']}' value=\"".html_val($field_name)."\" $autofocus /></div>\n";
-				if(!$is_required) render_setnull($field_name);
+				if(!$is_required) render_setnull($field_name, $field);
 				break;
 				
 			case T_NUMBER:
@@ -167,18 +170,18 @@
 				$attr_step = isset($field['step']) ? "step='{$field['step']}'" : '';
 				
 				echo "<div class='col-sm-3'><input $disabled $required_attr $attr_min $attr_max $attr_step type='number' class='form-control' id='{$field_name}' name='{$field_name}' value=\"".html_val($field_name)."\" $autofocus /></div>\n";
-				if(!$is_required) render_setnull($field_name);
+				if(!$is_required) render_setnull($field_name, $field);
 				break;
 				
 			case T_TEXT_AREA:
 				echo "<div class='col-sm-$width'><textarea $disabled $required_attr class='form-control' id='{$field_name}' name='{$field_name}' rows='5' $autofocus>".html_val($field_name)."</textarea></div>\n";
-				if(!$is_required) render_setnull($field_name);
+				if(!$is_required) render_setnull($field_name, $field);
 				break;
 				
 			case T_ENUM:
 				echo "<div class='col-sm-$width'><select $disabled $required_attr class='form-control' id='{$field_name}' name='{$field_name}' $autofocus>\n";
 				if(!$is_required)
-					echo "<option value='". NULL_OPTION ."'>(none)</option>\n";
+					echo "<option value='". NULL_OPTION ."'>&nbsp;</option>\n";
 				
 				$selection_done = '';
 				
@@ -205,7 +208,7 @@
 				
 			case T_POSTGIS_GEOM:
 				echo "<div class='col-sm-4'><input $disabled $required_attr type='text' class='form-control' id='{$field_name}' name='{$field_name}' value=\"".html_val($field_name)."\" $autofocus /></div>\n";
-				if(!$is_required) render_setnull($field_name);
+				if(!$is_required) render_setnull($field_name, $field);
 				break;
 				
 			case T_LOOKUP:
@@ -231,7 +234,7 @@
 						return proc_error("Could not retrieve data.", $db);
 					
 					if(!$is_required)
-						echo "<option value='". NULL_OPTION ."'>(none)</option>\n";
+						echo "<option value='". NULL_OPTION ."'>&nbsp;</option>\n";
 					else if($_GET['mode'] == MODE_NEW)
 						echo "<option value=''></option>\n";
 					

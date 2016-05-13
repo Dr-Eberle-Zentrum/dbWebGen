@@ -47,6 +47,9 @@
 	// prefix for url parameters that should be used as prefill values in MODE_NEW
 	define('PREFILL_PREFIX', 'pre:');
 	
+	// separator character(s) for inline display of multiple records
+	define('MULTIPLE_RECORDS_SEPARATOR', ' ● ');
+	
 	// viewing modes (reflected in URL parameter mode=XXX)
 	define('MODE_NEW', 'new');
 	define('MODE_EDIT', 'edit');

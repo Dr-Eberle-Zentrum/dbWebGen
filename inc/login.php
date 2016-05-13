@@ -66,6 +66,8 @@ END;
 		global $LOGIN;
 		global $APP;		
 		
+		date_default_timezone_set($APP['timezone']);
+		
 		if(isset($APP['plugins']))
 			foreach($APP['plugins'] as $plugin)
 				require_once $plugin;

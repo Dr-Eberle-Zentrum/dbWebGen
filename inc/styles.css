@@ -59,6 +59,10 @@ span.clipped_text {
 	margin-left: .5em;
 }
 
+.space-right {
+	margin-right: .5em;
+}
+
 .prefilled {
 	display:none
 }
@@ -109,4 +113,8 @@ span.required-indicator {
 .dotted {
 	border-bottom: 1px dotted #000;
     text-decoration: none;
+}
+
+.invisible {
+	display:none;
 }

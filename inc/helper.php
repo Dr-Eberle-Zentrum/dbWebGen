@@ -154,6 +154,17 @@
 				db_esc($field['lookup']['table']), db_esc($field['linkage']['table']),
 				db_esc($field['linkage']['fk_self']), $table_alias, db_esc($table['primary_key']['columns'][0]),
 				db_esc($field['lookup']['field']), db_esc($field['linkage']['fk_other']), $op);
+						
+			// for SEARCH_ANY queries (~ contains) we also want to look whether the provided query value matches any of the multiple foreign keys (not only the lookup values), expecting those key values to be integers (but also works with others)
+			if($search_option === SEARCH_ANY) {
+				$field_trafo = sprintf("array_agg(%s)", $string_trafo);
+				$or_term = sprintf("(select $field_trafo from %s link where link.%s = %s.%s) @> array[$query_trafo]",
+					db_esc($field['linkage']['fk_other']), db_esc($field['linkage']['table']),
+					db_esc($field['linkage']['fk_self']), $table_alias, db_esc($table['primary_key']['columns'][0]));
+					
+				$term['sql'] = "({$term['sql']} OR {$or_term})";
+				$term['params'][] = $search_query;
+			}
 		}
 		else {
 			if($fields[$search_field]['type'] == T_POSTGIS_GEOM)
@@ -333,7 +344,7 @@
 				
 					$linked_records[] = "<a class='$class' title='{$title}' href=\"?{$href}\">". $html_val ."</a>";
 				}
-				$val = implode($linked_records, '; ');
+				$val = implode($linked_records, MULTIPLE_RECORDS_SEPARATOR);
 			}
 			else
 				$val = '';

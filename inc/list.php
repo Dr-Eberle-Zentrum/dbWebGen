@@ -172,7 +172,10 @@
 			
 			echo "<p class='text-info'>Displaying {$what} <b>{$start_record}</b>&ndash;<b>{$end_record}</b> of <b>{$num_records}</b>{$total_ind}</p>";
 			$query = build_query($table_name, $table, $offset, MODE_LIST, null, $params_arr);
+			
 			#debug_log($query);
+			#debug_log(arr_str($params_arr));
+			
 			$res = $db->prepare($query);
 			if($res === FALSE)
 				return proc_error('List query preparation went wrong.', $db);
@@ -203,18 +206,27 @@
 				}
 								
 				echo "<tr><td class='fit'>\n";
-				$action_icons = '';
+				$action_icons = array();
 				
 				if(is_allowed($table, MODE_VIEW))
-					$action_icons .= "<a href='?table={$table_name}&amp;mode=".MODE_VIEW."{$id_str}'><span title='View this record' class='glyphicon glyphicon-zoom-in'></span></a>&nbsp;&nbsp;";
+					$action_icons[] = "<a href='?table={$table_name}&amp;mode=".MODE_VIEW."{$id_str}'><span title='View this record' class='glyphicon glyphicon-zoom-in'></span></a>";
 				
 				if(is_allowed($table, MODE_EDIT))
-					$action_icons .= "<a href='?table={$table_name}&amp;mode=".MODE_EDIT."{$id_str}'><span title='Edit this record' class='glyphicon glyphicon-edit'></span></a>&nbsp;&nbsp;";
+					$action_icons[] = "<a href='?table={$table_name}&amp;mode=".MODE_EDIT."{$id_str}'><span title='Edit this record' class='glyphicon glyphicon-edit'></span></a>";
 					
 				if(is_allowed($table, MODE_DELETE))
-					$action_icons .= "<a role='button' data-href='?table={$table_name}{$id_str}&amp;mode=".MODE_DELETE."' data-toggle='modal' data-target='#confirm-delete'><span title='Delete this record' class='glyphicon glyphicon-trash'></span></a>";
+					$action_icons[] = "<a role='button' data-href='?table={$table_name}{$id_str}&amp;mode=".MODE_DELETE."' data-toggle='modal' data-target='#confirm-delete'><span title='Delete this record' class='glyphicon glyphicon-trash'></span></a>";
 				
-				echo "{$action_icons}&nbsp;&nbsp;&nbsp</td>\n";
+				if(isset($table['custom_actions'])) {
+					foreach($table['custom_actions'] as $custom_action) {
+						if($custom_action['mode'] == $_GET['mode']) {
+							// call custom action handler
+							$action_icons[] = $custom_action['handler']($table_name, $table, $record, $custom_action);
+						}
+					}
+				}
+				
+				echo implode('&nbsp;&nbsp;', $action_icons) . "&nbsp;&nbsp;&nbsp</td>\n";
 				
 				foreach($record as $col => $val) {
 					if(!isset($fields[$col]))
