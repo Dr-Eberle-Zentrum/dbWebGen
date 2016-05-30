@@ -303,7 +303,7 @@
 			case T_LOOKUP:
 				$create_new_button = '';				
 				if(is_allowed_create_new($field)) {
-					$popup_url = get_script_url(false) . "?popup={$_GET['table']}&amp;lookup_field={$field_name}&amp;table={$field['lookup']['table']}&amp;mode=".MODE_NEW;
+					$popup_url = "?popup={$_GET['table']}&amp;lookup_field={$field_name}&amp;table={$field['lookup']['table']}&amp;mode=".MODE_NEW;
 					$popup_title = html('New ' . $field['label']);
 					
 					$create_new_button = "<div class='col-sm-2'><button type='button' class='btn btn-default multiple-select-add' data-create-title='{$popup_title}' data-create-url='{$popup_url}' id='{$field_name}_add' formnovalidate><span title='Remove this association' class='glyphicon glyphicon-plus'></span> Create New</button></div>\n";					

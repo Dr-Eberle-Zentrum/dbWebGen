@@ -511,7 +511,9 @@
 		return isset($_POST[$name]) ? $_POST[$name] : $default;
 	}
 	
-	//------------------------------------------------------------------------------------------
+	/*
+	// NOTE THIS FUNCTION DOES NOT WORK WITH ALL SERVER CONFIGURATIONS. DO NOT USE IT
+	// ------------------------------------------------------------------------------------------
 	function get_script_url($with_params) {
 	//------------------------------------------------------------------------------------------
 		$port = $_SERVER['SERVER_PORT'] != '80' ? ":{$_SERVER['SERVER_PORT']}" : '';
@@ -525,7 +527,7 @@
 			$url .= build_get_params();
 		
 		return $url;
-	}
+	}*/
 	
 	//------------------------------------------------------------------------------------------
 	// params in $arr_additional override those in $_GET !!
