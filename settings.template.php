@@ -28,6 +28,10 @@
 		- menu_complete_proc: string (optional)
 			procedure called when default main menu has been built.
 			function parameters: &$menu (assoc. array with complete menu for modification prior to rendering)
+		- list_mincolwidth_max: int (optional) (default: 300)
+			In MODE_LIST, column width is determined by cell content and set using CSS min-width. Specify here the maximum min-width that should be assigned
+		- list_mincolwidth_pxperchar: int (optional) (default: 6)
+			When determining min-width columns in MODE_LIST, how many pixels should be calculated for each character
 	======================================================================================================== */	
 	$APP = array(		
 		'plugins' => array(),

@@ -54,10 +54,11 @@
 		if($res === false)
 			return proc_error('Exec failed');
 		
-		$label = $stmt->fetchColumn() . " ($pk_column = $pk_value)";	
+		$label = $stmt->fetchColumn();
+		$text = "$label ($pk_column = $pk_value)";
 		
 		echo "<script>\n";
-		echo "  var r = " . json_encode(array('lookup_field' => $lookup_field, 'value' => $pk_value, 'label' => $label)) . ";\n";
+		echo "  var r = " . json_encode(array('lookup_field' => $lookup_field, 'value' => $pk_value, 'label' => $label, 'text' => $text)) . ";\n";
 		echo "  try { window.opener.handle_create_new_result(r); } catch(e) {}\n";
 		echo "  window.close();\n";
 		echo "</script>\n</body>";

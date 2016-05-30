@@ -37,11 +37,16 @@ $(window).load(function() {
 	// Search popovers
 	//
 	$('[data-toggle=popover][data-purpose=search]').each(function() {
+		// copy any pre-set value for the search field
+		$(this).on('shown.bs.popover', function(){
+			$('#searchtext').val($(this).data('value')).focus();
+		});
+		
 		// set the form content specific to the field
 		$(this).data('content', search_popover_template.replace('%FIELDNAME%', $(this).data('field'))).popover({
 			html: true,
 			container: '#search-popover' // needed for CSS styling
-		}); 
+		});
 	});		
 	
 	//
@@ -59,7 +64,7 @@ $(window).load(function() {
 	//
 	$('input[type="text"]:not([required]), input[type="number"]:not([required]), textarea:not([required])').each(function() {
 		var control = $(this);
-		$('input[name="' + control.attr('name') + '_null"]').each(function() {
+		$('input[name="' + control.attr('name') + '__null__"]').each(function() {
 			var checkbox = $(this);
 			control.on('input', function() {
 				if(control.val() != '' && checkbox.prop('checked'))
@@ -85,26 +90,37 @@ $(window).load(function() {
 		// automatic add
 		$(dropdown_id).on('change', function() {			
 			if($(dropdown_id).val() === null)
-				return false; // don't submit the form
-			
-			// add selected item to hidden input
-			var list = parse_multiple_val($(hidden_input).val());
-			list.push($(dropdown_id).val());			
-			$(hidden_input).val(write_multiple_val(list));
+				return;
 			
 			// append selected item to bullet list
-			$(list_id).append(
+			$.get('', { 
+				mode: 'func', 
+				target: 'get_linked_item_html',
+				table: $('#__table_name__').val(),
+				self_id: $('#__item_id__').val(),
+				parent_form: $('#__form_id__').val(),
+				field: field,
+				other_id: $(dropdown_id).val(),
+				label: $(dropdown_id + ' option:selected').data('label')
+			}, function(data) {				
+				// add selected item to hidden input				
+				var list = parse_multiple_val($(hidden_input).val());
+				list.push($(dropdown_id).val());			
+				$(hidden_input).val(write_multiple_val(list));
+				
+				$(list_id).append(data);
+				
+				// remove added item from dropdown
+				$(dropdown_id + " option[value='" + $(dropdown_id).val() + "']").each(function() { $(this).remove(); });			
+				
+				// reset dropdown selection
+				$(dropdown_id).val('').change();
+			});				
+			
+			/*$(list_id).append(
 				'<div class="multiple-select-item">' +
-				'<a role="button" onclick="remove_linked_item(this)" data-field="'+ field +'" data-id="' + $(dropdown_id).val() +'"><span class="glyphicon glyphicon-trash"></span></a> ' + 				
-				'<span class="multiple-select-text">' + $(dropdown_id + ' option:selected').text() + '</span>');			
-			
-			// remove added item from dropdown
-			$(dropdown_id + " option[value='" + $(dropdown_id).val() + "']").each(function() { $(this).remove(); });			
-			
-			// reset dropdown selection
-			$(dropdown_id).val('').change();
-			
-			return false; // don't submit the form		
+				'<a role="button" onclick="remove_linked_item(this)" data-field="'+ field +'" data-id="' + $(dropdown_id).val() +'" data-label="' + $(dropdown_id + ' option:selected').data('label') +'"><span class="glyphicon glyphicon-trash"></span></a> ' + 				
+				'<span class="multiple-select-text">' + $(dropdown_id + ' option:selected').text() + '</span></div>');*/			
 		});	
 	});
 	
@@ -118,6 +134,14 @@ $(window).load(function() {
 });
 
 //
+// "Edit Details" event handler for T_LOOKUP / MULTIPLE
+// 
+function linkage_details_click(a) {
+	window.open($(a).data('details-url'), $(a).data('details-title'),
+		'scrollbars=1,location=0,menubar=0,resizable=1,width=400,height=600');
+}
+
+//
 // parse and write select2 multiple value
 //
 function parse_multiple_val(str) { return JSON.parse(!str || str == '' ? '[]' : str); }
@@ -126,7 +150,7 @@ function write_multiple_val(arr) { return JSON.stringify(arr); }
 //
 // Insert item into select2 
 //
-function insert_option_sorted(dropdown_id, value, text, selected) {
+function insert_option_sorted(dropdown_id, value, label, text, selected) {
 	// insert removed element sorted into the dropdown
 	var insert_before = -1;
 	$(dropdown_id).children('option').each(function () {
@@ -136,7 +160,7 @@ function insert_option_sorted(dropdown_id, value, text, selected) {
 		}
 	});
 	
-	var opt = $('<option/>', { value: value }).text(text);	
+	var opt = $('<option/>', { value: value }).text(text).data('label', label);
 	if(insert_before == -1)
 		$(dropdown_id).append(opt);
 	else
@@ -149,10 +173,12 @@ function insert_option_sorted(dropdown_id, value, text, selected) {
 // Removal of linked item in T_LOOKUP fields with CARDINALITY_MULTIPLE
 //
 function remove_linked_item(e) {	
-	var removed_id = $(e).attr('data-id');
-	var field = $(e).attr('data-field');
+	var $e = $(e);
+	var removed_id = $e.data('id');
+	var field = $e.data('field');
+	var label = $e.data('label');
 	var dropdown_id = '#' + field + '_dropdown';
-	var removed_text = $(e).next('span.multiple-select-text').text();
+	var removed_text = $e.parent().find('span.multiple-select-text').text();
 	
 	// remove the value from the hidden input
 	var list = parse_multiple_val($('input#' + field).val());
@@ -165,9 +191,9 @@ function remove_linked_item(e) {
 	$('input#' + field).val(write_multiple_val(list));
 	
 	// remove the list item
-	$(e).closest('div').remove();
+	$e.closest('div').remove();
 	
-	insert_option_sorted(dropdown_id, removed_id, removed_text, false);
+	insert_option_sorted(dropdown_id, removed_id, label, removed_text, false);
 }
 
 //
@@ -175,7 +201,7 @@ function remove_linked_item(e) {
 //
 function handle_create_new_result(result) {
 	insert_option_sorted('#' + result.lookup_field + '_dropdown',
-		result.value, result.label, true);
+		result.value, result.label, result.text, true);
 }
 
 //

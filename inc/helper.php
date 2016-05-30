@@ -23,6 +23,12 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
+	function is_inline() {
+	//------------------------------------------------------------------------------------------
+		return isset($_GET['inline']);
+	}
+	
+	//------------------------------------------------------------------------------------------
 	function is_popup() {
 	//------------------------------------------------------------------------------------------
 		return isset($_GET['popup']);
@@ -35,10 +41,24 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
+	function get_mincolwidth_max() {
+	//------------------------------------------------------------------------------------------
+		global $APP;
+		return isset($APP['list_mincolwidth_max']) ? $APP['list_mincolwidth_max'] : 300;
+	}
+	
+	//------------------------------------------------------------------------------------------
+	function get_mincolwidth_pxperchar() {
+	//------------------------------------------------------------------------------------------
+		global $APP;
+		return isset($APP['list_mincolwidth_pxperchar']) ? $APP['list_mincolwidth_pxperchar'] : 6;
+	}
+	
+	//------------------------------------------------------------------------------------------
 	function __arr_str(&$a, $indent = 0) {
 	//------------------------------------------------------------------------------------------
 		$s = str_repeat(' ', $indent) . "[\n";
-		foreach($a as $k => $v) {
+		if(is_array($a)) foreach($a as $k => $v) {
 			
 			$s .= str_repeat(' ', $indent + 2) . "'{$k}' => ";
 			if(is_array($v))
@@ -233,20 +253,120 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
+	function unquote($text) {
+	//------------------------------------------------------------------------------------------
+		return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+	}
+	
+	//------------------------------------------------------------------------------------------
+	function has_additional_editable_fields($linkage) {
+	//------------------------------------------------------------------------------------------
+		global $TABLES;
+		
+		if(isset($TABLES[$linkage['table']])) {
+			// check whether the linkage table has additional fields
+			$linkage_table = $TABLES[$linkage['table']];								
+			foreach($linkage_table['fields'] as $lf_name => $lf_info) {
+				if($lf_name != $linkage['fk_self']
+					&& $lf_name != $linkage['fk_other']
+					&& is_field_editable($lf_info))
+				{
+					return true;					
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	//------------------------------------------------------------------------------------------
+	// CAREFUL: this function can be called via MODE_FUNC
+	//------------------------------------------------------------------------------------------
+	function get_linked_item_html(
+		/*string*/  $parent_form,
+		/*array*/	&$table,
+		/*string*/ 	$table_name, 
+		/*string*/ 	$field_name, 
+		/*bool*/	$can_edit, 
+		/*string*/	$fk_other_value, 
+		/*string*/	$fk_other_text, 
+		/*string*/	$fk_self_value) 
+	{
+	//------------------------------------------------------------------------------------------
+		global $TABLES;
+		
+		if(!isset($table['fields'][$field_name]))
+			return proc_error('Invalid field');
+		$field = $table['fields'][$field_name];
+		
+		$detail_data_span = '';
+		if($can_edit) {
+			$inline_url = sprintf('?inline=%s&amp;parent_form=%s&amp;lookup_field=%s&amp;table=%s&amp;mode=%s&amp;%s=%s&amp;%s=%s',
+				$table_name, $parent_form, $field_name, $field['linkage']['table'], MODE_EDIT,
+				$field['linkage']['fk_other'], $fk_other_value, 
+				$field['linkage']['fk_self'], $fk_self_value); 
+				
+			$popup_title = html($TABLES[$field['linkage']['table']]['item_name'] . ' Details');
+			
+			$detail_data_span = "<a role='button' onclick='linkage_details_click(this)' class='space-left multiple-select-details-edit' data-id-other='{$fk_other_value}' data-details-title='{$popup_title}' data-details-url='{$inline_url}' id='{$field_name}_details_{$fk_other_value}' title='Edit the details of this association'><span class='glyphicon glyphicon-th-list'></span></a>";
+		}
+		
+		return '<div class="multiple-select-item">' .
+			'<a role="button" onclick="remove_linked_item(this)" data-label="'. unquote($fk_other_text) .'" data-field="'. unquote($field_name) .'" data-id="' . unquote($fk_other_value) .'"><span class="glyphicon glyphicon-trash"></span></a>' .
+			$detail_data_span .
+			'<span class="multiple-select-text">' . html($fk_other_text) . " ({$field['lookup']['field']} = {$fk_other_value})</span></div>";
+	}
+	
+	//------------------------------------------------------------------------------------------
+	function html_linked_records(&$linked_records, $max_chars = 0) {
+	//------------------------------------------------------------------------------------------		
+		$html = '';
+		$cunt = count($linked_records);
+		$raw_len = 0;
+		$clip_opened = false;
+		
+		for($i = 0; $i < $cunt; $i++) {
+			$rec = $linked_records[$i];
+			$raw_len += mb_strlen(strval($rec['raw_val'])) + mb_strlen(MULTIPLE_RECORDS_SEPARATOR);
+			
+			if(!$clip_opened // clipping hasn't started yet				
+				&& $max_chars > 0 // there must be a restriction
+				&& $i > 0 // at least one must have been shown already
+				&& $raw_len > $max_chars // the length exceeds the configured maximum				
+				&& $i < $cunt - 1 // we're not at the last record
+			) {
+				$rest = $cunt - $i;
+				$html .= "<a role='button' title='Text clipped due to length. Click to show clipped text' class='clipped_text'>[$rest more]</a><span class='clipped_text'>";
+				$clip_opened = true;
+			}
+			
+			$html .= get_lookup_display_html($rec['class'], $rec['title'], $rec['href'], $rec['html_val']);
+			
+			if($i < $cunt - 1)
+				$html .= MULTIPLE_RECORDS_SEPARATOR;
+		}
+		
+		if($clip_opened)
+			$html .= '</span>';
+		
+		return $html;
+	}
+	
+	//------------------------------------------------------------------------------------------
 	function html($text, $max_chars = 0, $expandable = false) {
 	//------------------------------------------------------------------------------------------	
 		if($text === null)
 			return '';
 		
 		$text = strval($text);
-		$len = strlen($text);
+		$len = mb_strlen($text);
 		
 		if($max_chars > 0 && $len > $max_chars) {
-			$ret = htmlspecialchars(substr($text, 0, $max_chars), ENT_COMPAT | ENT_HTML401);
+			$ret = htmlspecialchars(mb_substr($text, 0, $max_chars), ENT_COMPAT | ENT_HTML401);
 			
 			if($expandable)
-				$ret .= "<a role='button' class='clipped_text'>[show clipped text]</a><span class='clipped_text'>" .
-				htmlspecialchars(substr($text, $max_chars), ENT_COMPAT | ENT_HTML401) .
+				$ret .= "<a role='button' title='Text clipped due to length. Click to show clipped text' class='clipped_text'>[...]</a><span class='clipped_text'>" .
+				htmlspecialchars(mb_substr($text, $max_chars), ENT_COMPAT | ENT_HTML401) .
 				"</span>";
 			else
 				$ret .= '...';
@@ -259,6 +379,20 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
+	function get_lookup_display_html($class, $title, $href, $label_html) {
+	//------------------------------------------------------------------------------------------
+		if($href === null) {
+			if($class == '' && $title == '')
+				return $label_html;
+			
+			return "<span class='$class' title='$title'>$label_html</span>";
+		}
+		
+		return "<a class='$class' title='$title' href=\"?$href\">$label_html</a>";
+	}
+	
+	
+	//------------------------------------------------------------------------------------------
 	function prepare_field_display_val(&$table, &$record, &$field, $col, $val) {
 	//------------------------------------------------------------------------------------------
 		global $TABLES;
@@ -268,32 +402,28 @@
 			$val = html($field['values'][$val]);
 		}
 		else if($field['type'] == T_PASSWORD) {
-			$val = '&bull;&bull;&bull;&bull;&bull;';
+			$val = '●●●●●';
 		}		
 		else if($field['type'] == T_UPLOAD) {
 			$val = "<a href='". get_file_url($val, $field) ."'>$val</a>";
 		}
 		else if($field['type'] == T_LOOKUP && $field['lookup']['cardinality'] == CARDINALITY_SINGLE) {
-			/*if(isset($record[db_postfix_fieldname($col, FK_FIELD_POSTFIX, false)]) && $val === null) {
-				$val = '<span title="There is no display value for this referenced record, so its identifier is displayed here">' . html($record[db_postfix_fieldname($col, FK_FIELD_POSTFIX, false)]) . '</span>';
-			}
-			else*/ {
-				$href = http_build_query(array(
-					'table' => $field['lookup']['table'],
-					'mode' => MODE_VIEW,
-					$field['lookup']['field'] => isset($record[db_postfix_fieldname($col, FK_FIELD_POSTFIX, false)]) ? $record[db_postfix_fieldname($col, FK_FIELD_POSTFIX, false)] : $val
-				));
-				
-				$html_val = html($val);
-				$title = ''; $class = '';
-				if($html_val == '') {
-					$title = 'There is no display value for this referenced record, so its identifier is displayed here';
-					$html_val = html($record[db_postfix_fieldname($col, FK_FIELD_POSTFIX, false)]);
-					$class = 'dotted';
-				}
+			$href = isset($TABLES[$field['lookup']['table']]) && in_array(MODE_VIEW, $TABLES[$field['lookup']['table']]['actions']) ? 
+			http_build_query(array(
+				'table' => $field['lookup']['table'],
+				'mode' => MODE_VIEW,
+				$field['lookup']['field'] => isset($record[db_postfix_fieldname($col, FK_FIELD_POSTFIX, false)]) ? $record[db_postfix_fieldname($col, FK_FIELD_POSTFIX, false)] : $val
+			)) : null;
 			
-				$val = "<a class='$class' title='{$title}' href=\"?{$href}\">". $html_val ."</a>";
+			$html_val = html($val);
+			$title = ''; $class = '';
+			if($html_val == '') {
+				$title = 'There is no display value for this referenced record, so its identifier is displayed here';
+				$html_val = html($record[db_postfix_fieldname($col, FK_FIELD_POSTFIX, false)]);
+				$class = 'dotted';
 			}
+		
+			$val = get_lookup_display_html($class, $title, $href, $html_val);			
 		}
 		else if($field['type'] == T_LOOKUP && $field['lookup']['cardinality'] == CARDINALITY_MULTIPLE) {
 			if($val !== null && trim($val) != '') {
@@ -313,6 +443,9 @@
 				
 				$linked_records = array();			
 				foreach($id_display_map as $id_val => $display_val) {
+					$linked_rec = array();
+					$linked_rec['raw_val'] = $display_val;
+					
 					$params = array(
 						'mode' => MODE_VIEW
 					);
@@ -332,19 +465,19 @@
 						$params[$TABLES[$field['lookup']['table']]['primary_key']['columns'][0]] = $id_val;
 					}
 					
-					$href = http_build_query($params);						
-					
-					$html_val = html($display_val);					
-					$title = ''; $class = '';
-					if($html_val == '') {
-						$title = 'There is no display value for this referenced record, so its identifier is displayed here';
-						$html_val = html($id_val);
-						$class = 'dotted';
+					$linked_rec['href'] = isset($TABLES[$params['table']]) && in_array(MODE_VIEW, $TABLES[$params['table']]['actions']) ? http_build_query($params) : null;
+					$linked_rec['html_val'] = html($display_val);
+					$linked_rec['title'] = ''; 
+					$linked_rec['class'] = '';
+					if($linked_rec['html_val'] == '') {
+						$linked_rec['title'] = 'There is no display value for this referenced record, so its identifier is displayed here';
+						$linked_rec['html_val'] = html($linked_rec['raw_val'] = $id_val);
+						$linked_rec['class'] = 'dotted';
 					}
 				
-					$linked_records[] = "<a class='$class' title='{$title}' href=\"?{$href}\">". $html_val ."</a>";
-				}
-				$val = implode($linked_records, MULTIPLE_RECORDS_SEPARATOR);
+					$linked_records[] = $linked_rec;					
+				}				
+				$val = html_linked_records($linked_records, $_GET['mode'] == MODE_LIST ? $APP['max_text_len'] : 0);
 			}
 			else
 				$val = '';
@@ -479,6 +612,76 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
+	function proc_info($txt, $db = null) {
+	//------------------------------------------------------------------------------------------
+		$msg = '<div class="alert alert-info"><b>Information</b>: ' . $txt;
+		if(is_object($db)) {			
+			$e = $db->errorInfo();
+			$msg .= "<ul>\n<li>". str_replace("\n", '</li><li>', html($e[2])) . "</li>\n";
+			$msg .= "<li>Error Codes: SQLSTATE {$e[0]}, Driver {$e[1]}</li>\n";
+			$msg .= "</ul>\n";
+		}
+		$msg .= "</div>\n";
+		$_SESSION['msg'][] = $msg;
+		return true;
+	}
+	
+	//------------------------------------------------------------------------------------------
+	function get_inline_fieldname_fk_other() {
+	//------------------------------------------------------------------------------------------
+		global $TABLES;
+		return $TABLES[$_GET['inline']]['fields'][$_GET['lookup_field']]['linkage']['fk_other'];
+	}
+	
+	//------------------------------------------------------------------------------------------
+	// returns assoc array with key=>value pairs; false otherwise
+	function get_inline_linkage_details($form_id, $field_name, $linked_id,
+		/*in assoc array*/ $fk_self_hash = null) {
+	//------------------------------------------------------------------------------------------
+		$linked_id = strval($linked_id);
+		
+		if(!isset($_SESSION[$form_id])
+			|| !isset($_SESSION[$form_id][$field_name])
+			|| !isset($_SESSION[$form_id][$field_name][$linked_id]))
+		{
+			return false;
+		}
+		
+		if($fk_self_hash !== null && is_array($fk_self_hash)) {
+			$fk_self_name = first(array_keys($fk_self_hash));			
+			// set fk_self in case it was not there when the inline details were edited (ie new parent record)
+			for($i=0; $i<count($_SESSION[$form_id][$field_name][$linked_id]['columns']); $i++) {
+				if($_SESSION[$form_id][$field_name][$linked_id]['columns'][$i] === $fk_self_name)
+					$_SESSION[$form_id][$field_name][$linked_id]['params'][$i] = $fk_self_hash[$fk_self_name];
+			}
+		}
+		
+		return $_SESSION[$form_id][$field_name][$linked_id];
+	}
+	
+	//------------------------------------------------------------------------------------------
+	function set_inline_linkage_details($form_id, $field_name, $linked_id, 
+		/*const*/ &$arr_details, /*const*/ &$arr_columns, /*const*/ &$arr_params) 
+	{
+	//------------------------------------------------------------------------------------------
+		$linked_id = strval($linked_id);
+		
+		if(!isset($_SESSION[$form_id]))
+			$_SESSION[$form_id] = array();
+		
+		if(!isset($_SESSION[$form_id][$field_name]))
+			$_SESSION[$form_id][$field_name] = array();
+		
+		if(!isset($_SESSION[$form_id][$field_name]))
+			$_SESSION[$form_id][$field_name][$linked_id] = array();
+			
+		$_SESSION[$form_id][$field_name][$linked_id]['details'] = array_merge($arr_details, array());
+		$_SESSION[$form_id][$field_name][$linked_id]['columns'] = array_merge($arr_columns, array());;
+		$_SESSION[$form_id][$field_name][$linked_id]['params'] = array_merge($arr_params, array());
+		#$_SESSION[$form_id][$field_name][$linked_id]['empty_key_indexes'] = array_merge($empty_key_indexes, array());
+	}
+	
+	//------------------------------------------------------------------------------------------
 	function get_file_url($file_name, $field_info) {
 	//------------------------------------------------------------------------------------------
 		$url = $field_info['location'] . '/' . $file_name;
@@ -497,6 +700,11 @@
 		return !isset($field['trim']) || $field['trim'] === true;
 	}
 	
+	//------------------------------------------------------------------------------------------
+	function is_field_reset(&$field) {
+	//------------------------------------------------------------------------------------------
+		return isset($field['reset']) && $field['reset'] === true;
+	}
 
 	//------------------------------------------------------------------------------------------
 	function is_allowed_create_new(&$field) {
@@ -520,7 +728,7 @@
 	function is_field_setnull($field_name, &$field_info) {
 	//------------------------------------------------------------------------------------------
 		return 
-			(isset($_POST["{$field_name}_null"]) && $_POST["{$field_name}_null"] === 'true') 
+			(isset($_POST["{$field_name}__null__"]) && $_POST["{$field_name}__null__"] === 'true') 
 			
 			||
 			
@@ -529,12 +737,23 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
+	function get_the_primary_key_value_from_url($table, $default_if_missing) {
+	//------------------------------------------------------------------------------------------
+		$pk_name = $table['primary_key']['columns'][0];
+		
+		if(!isset($_GET[$pk_name]))
+			return $default_if_missing;
+		
+		return $_GET[$pk_name];
+	}
+		
+	//------------------------------------------------------------------------------------------
 	function get_primary_key_values_from_url($table) {
 	//------------------------------------------------------------------------------------------
 		$pk_vals = array();
 		
 		foreach($table['primary_key']['columns'] as $pk) {
-			if(!isset($_GET[$pk]))
+			if(!isset($_GET[$pk]))				
 				return proc_error("Key '$pk' of object to edit not provided");
 			
 			$pk_vals[$pk] = $_GET[$pk];
@@ -776,7 +995,7 @@
 		if($mode == MODE_LIST || $mode == MODE_VIEW) {
 			$pk_fields = '';
 			foreach($table['primary_key']['columns'] as $pk)
-				$pk_fields .= sprintf(', %s %s', $pk, db_postfix_fieldname($pk, FK_FIELD_POSTFIX, true));
+				$pk_fields .= sprintf(', %s %s', db_esc($pk), db_postfix_fieldname($pk, FK_FIELD_POSTFIX, true));
 			
 			$cols .= $pk_fields;
 		}

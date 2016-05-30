@@ -25,7 +25,7 @@
 		$div = "<p>\n";				
 		$div .= "<a href='$prev_href' class='btn btn-default $prev_disabled'><span class='glyphicon glyphicon-triangle-left'></span></a>\n";
 		$div .= "<a href='$next_href' class='btn btn-default $next_disabled'><span class='glyphicon glyphicon-triangle-right'></span></a>\n";
-		$div .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Jump to page:&nbsp;";
+		$div .= '<span style="padding-left:2.5em">Jump to page: </span>';
 		
 		$before_skip = ($cur_page >= 3 + $APP['pages_prevnext']);
 		$after_skip = ($num_pages - $cur_page >= 3 + $APP['pages_prevnext']);
@@ -39,14 +39,14 @@
 			$style = ($p == $cur_page ? 'btn-primary disabled' : 'btn-default');
 			
 			if($p == 1 || $p == $num_pages || ($p >= $lower_bound && $p <= $upper_bound))
-				$div .= "&nbsp;<a href='".build_get_params(array('page' => $p))."' class='btn $style'>$p</a>";
+				$div .= " <a href='".build_get_params(array('page' => $p))."' class='btn $style'>$p</a>";
 			else if($p < $lower_bound && !$before_skipped) {
 				$before_skipped = true;
-				$div .= "&nbsp;&bullet; &bullet; &bullet;";
+				$div .= " • • •";
 			}
 			else if($p > $upper_bound && !$after_skipped) {
 				$after_skipped = true;
-				$div .= "&nbsp;&bullet; &bullet; &bullet;";
+				$div .= " • • •";
 			}
 		}
 		
@@ -65,7 +65,7 @@
 			"<option value='".SEARCH_START."'>Field starts with</option>".
 			"<option value='".SEARCH_END."'>Field ends with</option>".
 			"</select>".
-			"<input type='text' class='form-control' name='".SEARCH_PARAM_QUERY."' placeholder='Enter search text' autofocus>".
+			"<input id='searchtext' type='text' class='form-control' name='".SEARCH_PARAM_QUERY."' placeholder='Enter search text' autofocus>".
 			"<input type='hidden' name='table' value='{$_GET['table']}'>".
 			"<input type='hidden' name='mode' value='list'>".
 			"<input type='hidden' name='".SEARCH_PARAM_FIELD."' value='%FIELDNAME%'>". // the %FIELDNAME% is replaced during runtime in dbweb.js
@@ -92,7 +92,9 @@
 		else
 			$t .= "<a href='". build_get_params(array('sort'=>$field_name,'dir'=>'desc')) ."' title='Sort Descending'><span class='glyphicon glyphicon-arrow-down'></span></a>";
 		
-		$t .= "&nbsp;&nbsp;<a href='javascript:void(0)' title='Search' data-field='{$field_name}' data-purpose='search' data-toggle='popover' data-container='body' data-placement='top'><span class='glyphicon glyphicon-search'></span></a>";
+		$search_val = (isset($_GET[SEARCH_PARAM_QUERY]) && isset($_GET[SEARCH_PARAM_FIELD]) && $_GET[SEARCH_PARAM_FIELD] == $field_name ? unquote($_GET[SEARCH_PARAM_QUERY]) : '');
+		
+		$t .= " <a href='javascript:void(0)' title='Search' data-value='{$search_val}' data-field='{$field_name}' data-purpose='search' data-toggle='popover' data-container='body' data-placement='top'><span class='glyphicon glyphicon-search'></span></a>";
 		
 		$t .= "</div>";
 		
@@ -159,8 +161,8 @@
 				case SEARCH_START: $search_type = 'starts with'; break;
 				case SEARCH_EXACT: $search_type = 'matches'; break;
 			}
-			echo "<p class='text-info'>Searching all records where <b>".html($fields[$_GET[SEARCH_PARAM_FIELD]]['label'])."</b> {$search_type} <b>'".html($_GET[SEARCH_PARAM_QUERY])."'</b>&nbsp;&nbsp;&nbsp;".
-			"<a class='btn btn-default' href='?".http_build_query(array('table'=>$table_name, 'mode'=>MODE_LIST))."'><span class='glyphicon glyphicon-remove-circle'></span> Clear search</a></p>\n";
+			echo "<p class='text-info'>Searching all records where <b>".html($fields[$_GET[SEARCH_PARAM_FIELD]]['label'])."</b> {$search_type} <span class='bg-success'><strong>".html($_GET[SEARCH_PARAM_QUERY])."</strong></span> ".
+			"<a class='btn btn-default space-left' href='?".http_build_query(array('table'=>$table_name, 'mode'=>MODE_LIST))."'><span class='glyphicon glyphicon-remove-circle'></span> Clear search</a></p>\n";
 		}
 		
 		if($num_records == 0) {
@@ -184,17 +186,9 @@
 				return proc_error('List query execution went wrong.', $db);
 		
 			echo $pag;
-			echo "<table class='table table-hover table-condensed table-responsive'>\n";
-			echo "<thead><tr class='info'><th class='fit'></th>\n";
-			for($i=0; $i<$res->columnCount(); $i++) {
-				$meta = $res->getColumnMeta($i);
-				$col = $meta['name'];
-				if(!isset($fields[$col]))
-					continue;
-				
-				echo "<th>{$fields[$col]['label']}<br />" . render_search_sort($col /*, $fields[$col]*/) . "</th>";
-			}
-			echo "</tr></thead><tbody>\n";
+			
+			$table_body = "<tbody>\n";
+			$col_longest_content = array();
 						
 			while($record = $res->fetch(PDO::FETCH_ASSOC)) {				
 				#debug_log(arr_str($record));
@@ -205,7 +199,7 @@
 					$id_str .= "&amp;{$pk}=" . urlencode($record[db_postfix_fieldname($pk, FK_FIELD_POSTFIX, false)]);
 				}
 								
-				echo "<tr><td class='fit'>\n";
+				$table_body .= "<tr><td class='fit'>\n";
 				$action_icons = array();
 				
 				if(is_allowed($table, MODE_VIEW))
@@ -226,23 +220,57 @@
 					}
 				}
 				
-				echo implode('&nbsp;&nbsp;', $action_icons) . "&nbsp;&nbsp;&nbsp</td>\n";
+				$table_body .= implode('&nbsp;&nbsp;', $action_icons) . "&nbsp;&nbsp;&nbsp</td>\n";
 				
+				$col_no = 0;
 				foreach($record as $col => $val) {
 					if(!isset($fields[$col]))
 						continue;
 					
-					$val = prepare_field_display_val($table, $record, $fields[$col], $col, $val);
+					$css = '';
+					if(isset($_GET[SEARCH_PARAM_FIELD]) && $_GET[SEARCH_PARAM_FIELD] === $col)
+						$css = 'class="bg-success"';
 					
-					echo "<td>{$val}</td>\n";
+					$val = prepare_field_display_val($table, $record, $fields[$col], $col, $val);					
+					$table_body .= "<td $css>{$val}</td>\n";
+					
+					// determine max cell len
+					$textlen = mb_strlen(strip_tags($val));
+					if(!isset($col_longest_content[$col_no]) || $textlen > $col_longest_content[$col_no])
+						$col_longest_content[$col_no] = $textlen;					
+					
+					$col_no++;
 				}
 				
-				echo "</tr>\n";
-			}
+				$table_body .= "</tr>\n";
+			}			
+			$table_body .= "</tbody></table>\n";
 			
-			echo "</tbody></table>\n";
+			$table_head = "<table class='table table-hover table-condensed table-responsive'>\n";
+			$table_head .= "<thead><tr class='info'><th class='fit'></th>\n";
+			
+			$col_no = 0;
+			for($i=0; $i<$res->columnCount(); $i++) {
+				$meta = $res->getColumnMeta($i);
+				$col = $meta['name'];
+				if(!isset($fields[$col]))
+					continue;
+				
+				$minwidth = '';
+				if(isset($col_longest_content[$col_no])) {
+					$mw = min(get_mincolwidth_max(), $col_longest_content[$col_no] * get_mincolwidth_pxperchar());
+					$minwidth = "style='min-width:{$mw}px'";
+				}
+				$col_no++;
+				
+				$table_head .= "<th $minwidth>{$fields[$col]['label']}<br />" . render_search_sort($col /*, $fields[$col]*/) . "</th>";
+			}
+			$table_head .= "</tr></thead>\n";
+			
+			echo $table_head;
+			echo $table_body;
 		}
-	
+		
 		echo $pag;
 		echo "</div>";
 		

@@ -30,6 +30,12 @@
 	define('STORE_FOLDER', 0x1);
 	define('STORE_DB', 0x2); // TODO: not implemented yet
 	
+	// temporary form identifier
+	define('TEMP_FORM_ID', '__temp-id__');	
+	
+	// special function names called via MODE_FUNC
+	define('LINKED_ITEM_HTML', 'get_linked_item_html');
+	
 	// search options
 	define('SEARCH_ANY', 'any');
 	define('SEARCH_START', 'start');
@@ -60,4 +66,5 @@
 	define('MODE_DELETE', 'delete');
 	define('MODE_CREATE_DONE', 'create_done');
 	define('MODE_LOGOUT', 'logout');	
+	define('MODE_FUNC', 'func');
 ?>

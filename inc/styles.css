@@ -4,7 +4,7 @@
 }
 
 .multiple-select-text {
-	margin-left: .33em;
+	margin-left: .5em;
 }
 
 .multiple-linkage {
@@ -45,6 +45,10 @@ span.multiple-select-id {
 
 span.clipped_text {
 	display:none;
+}
+
+a.clipped_text {
+	font-style: italic;
 }
 
 .pager-prev, .pager-next {
@@ -117,4 +121,9 @@ span.required-indicator {
 
 .invisible {
 	display:none;
+}
+
+.smsp {
+	padding-left: .1em;
+	padding-right: .1em;
 }

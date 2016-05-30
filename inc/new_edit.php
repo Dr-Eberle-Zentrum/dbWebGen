@@ -11,6 +11,10 @@
 		if(!is_allowed($table, $_GET['mode']))
 			return proc_error('You are not allowed to perform this action.');
 		
+		// get the unique form id (either from POST, or generate)
+		$form_id = isset($_POST['__form_id__']) ? $_POST['__form_id__'] : ($_POST['__form_id__'] = uniqid('__form_id__', true));
+		#debug_log("$form_id = " . arr_str($_SESSION[$form_id]));
+		
 		if($_GET['mode'] == MODE_NEW) {
 			echo "<h1>New {$table['item_name']}</h1>\n";
 			
@@ -21,26 +25,53 @@
 					$_POST[substr($p, strlen(PREFILL_PREFIX))] = $v;				
 			}
 		}
-		else {
+		else { // MODE_EDIT
+			// in inline mode it can happen that the fk_self does not exist yet
 			$edit_id = get_primary_key_values_from_url($table);
-			if($edit_id === FALSE)
-				return false;
+			if($edit_id === false)
+				return false;		
 			
-			echo "<h1>Edit {$table['item_name']} {$_GET[$table['primary_key']['columns'][0]]}</h1>\n";
+			$parent_form = null;
+			if(is_inline()) {
+				$page_title = "Edit {$table['item_name']} Details";
+				if(!isset($_GET['parent_form']))
+					return proc_error('Parent form id not provided');
+				
+				$parent_form = $_GET['parent_form'];
+			}
+			else {
+				$page_title = "Edit {$table['item_name']}";
+				if(count($edit_id) == 1)
+					$page_title .= ' <small>'. html(first(array_keys($edit_id))) . '<span class="smsp">=</span>' . html(first(array_values($edit_id))) .'</small>';
+			}
 			
-			if(!build_post_array_for_edit_mode($table_name, $table, $edit_id))
-				return false;
+			echo "<h1>$page_title</h1>\n";
+			
+			#debug_log("POST = " . arr_str($_POST));
+			if(!isset($_POST['__item_id__'])) { // if not already posted (with errors obviously), then get from DB
+				if(!build_post_array_for_edit_mode($table_name, $table, $edit_id, $parent_form))
+					return false;
+			}
 		}
 		
 		echo "<p>{$table['description']}</p>\n";
+		
 		echo "<p>Fill the form fields and then press 'Save'. Fields indicated with <span class='required-indicator'>&#9733;</span> are required.</p>\n";
+		
+		if(is_inline())
+			echo "<p>Note that your edits will only be stored in the database if the original form is also submitted</p>\n";
+		
 		echo "<form class='form-horizontal' role='form' method='post' enctype='multipart/form-data'>\n";
+		
+		echo "<input type='hidden' id='__form_id__' name='__form_id__' value='$form_id' />";
+		echo '<input type="hidden" id="__table_name__" name="__table_name__" value="'. unquote($_GET['table']) .'"/>';
+		echo '<input type="hidden" id="__item_id__" name="__item_id__" value="'. ($_GET['mode'] == MODE_EDIT? unquote(first(array_values($edit_id))) : '') .'" />'; // do not remove this, it is referenced in other places!!!
 		
 		$submit_button = "<div class='form-group'>\n".
 			"<div class='col-sm-offset-3 col-sm-9'>\n".
 			"<input type='submit' class='btn btn-primary' value='Save' />\n";
 
-		if($_GET['mode'] == MODE_EDIT)
+		if($_GET['mode'] == MODE_EDIT && !is_inline())
 			echo $submit_button. '</div></div>';
 		
 		$i = 0;
@@ -48,14 +79,22 @@
 			if(!is_field_editable($field))
 				continue;
 			
+			if(is_inline() && in_array($field_name, $table['primary_key']['columns'])) {
+				// do not show key fields in inline mode.							
+				echo "<input type='hidden' id='{$field_name}' name='{$field_name}' value='". unquote($_GET[$field_name]) ."' />";
+				continue;
+			}
+			
 			$prefilled = isset($_GET[PREFILL_PREFIX . $field_name]);// ? 'prefilled' : '';
 						
 			$required_indicator = (is_field_required($field) ? '<span class="required-indicator">&#9733;</span>' : '');
 			echo "<div class='form-group'>\n";
 			echo "<label title='This field is ". (is_field_required($field) ? 'required' : 'optional') ."' class='control-label col-sm-3' for='{$field_name}'>";
 			render_help($field);
-			echo "{$field['label']}:{$required_indicator}</label>\n";						
-			render_control($field_name, $field, $i++ == 0, isset($_GET[PREFILL_PREFIX . $field_name]));						
+			echo "{$field['label']}:{$required_indicator}</label>\n";	
+			
+			render_control($form_id, $field_name, $field, $i++ == 0, isset($_GET[PREFILL_PREFIX . $field_name]));						
+			
 			echo "</div>\n";
 		}
 		
@@ -67,8 +106,46 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
-	function build_post_array_for_edit_mode($table_name, $table, $edit_id) {
+	function build_post_array_for_edit_mode($table_name, $table, $edit_id, $parent_form) {
 	//------------------------------------------------------------------------------------------
+		global $TABLES;
+		
+		if(is_inline()) {		
+			#debug_log("TRACE: Coming from {$TABLES[$_GET['inline']]['display_name']}, editing field {$TABLES[$_GET['inline']]['fields'][$_GET['lookup_field']]['label']}, association with {$TABLES[$_GET['inline']]['fields'][$_GET['lookup_field']]['lookup']['table']} #{$edit_id[$TABLES[$_GET['inline']]['fields'][$_GET['lookup_field']]['linkage']['fk_other']]}");
+			// here we only want to query if both foreign keys are present and the user has
+			// not yet edited the details of the linkage (which would be reflected in the session 
+			// variable)
+			//
+			// formulated differently: we can skip querying if any foreign 
+			// key is missing or if there is already detail info in the session var for this association
+			
+			$arr_details = get_inline_linkage_details(
+				$parent_form, 
+				$_GET['lookup_field'],				
+				$edit_id[get_inline_fieldname_fk_other()]);
+			
+			if($arr_details !== false) {			
+				#debug_log('Retrieving from session var = ' . arr_str($arr_details));
+				// user has already edited these details. copy from session var
+				foreach($arr_details['details'] as $col => $val) {
+					$_POST[$col] = $val;
+				
+					if(!is_field_required($table['fields'][$col])) 
+						$_POST["{$col}__null__"] = ($val === null ? 'true' : 'false');
+				}
+				
+				return true;
+			}
+			
+			if(in_array('', array_values($edit_id))) { // missing foreign key
+				// here the user has created a new (parent) record and then edited one of the linkage fields ofd this unsaved record				
+				#debug_log('Details edit of a new unsaved record');				
+				
+				// we don't have to do anything actually, all fields will be put to default value.
+				return true;
+			}
+		}
+		
 		$query = build_query($table_name, $table, $edit_id, MODE_EDIT, NULL, $params);		
 		
 		$db = db_connect();
@@ -83,11 +160,20 @@
 		if($res->execute($params) === FALSE)
 			return proc_error('Query execution went wrong.', $db);
 		
-		if($res->rowCount() != 1)
+		if($res->rowCount() != 1) {
+			if(is_inline() && $res->rowCount() == 0) {
+				// here we have both foreign keys set, but the association was added in the form and not saved yet.				
+				#debug_log('Editing new unsaved association for existing record');
+				
+				// we don't have to do anything actually, all fields will be put to default value.
+				return true;
+			}
+			
 			return proc_error("Requested object not found.");
+		}
 		
 		foreach($res->fetch(PDO::FETCH_ASSOC) as $col => $val) {
-			$reset_field = isset($table['fields'][$col]['reset']) && $table['fields'][$col]['reset'] === true;
+			$reset_field = is_field_reset($table['fields'][$col]);
 				
 			if($reset_field)
 				$_POST[$col] = is_field_required($table['fields'][$col])? '' : NULL;
@@ -95,7 +181,7 @@
 				$_POST[$col] = $val;
 			
 			if(!is_field_required($table['fields'][$col])) 
-				$_POST["{$col}_null"] = ($reset_field || $val === null ? 'true' : 'false');
+				$_POST["{$col}__null__"] = ($reset_field || $val === null ? 'true' : 'false');
 		}
 		
 		return true;
@@ -106,13 +192,13 @@
 	//------------------------------------------------------------------------------------------			
 		global $APP;
 		
-		$is_checked = !isset($_POST["{$field_name}_null"]) || $_POST["{$field_name}_null"] == 'true';
+		$is_checked = !isset($_POST["{$field_name}__null__"]) || $_POST["{$field_name}__null__"] == 'true';
 		$checked_attr = $is_checked? "checked='checked'" : '';
 		$visibility = (isset($field['show_setnull']) && $field['show_setnull'] === true ? '' : 'invisible');
 		
 		echo 
-			"<div class='checkbox col-sm-1 $visibility'><label><input type='hidden' name='{$field_name}_null' value='false' />".
-			"<input name='{$field_name}_null' type='checkbox' value='true' $checked_attr />{$APP['null_label']}</label></div>";
+			"<div class='checkbox col-sm-1 $visibility'><label><input type='hidden' name='{$field_name}__null__' value='false' />".
+			"<input name='{$field_name}__null__' type='checkbox' value='true' $checked_attr />{$APP['null_label']}</label></div>";
 	}
 	
 	//------------------------------------------------------------------------------------------
@@ -139,8 +225,11 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
-	function render_control($field_name, $field, $focus, $prefilled) {
+	function render_control($form_id, $field_name, $field, $focus, $prefilled) {
 	//------------------------------------------------------------------------------------------	
+		global $TABLES;
+		$table = $TABLES[$_GET['table']];
+		
 		$is_required = isset($field['required']) && $field['required'] === true;
 		$required_attr = ''; ($is_required ? " required='true' " : '');		
 		$width = 7; //($is_required ? 9 : 8); // spare place for NULL checkbox		
@@ -217,7 +306,7 @@
 					$popup_url = get_script_url(false) . "?popup={$_GET['table']}&amp;lookup_field={$field_name}&amp;table={$field['lookup']['table']}&amp;mode=".MODE_NEW;
 					$popup_title = html('New ' . $field['label']);
 					
-					$create_new_button = "<div class='col-sm-2'><button type='button' class='btn btn-default multiple-select-add' data-create-title='{$popup_title}' data-create-url='{$popup_url}' id='{$field_name}_add' formnovalidate><span class='glyphicon glyphicon-plus'></span> Create New</button></div>\n";					
+					$create_new_button = "<div class='col-sm-2'><button type='button' class='btn btn-default multiple-select-add' data-create-title='{$popup_title}' data-create-url='{$popup_url}' id='{$field_name}_add' formnovalidate><span title='Remove this association' class='glyphicon glyphicon-plus'></span> Create New</button></div>\n";					
 				}
 					
 				if($field['lookup']['cardinality'] == CARDINALITY_SINGLE) {
@@ -263,8 +352,7 @@
 					echo $create_new_button;					
 				}
 				else if($field['lookup']['cardinality'] == CARDINALITY_MULTIPLE) {
-					$id_list = trim(post_val($field_name));					
-					
+					$id_list = trim(post_val($field_name));
 					echo "<input class='multiple-select-hidden' id='{$field_name}' name='{$field_name}' type='hidden' value='$id_list' />\n";
 					
 					$db = db_connect();
@@ -277,22 +365,25 @@
 					$order_by = "ORDER BY txt";					
 					$res = $db->query($q . $order_by);
 					
-					
 					// first we look which ones are already conncted
 					$linked_items = get_linked_items($field_name);
 					$items_div = '';					
 										
 					// the rest goes into the dropdown box
 					echo "<div class='col-sm-7'><select $disabled $required_attr class='form-control multiple-select-dropdown' id='{$field_name}_dropdown' data-placeholder='Click to select' $autofocus>\n";
+
+					// check whether additional fields can be set in the linkage table
+					$has_additional_editable_fields = has_additional_editable_fields($field['linkage']);
 					
-					while($obj = $res->fetchObject()) {
+					// fill dropdown and linked fields list
+					while($obj = $res->fetchObject()) {						
 						if(in_array("{$obj->val}", $linked_items)) {
-							$items_div .= '<div class="multiple-select-item">' .
-								'<a role="button" onclick="remove_linked_item(this)" data-field="'. $field_name .'" data-id="' . $obj->val .'"><span class="glyphicon glyphicon-trash"></span></a>' .
-								'<span class="multiple-select-text">' . html($obj->txt)  . " ({$field['lookup']['field']} = {$obj->val})</span></div>";
+							$items_div .= get_linked_item_html($form_id, $table, $_GET['table'], $field_name, $has_additional_editable_fields,
+								$obj->val, $obj->txt, get_the_primary_key_value_from_url($table, ''));
 						}
-						else
-							echo "<option value='{$obj->val}'>" . html($obj->txt) . " ({$field['lookup']['field']} = {$obj->val})</option>\n";
+						else {							
+							echo '<option value="'. $obj->val .'" data-label="'. unquote($obj->txt) .'">'. html($obj->txt) ." ({$field['lookup']['field']} = {$obj->val})</option>\n";
+						}
 					}					
 					echo "</select></div>\n";		
 					
@@ -345,7 +436,6 @@
 		if(!isset($field['location']))
 			return proc_error("Target location for uploaded files not set. Contact your admin.");
 		
-		
 		if($field['store'] & STORE_FOLDER) {
 			// make sure storage location ends with a slash /
 			$store_folder = $field['location'];
@@ -392,6 +482,63 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
+	function get_form_id() {
+	//------------------------------------------------------------------------------------------
+		return $_POST['__form_id__'];
+	}	
+	
+	//------------------------------------------------------------------------------------------
+	function get_sql_update($table_name, /*const*/ &$table, /*const*/ &$columns, 
+		/*in,out*/ &$values, /*in*/ $pk_values) {
+	//------------------------------------------------------------------------------------------
+		$sql = 'UPDATE ' . db_esc($table_name) . ' SET ';
+		
+		for($i=0; $i<count($columns); $i++) {
+			if($i > 0) $sql .= ', ';
+			
+			if($table['fields'][$columns[$i]]['type'] == T_POSTGIS_GEOM)
+				$sql .= db_esc($columns[$i]) . " = ST_GeomFromText(?,{$table['fields'][$columns[$i]]['SRID']})";
+			else
+				$sql .= db_esc($columns[$i]) . ' = ?';
+		}
+		
+		$sql .= ' WHERE ';
+		
+		$pk = 0;
+		foreach($pk_values as $pk_col => $pk_val) {
+			$sql .= ($pk++ == 0 ? ' ' : ' AND ') . db_esc($pk_col) . ' = ?';
+			$values[] = $pk_val;
+		}	
+
+		return $sql;
+	}
+	
+	//------------------------------------------------------------------------------------------
+	function get_sql_insert($table_name, /*const*/ &$table, /*const*/ &$columns) {
+	//------------------------------------------------------------------------------------------
+		$sql = 'INSERT INTO '. db_esc($table_name) . ' (';
+
+		for($i=0; $i<count($columns); $i++) {
+			if($i > 0) $sql .= ', ';
+			$sql .= db_esc($columns[$i]);
+		}
+		
+		$sql .= ') VALUES (';
+		
+		for($i=0; $i<count($columns); $i++) {
+			if($i > 0) $sql .= ', ';
+			
+			if($table['fields'][$columns[$i]]['type'] == T_POSTGIS_GEOM)
+				$sql .= "ST_GeomFromText(?,{$table['fields'][$columns[$i]]['SRID']})";
+			else
+				$sql .= '?';
+		}
+		$sql .= ')';
+		
+		return $sql;
+	}	
+	
+	//------------------------------------------------------------------------------------------
 	function process_form() {
 	//------------------------------------------------------------------------------------------		
 		global $TABLES;
@@ -413,10 +560,14 @@
 			return proc_error('You are not allowed to perform this action.');
 		
 		$columns = array();
-		$foreignkeys = array();
+		$many2many_field_assocs = array();
 		$values = array();
+		$arr_inline_details = array();
 		
 		foreach($table['fields'] as $field_name => $field_info) {
+			if(is_inline() && isset($_POST[$field_name])) // we wanna store the raw stuff for the form
+				$arr_inline_details[$field_name] = $_POST[$field_name];
+			
 			if($field_info['type'] == T_UPLOAD) {				
 				if(!isset($_FILES[$field_name]) || $_FILES[$field_name]['size'] == 0)
 					return proc_error("Please browse for an upload for <b>{$field_info['label']}</b>.");
@@ -447,20 +598,28 @@
 			if(!isset($_POST[$field_name]))
 				return proc_error("Field {$field_info['label']} is missing.");
 			
-			if(is_field_required($field_info) && $_POST[$field_name] === '' || $_POST[$field_name] === null)
+			if(is_field_required($field_info) && $_POST[$field_name] === '' || $_POST[$field_name] === null) {
+				// only fk_self can be missing in mode inline
+				if(is_inline() && in_array($field_name, array_keys(get_primary_key_values_from_url($table)))) {
+					$columns[] = $field_name;
+					$values[] = $_POST[$field_name];
+					continue;				
+				}
+				
 				return proc_error("Please fill in required field <b>{$field_info['label']}</b>");
+			}
 			
 			if(!is_field_required($field_info) && is_field_setnull($field_name, $field_info)) {				
 				$columns[] = $field_name;	
 				$values[] = NULL;
 			}			
 			else if($field_info['type'] == T_LOOKUP && $field_info['lookup']['cardinality'] == CARDINALITY_MULTIPLE) {
-				$foreignkeys[$field_name] = get_linked_items($field_name);				
-				if(is_field_required($field_info) && count($foreignkeys[$field_name]) == 0)
+				$many2many_field_assocs[$field_name] = get_linked_items($field_name);				
+				if(is_field_required($field_info) && count($many2many_field_assocs[$field_name]) == 0)
 					return proc_error("Please provide at least one value for required field <b>{$field_info['label']}</b>");
 			}
 			else if($field_info['type'] == T_PASSWORD) {
-				if(isset($field_info['min_len']) && strlen($_POST[$field_name]) < $field_info['min_len'])
+				if(isset($field_info['min_len']) && mb_strlen($_POST[$field_name]) < $field_info['min_len'])
 					return proc_error("Password is too short. Minimum length is {$field_info['min_len']}.");
 				
 				if(isset($LOGIN['password_hash_func']) && !function_exists($LOGIN['password_hash_func']))
@@ -474,8 +633,8 @@
 				$values[] = is_field_trim($field_info) ? trim($_POST[$field_name]) : $_POST[$field_name];
 			}
 		}
-
-		if(count($columns) == 0 && count($foreignkeys) == 0)
+		
+		if(count($columns) == 0 && count($many2many_field_assocs) == 0)
 			return proc_error('No values to store in database.');
 		
 		if($_GET['mode'] == MODE_NEW) {
@@ -483,50 +642,29 @@
 			if(isset($table['hooks']) && isset($table['hooks']['before_insert']))
 				$table['hooks']['before_insert']($table_name, $table, $columns, $values);			
 			
-			$sql = 'INSERT INTO '. db_esc($table_name) . ' (';
-
-			$placeholders = '';
-			
-			for($i=0; $i<count($columns); $i++) {
-				if($i > 0) $sql .= ', ';
-				$sql .= db_esc($columns[$i]);
-			}
-			$sql .= ') values (';
-			for($i=0; $i<count($columns); $i++) {
-				if($i > 0) $sql .= ', ';
-				
-				if($table['fields'][$columns[$i]]['type'] == T_POSTGIS_GEOM)
-					$sql .= "ST_GeomFromText(?,{$table['fields'][$columns[$i]]['SRID']})";
-				else
-					$sql .= '?';
-			}
-			$sql .= ')';			
+			$sql = get_sql_insert($table_name, $table, $columns);
 		}
 		else { // MODE_EDIT
 			// call 'before_update' hook functions
 			if(isset($table['hooks']) && isset($table['hooks']['before_update']))
 				$table['hooks']['before_update']($table_name, $table, $columns, $values);
 			
-			$sql = 'UPDATE ' . db_esc($table_name) . ' SET ';
+			$edit_ids = get_primary_key_values_from_url($table);
 			
-			for($i=0; $i<count($columns); $i++) {
-				if($i > 0) $sql .= ', ';
-				
-				if($table['fields'][$columns[$i]]['type'] == T_POSTGIS_GEOM)
-					$sql .= db_esc($columns[$i]) . " = ST_GeomFromText(?,{$table['fields'][$columns[$i]]['SRID']})";
-				else
-					$sql .= db_esc($columns[$i]) . ' = ?';
+			if(is_inline()) {
+				// copy the values to session
+				set_inline_linkage_details($_GET['parent_form'], $_GET['lookup_field'], 
+					$edit_ids[get_inline_fieldname_fk_other()], $arr_inline_details, $columns, $values);
+					
+				// here we just close the window.
+				echo "<script>window.close();</script>";
+				return true;
 			}
 			
-			$sql .= ' WHERE ';
-			
-			for($pk=0; $pk<count($table['primary_key']['columns']); $pk++) {
-				$sql .= ($pk == 0 ? ' ' : ' AND ') . db_esc($table['primary_key']['columns'][$pk]) . ' = ?';
-				$values[] = $_GET[ $table['primary_key']['columns'][$pk] ];
-			}
+			$sql = get_sql_update($table_name, $table, $columns, $values, $edit_ids);
 		}		
 		
-		// FIRST INSERT THE RECORD
+		// FIRST INSERT OR UPDATE THE RECORD
 		$db = db_connect();
 		if($db === false)
 			return proc_error('Cannot connect to DB.');
@@ -535,30 +673,35 @@
 		if($stmt === FALSE)
 			return proc_error('SQL statement preparation failed.', $db);
 		
+		#debug_log($sql . "\nvalues := " . arr_str($values));
+		
 		if(FALSE === $stmt->execute($values))
 			return proc_error('SQL statement execution failed.', $db);
 		
+		$form_id = get_form_id();
+		
+		// THEN HANDLE THE MANY-TO-MANY-ASSOCIATIONS (only if not in m:n table, since composite FKs do not work yet)
+		$primary_keys = array();		
 		if($_GET['mode'] == MODE_NEW) {
+			// Obtain primary key assoc in $primary_keys
 			if($table['primary_key']['auto']) { // CURRENTLY WORKS ONLY WITH ONE PRIMARY KEY COLUMN (NO COMPOSITE KEYS!)
 				$new_id = $db->lastInsertId($table['primary_key']['sequence_name']);
 				if($new_id === null || $new_id == 0 || $new_id == '')
 					return proc_error('Setting id_sequence_name appears invalid');
 				
-				$id[$table['primary_key']['columns'][0]] = $new_id;
+				$primary_keys[$table['primary_key']['columns'][0]] = $new_id;
 			}
-			else {
-				$id = array();
+			else {				
 				foreach($table['primary_key']['columns'] as $pk)
-					$id[$pk] = $_POST[$pk];
+					$primary_keys[$pk] = $_POST[$pk];
 			}
 		}
-		else {
-			$id = array();
+		else {			
 			foreach($table['primary_key']['columns'] as $pk)
-				$id[$pk] = $_GET[$pk];
+				$primary_keys[$pk] = $_GET[$pk];
 			
 			// REMOVE ALL N:N ASSIGNMENTS THAT ARE NOT NEEDED ANY MORE
-			foreach($foreignkeys as $field_name => $values) {
+			foreach($many2many_field_assocs as $field_name => $values) {
 				// delete all associations that are not in $values. if $values is empty, delete all associations
 				$question_marks = array();
 				foreach($values as $value)
@@ -610,7 +753,7 @@
 					$select_stmt = $db->prepare('SELECT * ' . $from_where);
 					if($select_stmt === false)
 						return proc_error("Preparing of updating of relationships failed for field {$field_name} (step 0).", $db);				
-					if($select_stmt->execute(array_merge(array_values($id), $values)) === false)
+					if($select_stmt->execute(array_merge(array_values($primary_keys), $values)) === false)
 						return proc_error("Executing the updating of relationships failed for field {$field_name} (step 0).", $db);	
 
 					while($record = $select_stmt->fetch(PDO::FETCH_ASSOC)) {					
@@ -630,7 +773,7 @@
 				$delete_stmt = $db->prepare('DELETE ' . $from_where);				
 				if($delete_stmt === false)
 					return proc_error("Preparing of updating of relationships failed for field {$field_name} (step 1).", $db);				
-				if($delete_stmt->execute(array_merge(array_values($id), $values)) === false)
+				if($delete_stmt->execute(array_merge(array_values($primary_keys), $values)) === false)
 					return proc_error("Executing the updating of relationships failed for field {$field_name} (step 1).", $db);
 				// << ACTUAL DELETION
 				
@@ -643,9 +786,11 @@
 				// << AFTER_DELETE hook
 				
 				// determine which assoications in $values already exist, and remove them form $values
-				$the_table = db_esc($table['fields'][$field_name]['linkage']['table']);
-				$the_fk_self = db_esc($table['fields'][$field_name]['linkage']['fk_self']);
-				$the_fk_other = db_esc($table['fields'][$field_name]['linkage']['fk_other']);
+				$linkage_info = $table['fields'][$field_name]['linkage'];
+				$the_table = db_esc($linkage_info['table']);
+				$the_fk_self = db_esc($linkage_info['fk_self']);
+				$the_fk_other = db_esc($linkage_info['fk_other']);
+				
 				for($i=count($values)-1; $i>=0; $i--) {
 					$sql = sprintf('SELECT COUNT(1) FROM %s WHERE %s = ? AND %s = ?',
 						$the_table, $the_fk_self, $the_fk_other);
@@ -654,18 +799,45 @@
 					if($stmt === false)
 						return proc_error("Preparing of updating of relationships failed for field {$field_name} (step 2).", $db);
 					
-					if($stmt->execute(array_merge(array_values($id), array($values[$i]))) === false)
+					if($stmt->execute(array_merge(array_values($primary_keys), array($values[$i]))) === false)
 						return proc_error("Executing the updating of relationships failed for field {$field_name} (step 2).", $db);
 					
 					$cunt = $stmt->fetchColumn();
-					if($cunt > 0) // already exists, needs to be removed from values
-						unset($foreignkeys[$field_name][$i]);
+					if($cunt > 0) {		
+						#debug_log("$form_id, $field_name, {$values[$i]}");
+						// need to check if we need to update inline edits to linked records
+						$inline_details = get_inline_linkage_details($form_id, $field_name, $values[$i], $primary_keys);						
+						
+						if($inline_details !== false) {
+							#debug_log("Inline details found for $field_name / {$values[$i]}" . arr_str($inline_details));						
+							$inline_params = array_merge($inline_details['params'], array());
+							
+							$pk_values = array(
+								$linkage_info['fk_self'] => first(array_values($primary_keys)), // only one
+								$linkage_info['fk_other'] => $values[$i]
+							);
+							
+							$sql_update = get_sql_update($linkage_info['table'], $TABLES[$linkage_info['table']],
+								$inline_details['columns'], $inline_params, $pk_values);
+								
+							#debug_log($sql_update . arr_str($inline_params));
+							// prep & exec
+							$details_upd = $db->prepare($sql_update);
+							if($details_upd === false)
+								proc_info("Failed to prepare update of details of relation to record {$values[$i]} in field {$table['fields'][$field_name]['label']}", $db);
+							else if($details_upd->execute($inline_params) === false)
+								proc_info("Failed to execute update of details of relation to record {$values[$i]} in field {$table['fields'][$field_name]['label']}", $db);
+						}
+						
+						// already exists, needs to be removed from values
+						unset($many2many_field_assocs[$field_name][$i]);
+					}
 				}
 			}
 		}
 		
 		// THEN LINK THE NEW VALUES FOR THE n:n TABLES		
-		foreach($foreignkeys as $field => $values) {
+		foreach($many2many_field_assocs as $field => $values) {
 			if(count($values) == 0)
 				continue;
 			
@@ -674,54 +846,85 @@
 			$ins_fields = array();
 			$ins_values = array();
 			
-			// convention: fk_other must be at the beginning, so for each SQL execution later the foreign key value can be set at array index 0
-			$ins_fields[] = db_esc($field_info['linkage']['fk_other']); 
-			$ins_values[] = ''; // will be replaced during execution
+			define('POS_FK_OTHER', 0); // convention: fk_other must be at the beginning POSITION = 0, so for each SQL execution later the foreign key value can be set at array index 0
+			define('POS_FK_SELF', 1);
 			
-			//TODO UPDATE FOR COMPOSITE FK_SELF & FK_OTHER
-			$ins_fields[] = db_esc($field_info['linkage']['fk_self']);			
-			$ins_values[] = first(array_values($id));
+			$ins_fields[POS_FK_OTHER] = db_esc($field_info['linkage']['fk_other']); 
+			$ins_values[POS_FK_OTHER] = ''; // will be replaced during execution
+			
+			// TODO UPDATE FOR COMPOSITE FK_SELF & FK_OTHER -- NOTE POSITION MATTTERS: fk_self MUST BE AT POSITION = 1
+			$ins_fields[POS_FK_SELF] = db_esc($field_info['linkage']['fk_self']);			
+			$ins_values[POS_FK_SELF] = first(array_values($primary_keys));
 			
 			// defaults of n:m linkage tables
+			$default_fields = array();
+			$default_values = array();
 			if(isset($field_info['linkage']['defaults']) && is_array($field_info['linkage']['defaults'])) {
 				foreach($field_info['linkage']['defaults'] as $def_field => $def_value) {
-					$ins_fields[] = db_esc($def_field);
-					$ins_values[] = get_default($def_value);
+					$default_fields[] = db_esc($def_field);
+					$default_values[] = get_default($def_value);
 				}
 			}
 			
-			$ins_placeholders = array();
-			for($i = count($ins_values) - 1; $i >= 0; $i--)
-				$ins_placeholders[] = '?';
+			$default_fields = array_merge($ins_fields, $default_fields);
+			$default_params = array_merge($ins_values, $default_values);
+			$default_placeholders = array_fill(0, count($default_params), '?');
 			
-			$sql = sprintf('INSERT INTO %s (%s) VALUES (%s)',
+			$default_sql = sprintf('INSERT INTO %s (%s) VALUES (%s)',
 				db_esc($field_info['linkage']['table']),
-				implode(', ', $ins_fields),
-				implode(', ', $ins_placeholders));
+				implode(', ', $default_fields),
+				implode(', ', $default_placeholders));
 			
-			$stmt = $db->prepare($sql);
-			if($stmt === FALSE)
-				return proc_error('SQL linkage statement preparation failed.', $db);
+			$default_stmt = $db->prepare($default_sql);
+			if($default_stmt === false)
+				return proc_error('SQL linkage statement with default values preparation failed.', $db);
 			
 			foreach($values as $value) { //TODO UPDATE FOR COMPOSITE FK_SELF & FK_OTHER
-				$ins_values[0] = $value;
-			
-				if(FALSE === $stmt->execute($ins_values))
-					return proc_error("New record was stored, but related records could not be set for '$field_name'", $db);				
+				// see whether inline linkage details are available
+				$inline_details = get_inline_linkage_details($form_id, $field, $value,
+					array($field_info['linkage']['fk_self'] => $ins_values[POS_FK_SELF]));
+				
+				if($inline_details === false) {
+					// no details available, continue with default values
+					$default_params[POS_FK_OTHER] = $value;
+
+					#debug_log("Default linkage: $default_sql". arr_str($default_params));
+					if($default_stmt->execute($default_params) === false)
+						proc_info("Record was stored, but could not set related record $value for '$field_name'", $db);
+				}
+				else {
+					// we do have additional info, so we need to prepare and exec a different SQL statement
+					$ins_values[POS_FK_OTHER] = $value;
+					
+					$sql_insert = get_sql_insert($field_info['linkage']['table'], $TABLES[$field_info['linkage']['table']],
+						$inline_details['columns']);
+						
+					#debug_log("Inline details for $field, linked item $value := " . arr_str($inline_details) . "\n   SQL: $sql_insert");
+					
+					// execute the SQL					
+					$details_stmt = $db->prepare($sql_insert);
+					if($details_stmt === false)
+						proc_info("Preparation of updating of association details in field {$table['fields'][$field]['label']} with record #{$value} failed", $db);
+					else if($details_stmt->execute($inline_details['params']) === false)
+						proc_info("Updating of association details in field {$table['fields'][$field]['label']} with record #{$value} failed", $db);
+				}
 			}
 		}
 		
 		// call 'after_insert/update' hook functions
 		if($_GET['mode'] == MODE_NEW && isset($table['hooks']) && isset($table['hooks']['after_insert']))
-			$table['hooks']['after_insert']($table_name, $table, $id);
+			$table['hooks']['after_insert']($table_name, $table, $primary_keys);
 		else if($_GET['mode'] == MODE_EDIT && isset($table['hooks']) && isset($table['hooks']['after_update']))
-			$table['hooks']['after_update']($table_name, $table, $id);
+			$table['hooks']['after_update']($table_name, $table, $primary_keys);
+		
+		// here we are done and can clear the form from the session --> TEST
+		// unset($_SESSION[$form_id]);		
 		
 		if(is_popup()) {
 			$key = $table['primary_key']['columns'][0];			
 			
-			$_SESSION['redirect'] = "?mode=". MODE_CREATE_DONE ."&table={$table_name}&lookup_table={$_GET['popup']}&lookup_field={$_GET['lookup_field']}&pk_value=" . 
-				(isset($_POST[$key]) ? $_POST[$key] : $id[$key]);
+			$_SESSION['redirect'] = sprintf('?mode=%s&table=%s&lookup_table=%s&lookup_field=%s&pk_value=%s',
+				MODE_CREATE_DONE, $table_name, $_GET['popup'], $_GET['lookup_field'], isset($_POST[$key]) ? $_POST[$key] : $primary_keys[$key]);
 			
 			return true;
 		}
@@ -732,7 +935,7 @@
 		if(!isset($_SESSION['redirect'])) {
 			$new_keys = array();
 			foreach($table['primary_key']['columns'] as $pk)
-				$new_keys[$pk] = isset($_POST[$pk]) ? $_POST[$pk] : $id[$pk];
+				$new_keys[$pk] = isset($_POST[$pk]) ? $_POST[$pk] : $primary_keys[$pk];
 			
 			$_SESSION['redirect'] = "?table={$table_name}&mode=".MODE_VIEW. '&' . http_build_query($new_keys);
 		}

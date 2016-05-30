@@ -5,7 +5,7 @@
 		global $APP;
 		global $LOGIN;
 		
-		if(is_popup())
+		if(is_popup() || is_inline())
 			return;
 		
 		echo '<nav class="navbar navbar-default">' .
