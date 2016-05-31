@@ -22,10 +22,10 @@
 		$prev_href = build_get_params(array('page' => $cur_page - 1));
 		$next_href = build_get_params(array('page' => $cur_page + 1));
 		
-		$div = "<p>\n";				
-		$div .= "<a href='$prev_href' class='btn btn-default $prev_disabled'><span class='glyphicon glyphicon-triangle-left'></span></a>\n";
-		$div .= "<a href='$next_href' class='btn btn-default $next_disabled'><span class='glyphicon glyphicon-triangle-right'></span></a>\n";
-		$div .= '<span style="padding-left:2.5em">Jump to page: </span>';
+		$div = "<p><div class='btn-group'>\n";				
+		$div .= "<a href='$prev_href' class='btn btn-sm btn-default $prev_disabled'><span class='glyphicon glyphicon-triangle-left'></span></a>\n";
+		$div .= "<a href='$next_href' class='btn btn-sm btn-default $next_disabled'><span class='glyphicon glyphicon-triangle-right'></span></a>\n";
+		$div .= '</div><span class="page-jumper">Jump to page: ';
 		
 		$before_skip = ($cur_page >= 3 + $APP['pages_prevnext']);
 		$after_skip = ($num_pages - $cur_page >= 3 + $APP['pages_prevnext']);
@@ -39,19 +39,19 @@
 			$style = ($p == $cur_page ? 'btn-primary disabled' : 'btn-default');
 			
 			if($p == 1 || $p == $num_pages || ($p >= $lower_bound && $p <= $upper_bound))
-				$div .= " <a href='".build_get_params(array('page' => $p))."' class='btn $style'>$p</a>";
+				$div .= "<a href='".build_get_params(array('page' => $p))."' class='btn btn-sm $style'>$p</a>";
 			else if($p < $lower_bound && !$before_skipped) {
 				$before_skipped = true;
-				$div .= " • • •";
+				$div .= " • • • ";
 			}
 			else if($p > $upper_bound && !$after_skipped) {
 				$after_skipped = true;
-				$div .= " • • •";
+				$div .= " • • • ";
 			}
 		}
 		
 		$div .= "\n";
-		$div .= "</p>\n";
+		$div .= "</span></p>\n";
 		return $div;
 	}
 	
@@ -59,17 +59,17 @@
 	function initialize_search_popover() {
 	//------------------------------------------------------------------------------------------
 		echo "<script>var search_popover_template = \"<form class='form-inline' action='".build_get_params()."' method='get'><div class='form-group'>" .
-			"<select class='form-control' name='".SEARCH_PARAM_OPTION."'>".
+			"<select class='form-control input-sm space-right' name='".SEARCH_PARAM_OPTION."'>".
 			"<option value='".SEARCH_ANY."'>Field contains</option>".
 			"<option value='".SEARCH_EXACT."'>Field is</option>".
 			"<option value='".SEARCH_START."'>Field starts with</option>".
 			"<option value='".SEARCH_END."'>Field ends with</option>".
 			"</select>".
-			"<input id='searchtext' type='text' class='form-control' name='".SEARCH_PARAM_QUERY."' placeholder='Enter search text' autofocus>".
+			"<input id='searchtext' type='text' class='form-control input-sm space-right' name='".SEARCH_PARAM_QUERY."' placeholder='Enter search text' autofocus>".
 			"<input type='hidden' name='table' value='{$_GET['table']}'>".
 			"<input type='hidden' name='mode' value='list'>".
 			"<input type='hidden' name='".SEARCH_PARAM_FIELD."' value='%FIELDNAME%'>". // the %FIELDNAME% is replaced during runtime in dbweb.js
-			"<input class='btn btn-primary' type='submit' value='Search'/></div></form>\";</script>\n";
+			"<input class='btn btn-sm btn-primary' type='submit' value='Search'/></div></form>\";</script>\n";
 		
 		echo "<div id='search-popover'></div>\n"; //needed for CSS styling of the popover
 	}
@@ -246,7 +246,7 @@
 			}			
 			$table_body .= "</tbody></table>\n";
 			
-			$table_head = "<table class='table table-hover table-condensed table-responsive'>\n";
+			$table_head = "<table class='table table-hover table-striped table-condensed'>\n";
 			$table_head .= "<thead><tr class='info'><th class='fit'></th>\n";
 			
 			$col_no = 0;
@@ -267,8 +267,10 @@
 			}
 			$table_head .= "</tr></thead>\n";
 			
+			echo "<div class='panel panel-default'><div class='table-responsive'>";
 			echo $table_head;
 			echo $table_body;
+			echo "</div></div>";
 		}
 		
 		echo $pag;

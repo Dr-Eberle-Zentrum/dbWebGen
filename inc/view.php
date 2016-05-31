@@ -18,11 +18,17 @@
 		
 		$fields = $table['fields'];
 		
-		echo "<h1>{$table['item_name']}</h1>\n";
-		
 		$pk_vals = get_primary_key_values_from_url($table);
 		if($pk_vals === FALSE)
 			return false;
+		
+		echo "<h1>{$table['item_name']}</h1>";
+		/*$key_ids = array();
+		foreach($pk_vals as $pk => $val)
+			$key_ids[] = html($table['fields'][$pk]['label']) . '<span class="smsp">=</span>' . html($val);
+		
+		printf ('<h1>%s <small>%s</small></h1>', $table['item_name'], implode(', ', $key_ids));
+		*/
 		
 		$query = build_query($table_name, $table, $pk_vals, MODE_VIEW, NULL, $params);
 		
@@ -44,7 +50,7 @@
 		
 		$addl_data = '';				
 		if(isset($table['additional_steps'])) {
-			$addl_data .= "<div class='btn-group'><button type='button' class='btn btn-default dropdown-toggle space-right' data-toggle='dropdown'><span class='glyphicon glyphicon-forward'></span> Add Related Data <span class='caret'></span></button><ul class='dropdown-menu' role='menu'>\n";
+			$addl_data .= "<div class='btn-group'><button type='button' class='btn btn-default dropdown-toggle ' data-toggle='dropdown'><span class='glyphicon glyphicon-forward'></span> Add Related Data <span class='caret'></span></button><ul class='dropdown-menu' role='menu'>\n";
 			foreach($table['additional_steps'] as $add_table => $add_info) {
 				//TODO: adapt for composite foreign key
 				$q = "?table={$add_table}&mode=".MODE_NEW.'&'.PREFILL_PREFIX . $add_info['foreign_key']."={$record[$table['primary_key']['columns'][0]]}";
@@ -55,16 +61,16 @@
 		}
 		
 		if(is_allowed($table, MODE_EDIT))
-			$addl_data .= "<a title='".html("Edit This {$table['item_name']}")."' href='". build_get_params(array('mode' => MODE_EDIT)) ."' class='btn btn-default space-right'><span class='glyphicon glyphicon-edit'></span> Edit</a>";
+			$addl_data .= "<a title='".html("Edit This {$table['item_name']}")."' href='". build_get_params(array('mode' => MODE_EDIT)) ."' class='btn btn-default '><span class='glyphicon glyphicon-edit'></span> Edit</a>";
 		
 		if(is_allowed($table, MODE_DELETE))
-			$addl_data .= "<a title='".html("Delete This {$table['item_name']}")."' class='btn btn-default space-right' role='button' data-href='". build_get_params(array('mode' => MODE_DELETE)) ."' data-toggle='modal' data-target='#confirm-delete'><span class='glyphicon glyphicon-trash'></span> Delete</a>";
+			$addl_data .= "<a title='".html("Delete This {$table['item_name']}")."' class='btn btn-default ' role='button' data-href='". build_get_params(array('mode' => MODE_DELETE)) ."' data-toggle='modal' data-target='#confirm-delete'><span class='glyphicon glyphicon-trash'></span> Delete</a>";
 		
 		if(is_allowed($table, MODE_NEW))
-			$addl_data .= "<a title='".html("Create New {$table['item_name']}")."' href='?" . http_build_query(array('table'=>$table_name, 'mode'=>MODE_NEW)) ."' class='btn btn-default space-right'><span class='glyphicon glyphicon-plus'></span> Create New</a>";
+			$addl_data .= "<a title='".html("Create New {$table['item_name']}")."' href='?" . http_build_query(array('table'=>$table_name, 'mode'=>MODE_NEW)) ."' class='btn btn-default '><span class='glyphicon glyphicon-plus'></span> Create New</a>";
 		
 		if(is_allowed($table, MODE_LIST))
-			$addl_data .= "<a title='".html("List All {$table['display_name']}")."' href='?" . http_build_query(array('table'=>$table_name, 'mode'=>MODE_LIST)) ."' class='btn btn-default space-right'><span class='glyphicon glyphicon-list'></span> List All</a>";
+			$addl_data .= "<a title='".html("List All {$table['display_name']}")."' href='?" . http_build_query(array('table'=>$table_name, 'mode'=>MODE_LIST)) ."' class='btn btn-default '><span class='glyphicon glyphicon-list'></span> List All</a>";
 	
 		// now check for related data in other tables
 		$rel_list = array();
@@ -89,7 +95,7 @@
 		}
 		
 		if(count($rel_list) > 0) {
-			$addl_data .= "<div class='btn-group'><button type='button' class='btn btn-default dropdown-toggle space-right' data-toggle='dropdown'><span class='glyphicon glyphicon-link'></span> List Related <span class='caret'></span></button><ul class='dropdown-menu' role='menu'>\n";
+			$addl_data .= "<div class='btn-group'><button type='button' class='btn btn-default dropdown-toggle ' data-toggle='dropdown'><span class='glyphicon glyphicon-link'></span> List Related <span class='caret'></span></button><ul class='dropdown-menu' role='menu'>\n";
 			foreach($rel_list as $rel) {				
 				$q = http_build_query(array(
 					'table' => $rel['table_name'],
@@ -110,7 +116,7 @@
 		if($addl_data != '')			
 			echo "<div class='btn-group'>{$addl_data}</div>\n";
 		
-		echo "<p><form class='form-horizontal' role='form' data-type='view'>\n";
+		echo "<p><form class='form-horizontal bg-gray' role='form' data-type='view'>\n";
 		
 		foreach($record as $col => $val) {
 			if(!isset($fields[$col]))

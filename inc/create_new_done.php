@@ -44,7 +44,7 @@
 			return proc_error('DB connect failed');
 		
 		$sql = sprintf('select %s display from %s where %s = ?',
-			resolve_display_expression($display_expr), $table_name, $pk_column);
+			resolve_display_expression($display_expr), db_esc($table_name), db_esc($pk_column));
 		
 		$stmt = $db->prepare($sql);
 		if($stmt === false)
@@ -55,7 +55,7 @@
 			return proc_error('Exec failed');
 		
 		$label = $stmt->fetchColumn();
-		$text = "$label ($pk_column = $pk_value)";
+		$text = format_lookup_item_label($label, $table_name, $pk_column, $pk_value);		
 		
 		echo "<script>\n";
 		echo "  var r = " . json_encode(array('lookup_field' => $lookup_field, 'value' => $pk_value, 'label' => $label, 'text' => $text)) . ";\n";

@@ -4,6 +4,8 @@
 		
 		- title: string
 			Displayed one main pageadd			
+		- bootstrap_css: string (optional) (default: https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css) 
+			Specify a bootstrap CSS theme, if you do not want to use the default theme.
 		- plugins: array (optional)
 			Custom PHP files that will be included using require_once(). These plugins can contain functions that can be referenced anywhere in this file where external procedures can be provided (e.g. $LOGIN/initializer_proc) 			
 		- page_size: int
@@ -33,7 +35,7 @@
 		- list_mincolwidth_pxperchar: int (optional) (default: 6)
 			When determining min-width columns in MODE_LIST, how many pixels should be calculated for each character
 	======================================================================================================== */	
-	$APP = array(		
+	$APP = array(				
 		'plugins' => array(),
 		'title' => '',
 		'view_display_null_fields' => false,

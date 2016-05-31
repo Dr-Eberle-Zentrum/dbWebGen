@@ -89,7 +89,8 @@ $(window).load(function() {
 		
 		// automatic add
 		$(dropdown_id).on('change', function() {			
-			if($(dropdown_id).val() === null)
+			var selected_value = $(dropdown_id).val();
+			if(selected_value === null || selected_value === '')
 				return;
 			
 			// append selected item to bullet list
@@ -100,27 +101,25 @@ $(window).load(function() {
 				self_id: $('#__item_id__').val(),
 				parent_form: $('#__form_id__').val(),
 				field: field,
-				other_id: $(dropdown_id).val(),
+				other_id: selected_value,
 				label: $(dropdown_id + ' option:selected').data('label')
 			}, function(data) {				
 				// add selected item to hidden input				
-				var list = parse_multiple_val($(hidden_input).val());
-				list.push($(dropdown_id).val());			
+				var list = parse_multiple_val($(hidden_input).val());				
+				list.push(selected_value);			
 				$(hidden_input).val(write_multiple_val(list));
 				
+				// add item line to list of selected items
 				$(list_id).append(data);
 				
 				// remove added item from dropdown
-				$(dropdown_id + " option[value='" + $(dropdown_id).val() + "']").each(function() { $(this).remove(); });			
+				$(dropdown_id + " option[value='" + selected_value + "']").each(function() { 
+					$(this).remove(); 
+				});
 				
 				// reset dropdown selection
 				$(dropdown_id).val('').change();
-			});				
-			
-			/*$(list_id).append(
-				'<div class="multiple-select-item">' +
-				'<a role="button" onclick="remove_linked_item(this)" data-field="'+ field +'" data-id="' + $(dropdown_id).val() +'" data-label="' + $(dropdown_id + ' option:selected').data('label') +'"><span class="glyphicon glyphicon-trash"></span></a> ' + 				
-				'<span class="multiple-select-text">' + $(dropdown_id + ' option:selected').text() + '</span></div>');*/			
+			});
 		});	
 	});
 	
@@ -160,7 +159,7 @@ function insert_option_sorted(dropdown_id, value, label, text, selected) {
 		}
 	});
 	
-	var opt = $('<option/>', { value: value }).text(text).data('label', label);
+	var opt = $('<option/>', { value: value }).html(text).data('label', label);
 	if(insert_before == -1)
 		$(dropdown_id).append(opt);
 	else

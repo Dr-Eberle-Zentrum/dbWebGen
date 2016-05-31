@@ -280,6 +280,29 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
+	function bootstrap_css() {
+	//------------------------------------------------------------------------------------------
+		global $APP;
+		return isset($APP['bootstrap_css']) ? $APP['bootstrap_css'] :
+			'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css';
+	}
+	
+	//------------------------------------------------------------------------------------------
+	function format_lookup_item_label($raw_label, $lookup_table, $lookup_id_field, $id_value) {
+	//------------------------------------------------------------------------------------------
+		global $TABLES;
+		
+		if(isset($TABLES[$lookup_table]) 
+			&& isset($TABLES[$lookup_table]['fields'][$lookup_id_field]) 
+			&& isset($TABLES[$lookup_table]['fields'][$lookup_id_field]['label'])) 
+		{
+			$lookup_id_field = $TABLES[$lookup_table]['fields'][$lookup_id_field]['label'];
+		}		
+		
+		return sprintf('%s&nbsp;&nbsp;(%s = %s)', html($raw_label), $lookup_id_field, html($id_value));
+	}
+	
+	//------------------------------------------------------------------------------------------
 	// CAREFUL: this function can be called via MODE_FUNC
 	//------------------------------------------------------------------------------------------
 	function get_linked_item_html(
@@ -311,10 +334,12 @@
 			$detail_data_span = "<a role='button' onclick='linkage_details_click(this)' class='space-left multiple-select-details-edit' data-id-other='{$fk_other_value}' data-details-title='{$popup_title}' data-details-url='{$inline_url}' id='{$field_name}_details_{$fk_other_value}' title='Edit the details of this association'><span class='glyphicon glyphicon-th-list'></span></a>";
 		}
 		
+		$field_id = isset($TABLES[$field['lookup']['table']]) ? $TABLES[$field['lookup']['table']]['fields'][$field['lookup']['field']]['label'] : $field['lookup']['field'];
+		
 		return '<div class="multiple-select-item">' .
 			'<a role="button" onclick="remove_linked_item(this)" data-label="'. unquote($fk_other_text) .'" data-field="'. unquote($field_name) .'" data-id="' . unquote($fk_other_value) .'"><span class="glyphicon glyphicon-trash"></span></a>' .
 			$detail_data_span .
-			'<span class="multiple-select-text">' . html($fk_other_text) . " ({$field['lookup']['field']} = {$fk_other_value})</span></div>";
+			'<span class="multiple-select-text">' . format_lookup_item_label($fk_other_text, $field['lookup']['table'], $field_id, $fk_other_value) . '</span></div>';
 	}
 	
 	//------------------------------------------------------------------------------------------
@@ -353,7 +378,7 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
-	function html($text, $max_chars = 0, $expandable = false) {
+	function html($text, $max_chars = 0, $expandable = false, $html_linebreaks = false) {
 	//------------------------------------------------------------------------------------------	
 		if($text === null)
 			return '';
@@ -370,12 +395,12 @@
 				"</span>";
 			else
 				$ret .= '...';
-			
-			return $ret;
 		}
 		
 		else
-			return htmlspecialchars($text, ENT_COMPAT | ENT_HTML401);
+			$ret = htmlspecialchars($text, ENT_COMPAT | ENT_HTML401);
+		
+		return $html_linebreaks ? nl2br($ret) : $ret;
 	}
 	
 	//------------------------------------------------------------------------------------------
@@ -484,7 +509,7 @@
 		}		
 		else {		
 			if($_GET['mode'] == MODE_VIEW)
-				$val = html($val);
+				$val = html($val, 0, false, true);
 			else // MODE_LIST: limit chars to display
 				$val = html($val, $APP['max_text_len'], true);
 		}

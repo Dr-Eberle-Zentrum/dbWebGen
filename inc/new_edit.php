@@ -42,7 +42,7 @@
 			else {
 				$page_title = "Edit {$table['item_name']}";
 				if(count($edit_id) == 1)
-					$page_title .= ' <small>'. html(first(array_keys($edit_id))) . '<span class="smsp">=</span>' . html(first(array_values($edit_id))) .'</small>';
+					$page_title .= ' <small>'. html($table['fields'][first(array_keys($edit_id))]['label']) . '<span class="smsp">=</span>' . html(first(array_values($edit_id))) .'</small>';
 			}
 			
 			echo "<h1>$page_title</h1>\n";
@@ -61,7 +61,7 @@
 		if(is_inline())
 			echo "<p>Note that your edits will only be stored in the database if the original form is also submitted</p>\n";
 		
-		echo "<form class='form-horizontal' role='form' method='post' enctype='multipart/form-data'>\n";
+		echo "<form class='form-horizontal bg-gray' role='form' method='post' enctype='multipart/form-data'><fieldset>\n";
 		
 		echo "<input type='hidden' id='__form_id__' name='__form_id__' value='$form_id' />";
 		echo '<input type="hidden" id="__table_name__" name="__table_name__" value="'. unquote($_GET['table']) .'"/>';
@@ -101,7 +101,7 @@
 		echo $submit_button;
 		if($_GET['mode'] == MODE_NEW)
 			"<input type='reset' class='btn btn-default' value='Clear Form' />\n";
-        echo "</div>\n</div>\n</form>\n";
+        echo "</div>\n</div>\n</fieldset></form>\n";
 		echo "<div style='padding-bottom:4em'>&nbsp;</div>";		
 	}
 	
@@ -345,7 +345,7 @@
 							$sel = '';
 						}
 						
-						echo "<option value='{$obj->val}' $sel>" . html($obj->txt) . " ({$field['lookup']['field']} = {$obj->val})</option>\n";
+						echo "<option value='{$obj->val}' $sel>" . format_lookup_item_label($obj->txt, $field['lookup']['table'], $field['lookup']['field'], $obj->val) . "</option>\n";
 					}
 					echo "</select></div>\n";
 
@@ -382,7 +382,7 @@
 								$obj->val, $obj->txt, get_the_primary_key_value_from_url($table, ''));
 						}
 						else {							
-							echo '<option value="'. $obj->val .'" data-label="'. unquote($obj->txt) .'">'. html($obj->txt) ." ({$field['lookup']['field']} = {$obj->val})</option>\n";
+							echo '<option value="'. $obj->val .'" data-label="'. unquote($obj->txt) .'">'. format_lookup_item_label($obj->txt, $field['lookup']['table'], $field['lookup']['field'], $obj->val) . "</option>\n";
 						}
 					}					
 					echo "</select></div>\n";		
@@ -846,8 +846,10 @@
 			$ins_fields = array();
 			$ins_values = array();
 			
-			define('POS_FK_OTHER', 0); // convention: fk_other must be at the beginning POSITION = 0, so for each SQL execution later the foreign key value can be set at array index 0
-			define('POS_FK_SELF', 1);
+			if(!defined('POS_FK_OTHER')) 
+				define('POS_FK_OTHER', 0); // convention: fk_other must be at the beginning POSITION = 0, so for each SQL execution later the foreign key value can be set at array index 0
+			if(!defined('POS_FK_SELF')) 
+				define('POS_FK_SELF', 1);
 			
 			$ins_fields[POS_FK_OTHER] = db_esc($field_info['linkage']['fk_other']); 
 			$ins_values[POS_FK_OTHER] = ''; // will be replaced during execution
