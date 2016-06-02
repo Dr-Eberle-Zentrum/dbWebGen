@@ -24,6 +24,12 @@
 				if(substr($p, 0, strlen(PREFILL_PREFIX)) == PREFILL_PREFIX && strlen($p) > strlen(PREFILL_PREFIX))
 					$_POST[substr($p, strlen(PREFILL_PREFIX))] = $v;				
 			}
+			
+			// set default field values
+			foreach($table['fields'] as $field_name => $field_info) {
+				if(isset($field_info['default']) && !isset($_POST[$field_name]))
+					$_POST[$field_name] = get_default($field_info['default']);
+			}
 		}
 		else { // MODE_EDIT
 			// in inline mode it can happen that the fk_self does not exist yet
