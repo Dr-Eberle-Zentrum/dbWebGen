@@ -314,9 +314,11 @@
 					
 					$create_new_button = "<div class='col-sm-2'><button type='button' class='btn btn-default multiple-select-add' data-create-title='{$popup_title}' data-create-url='{$popup_url}' id='{$field_name}_add' formnovalidate><span title='Remove this association' class='glyphicon glyphicon-plus'></span> Create New</button></div>\n";					
 				}
+				
+				$lookup_table_attr = unquote($field['lookup']['table']);
 					
 				if($field['lookup']['cardinality'] == CARDINALITY_SINGLE) {
-					echo "<div class='col-sm-7'><select $disabled $required_attr class='form-control' id='{$field_name}_dropdown' name='{$field_name}' data-placeholder='Click to select' $autofocus>\n";					
+					echo "<div class='col-sm-7'><select $disabled $required_attr class='form-control' id='{$field_name}_dropdown' name='{$field_name}' data-table='$lookup_table_attr' data-placeholder='Click to select' $autofocus>\n";					
 					$db = db_connect();
 					if($db === false)
 						return proc_error('Cannot connect to DB.');
@@ -376,7 +378,7 @@
 					$items_div = '';					
 										
 					// the rest goes into the dropdown box
-					echo "<div class='col-sm-7'><select $disabled $required_attr class='form-control multiple-select-dropdown' id='{$field_name}_dropdown' data-placeholder='Click to select' $autofocus>\n";
+					echo "<div class='col-sm-7'><select $disabled $required_attr class='form-control multiple-select-dropdown' id='{$field_name}_dropdown' data-table='$lookup_table_attr' data-placeholder='Click to select' $autofocus>\n";
 
 					// check whether additional fields can be set in the linkage table
 					$has_additional_editable_fields = has_additional_editable_fields($field['linkage']);

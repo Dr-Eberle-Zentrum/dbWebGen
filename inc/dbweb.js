@@ -153,7 +153,8 @@ function write_multiple_val(arr) { return JSON.stringify(arr); }
 function insert_option_sorted(dropdown_id, value, label, text, selected) {
 	// insert removed element sorted into the dropdown
 	var insert_before = -1;
-	$(dropdown_id).children('option').each(function () {
+	var $dropdown = $('#' +  dropdown_id);
+	$dropdown.children('option').each(function () {
 		if(text.localeCompare($(this).text()) <= 0) {
 			insert_before = $(this).val();					
 			return false; // breaks the each() loop
@@ -162,11 +163,11 @@ function insert_option_sorted(dropdown_id, value, label, text, selected) {
 	
 	var opt = $('<option/>', { value: value }).html(text).data('label', label);
 	if(insert_before == -1)
-		$(dropdown_id).append(opt);
+		$dropdown.append(opt);
 	else
-		opt.insertBefore($(dropdown_id + ' option[value="' + insert_before + '"]'));
+		opt.insertBefore($('#' + dropdown_id + ' option[value="' + insert_before + '"]'));
 	
-	$(dropdown_id).val(selected ? value : '').change();
+	$dropdown.val(selected ? value : '').change();
 }
 
 //
@@ -177,7 +178,7 @@ function remove_linked_item(e) {
 	var removed_id = $e.data('id');
 	var field = $e.data('field');
 	var label = $e.data('label');
-	var dropdown_id = '#' + field + '_dropdown';
+	var dropdown_id = field + '_dropdown';
 	var removed_text = $e.parent().find('span.multiple-select-text').text();
 	
 	// remove the value from the hidden input
@@ -200,8 +201,17 @@ function remove_linked_item(e) {
 // Function to call for popup window that creates new record for T_LOOKUP
 //
 function handle_create_new_result(result) {
-	insert_option_sorted('#' + result.lookup_field + '_dropdown',
-		result.value, result.label, result.text, true);
+	// insert the new record in all dropdown boxes of the same table type
+	var dropdown_id = result.lookup_field + '_dropdown';
+	var table = $('#' + dropdown_id).data('table');
+	
+	$('select[data-table]').each(function() {
+		var $this = $(this);		
+		if($this.data('table') == table) {
+			insert_option_sorted($this.attr('id'), result.value, result.label, 
+				result.text, dropdown_id == $this.attr('id'));
+		}
+	});
 }
 
 //
