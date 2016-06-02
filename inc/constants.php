@@ -40,8 +40,9 @@
 	define('SEARCH_ANY', 'any');
 	define('SEARCH_START', 'start');
 	define('SEARCH_END', 'end');
-	define('SEARCH_EXACT', 'exact');		
-	
+	define('SEARCH_EXACT', 'exact');
+	define('SEARCH_WORD', 'word'); // similar to SEARCH_ANY, but search string must occur as a whole word
+
 	define('SEARCH_PARAM_FIELD', 'field');
 	define('SEARCH_PARAM_QUERY', 'q');
 	define('SEARCH_PARAM_OPTION', 'match');

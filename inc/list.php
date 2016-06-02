@@ -59,9 +59,10 @@
 	function initialize_search_popover() {
 	//------------------------------------------------------------------------------------------
 		echo "<script>var search_popover_template = \"<form class='form-inline' action='".build_get_params()."' method='get'><div class='form-group'>" .
-			"<select class='form-control input-sm space-right' name='".SEARCH_PARAM_OPTION."'>".
+			"<select id='searchoption' class='form-control input-sm space-right' name='".SEARCH_PARAM_OPTION."'>".
 			"<option value='".SEARCH_ANY."'>Field contains</option>".
-			"<option value='".SEARCH_EXACT."'>Field is</option>".
+			"<option value='".SEARCH_WORD."'>Field contains word</option>".			
+			"<option value='".SEARCH_EXACT."'>Field is exactly</option>".
 			"<option value='".SEARCH_START."'>Field starts with</option>".
 			"<option value='".SEARCH_END."'>Field ends with</option>".
 			"</select>".
@@ -69,7 +70,8 @@
 			"<input type='hidden' name='table' value='{$_GET['table']}'>".
 			"<input type='hidden' name='mode' value='list'>".
 			"<input type='hidden' name='".SEARCH_PARAM_FIELD."' value='%FIELDNAME%'>". // the %FIELDNAME% is replaced during runtime in dbweb.js
-			"<input class='btn btn-sm btn-primary' type='submit' value='Search'/></div></form>\";</script>\n";
+			//"<input class='btn btn-sm btn-primary' type='submit' value='Search'/></div></form>\";</script>\n";
+			"<button class='btn btn-sm btn-primary' type='submit'><span class='glyphicon glyphicon-search'></span></button></div></form>\";</script>\n";
 		
 		echo "<div id='search-popover'></div>\n"; //needed for CSS styling of the popover
 	}
@@ -94,7 +96,9 @@
 		
 		$search_val = (isset($_GET[SEARCH_PARAM_QUERY]) && isset($_GET[SEARCH_PARAM_FIELD]) && $_GET[SEARCH_PARAM_FIELD] == $field_name ? unquote($_GET[SEARCH_PARAM_QUERY]) : '');
 		
-		$t .= " <a href='javascript:void(0)' title='Search' data-value='{$search_val}' data-field='{$field_name}' data-purpose='search' data-toggle='popover' data-container='body' data-placement='top'><span class='glyphicon glyphicon-search'></span></a>";
+		$search_option = isset($_GET[SEARCH_PARAM_OPTION]) ? $_GET[SEARCH_PARAM_OPTION] : SEARCH_ANY;
+		
+		$t .= " <a href='javascript:void(0)' title='Search' data-value='{$search_val}' data-field='{$field_name}' data-option='{$search_option}' data-purpose='search' data-toggle='popover' data-container='body' data-placement='top'><span class='glyphicon glyphicon-search'></span></a>";
 		
 		$t .= "</div>";
 		
@@ -160,6 +164,7 @@
 				case SEARCH_END: $search_type = 'ends with'; break;
 				case SEARCH_START: $search_type = 'starts with'; break;
 				case SEARCH_EXACT: $search_type = 'matches'; break;
+				case SEARCH_WORD: $search_type = 'contains word'; break;
 			}
 			echo "<p class='text-info'>Searching all records where <b>".html($fields[$_GET[SEARCH_PARAM_FIELD]]['label'])."</b> {$search_type} <span class='bg-success'><strong>".html($_GET[SEARCH_PARAM_QUERY])."</strong></span> ".
 			"<a class='btn btn-default space-left' href='?".http_build_query(array('table'=>$table_name, 'mode'=>MODE_LIST))."'><span class='glyphicon glyphicon-remove-circle'></span> Clear search</a></p>\n";

@@ -150,3 +150,7 @@ form.bg-gray {
 	padding-left: 1.5em;
 	/*white-space: nowrap;*/
 }
+
+#searchtext {
+	width: 120px;
+}

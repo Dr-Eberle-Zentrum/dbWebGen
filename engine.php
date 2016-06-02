@@ -54,7 +54,7 @@
   <link href="https://select2.github.io/select2-bootstrap-theme/css/select2-bootstrap.css" rel="stylesheet"><!-- Bootstrap theme from https://github.com/select2/select2-bootstrap-theme -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.min.js"></script>  
   <link href="<?= ENGINE_PATH ?>inc/styles.css" rel="stylesheet">  
-  <script src="<?= ENGINE_PATH ?>inc/dbweb.js"></script>
+  <script src="<?= ENGINE_PATH ?>inc/dbweb.js"></script>  
 </head>
 <body>
 

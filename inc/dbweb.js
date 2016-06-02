@@ -39,7 +39,8 @@ $(window).load(function() {
 	$('[data-toggle=popover][data-purpose=search]').each(function() {
 		// copy any pre-set value for the search field
 		$(this).on('shown.bs.popover', function(){
-			$('#searchtext').val($(this).data('value')).focus();
+			$('#searchoption').val($(this).data('option'));
+			$('#searchtext').val($(this).data('value')).focus();			
 		});
 		
 		// set the form content specific to the field

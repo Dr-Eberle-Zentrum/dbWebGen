@@ -118,25 +118,35 @@
 		if($search_field === null || !isset($fields[$search_field]))
 			return null;
 		
+		$term['params'][] = $search_query;
+		$pre_term_op = '';
+		$post_term_op = '';		
+		
 		switch($search_option) {
-			case SEARCH_EXACT:
-				$term['params'][] = $search_query;
-				$op = '=';
+			case SEARCH_EXACT:				
+				$op = '=';			
 				break;
 			
-			case SEARCH_ANY:
-				$term['params'][] = '%' . $search_query . '%';
+			case SEARCH_ANY:				
 				$op = 'like';				
+				$pre_term_op = '%';
+				$post_term_op = '%';
 				break;
 				
-			case SEARCH_START:
-				$term['params'][] = $search_query . '%';
-				$op = 'like';				
+			case SEARCH_START:				
+				$op = 'like';
+				$post_term_op = '%';
 				break;
 			
-			case SEARCH_END:
-				$term['params'][] = '%' . $search_query;
-				$op = 'like';				
+			case SEARCH_END:				
+				$op = 'like';		
+				$pre_term_op = '%';
+				break;
+				
+			case SEARCH_WORD:				
+				$op = '~*';
+				$pre_term_op = '\m';
+				$post_term_op = '\M';
 				break;
 			
 			default:
@@ -150,7 +160,14 @@
 				proc_error('$APP[search_string_transformation] does not include a placeholder for the value, i.e. %s');
 		}
 		
-		$query_trafo = str_replace('%s', '?', $string_trafo);
+		// for sprintf() we need to escape any %
+		$pre_term_op = str_replace('%', '%%', $pre_term_op);
+		$post_term_op = str_replace('%', '%%', $post_term_op);
+		if($pre_term_op != '') $pre_term_op = "'$pre_term_op' || ";
+		if($post_term_op != '') $post_term_op = " || '$post_term_op'";		
+		$query_trafo_without_ops = str_replace('%s', '?', $string_trafo);
+		$query_trafo = '(' . $pre_term_op . $query_trafo_without_ops . $post_term_op . ')';
+		#debug_log($query_trafo);
 		
 		if($APP['search_lookup_resolve'] && $fields[$search_field]['type'] == T_LOOKUP && $fields[$search_field]['lookup']['cardinality'] == CARDINALITY_SINGLE) {
 			$lookup = $fields[$search_field]['lookup'];
@@ -175,10 +192,10 @@
 				db_esc($field['linkage']['fk_self']), $table_alias, db_esc($table['primary_key']['columns'][0]),
 				db_esc($field['lookup']['field']), db_esc($field['linkage']['fk_other']), $op);
 						
-			// for SEARCH_ANY queries (~ contains) we also want to look whether the provided query value matches any of the multiple foreign keys (not only the lookup values), expecting those key values to be integers (but also works with others)
-			if($search_option === SEARCH_ANY) {
+			// for SEARCH_ANY & SEARCH_WORD queries (~ contains) we also want to look whether the provided query value matches any of the multiple foreign keys (not only the lookup values), expecting those key values to be integers (but also works with others)
+			if($search_option === SEARCH_ANY || $search_option === SEARCH_WORD) {
 				$field_trafo = sprintf("array_agg(%s)", $string_trafo);
-				$or_term = sprintf("(select $field_trafo from %s link where link.%s = %s.%s) @> array[$query_trafo]",
+				$or_term = sprintf("(select $field_trafo from %s link where link.%s = %s.%s) @> array[$query_trafo_without_ops]",
 					db_esc($field['linkage']['fk_other']), db_esc($field['linkage']['table']),
 					db_esc($field['linkage']['fk_self']), $table_alias, db_esc($table['primary_key']['columns'][0]));
 					

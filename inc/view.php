@@ -100,7 +100,7 @@
 				$q = http_build_query(array(
 					'table' => $rel['table_name'],
 					'mode' => MODE_LIST,
-					SEARCH_PARAM_OPTION => SEARCH_ANY,
+					SEARCH_PARAM_OPTION => SEARCH_WORD,
 					SEARCH_PARAM_FIELD => $rel['field_name'],
 					SEARCH_PARAM_QUERY => $record[$table['primary_key']['columns'][0]]
 				));
