@@ -81,6 +81,8 @@
 			echo $submit_button. '</div></div>';
 		
 		$i = 0;
+		$conditional_label_scripts = array();
+		
 		foreach($table['fields'] as $field_name => $field) {
 			if(!is_field_editable($field))
 				continue;
@@ -97,18 +99,42 @@
 			echo "<div class='form-group'>\n";
 			echo "<label title='This field is ". (is_field_required($field) ? 'required' : 'optional') ."' class='control-label col-sm-3' for='{$field_name}'>";
 			render_help($field);
-			echo "{$field['label']}:{$required_indicator}</label>\n";	
+			echo "<span data-field='$field_name'>{$field['label']}</span>{$required_indicator}</label>\n";
 			
 			render_control($form_id, $field_name, $field, $i++ == 0, isset($_GET[PREFILL_PREFIX . $field_name]));						
 			
 			echo "</div>\n";
+			
+			if(isset($field['conditional_form_label']))
+				$conditional_label_scripts[] = get_conditional_label_script($table, $field_name, $field['conditional_form_label']);
 		}
 		
 		echo $submit_button;
 		if($_GET['mode'] == MODE_NEW)
 			"<input type='reset' class='btn btn-default' value='Clear Form' />\n";
         echo "</div>\n</div>\n</fieldset></form>\n";
-		echo "<div style='padding-bottom:4em'>&nbsp;</div>";		
+		echo "<div style='padding-bottom:4em'>&nbsp;</div>";
+		
+		echo implode($conditional_label_scripts);
+	}
+	
+	//------------------------------------------------------------------------------------------
+	function get_conditional_label_script(/*const*/ &$table, $field_name, /*const*/ &$field_cond) {
+	//------------------------------------------------------------------------------------------
+		$mapping_json = json_encode($field_cond['mapping']);		
+		$default_val = str_replace('"', '\\"', $table['fields'][$field_name]['label']);
+		
+		$js = <<<EOT
+			<script>
+				$('#{$field_cond['controlled_by']}').on('change', function() {					
+					var val = $(this).val();
+					var mapping = $mapping_json;
+					$('label > span[data-field="{$field_name}"]').html(val in mapping ? mapping[val] : "$default_val");					
+				});
+			</script>
+EOT;
+		
+		return $js;
 	}
 	
 	//------------------------------------------------------------------------------------------

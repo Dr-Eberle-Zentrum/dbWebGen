@@ -12,11 +12,16 @@ $(window).load(function() {
 	// make all dropdowns a select2
 	//
 	$('select').each(function() {
+		var box = $(this);
+		
 		// display search box in dropdown if more than 5 options available
-		if($(this).children('option').length > 5)	
-			$(this).select2({ theme: 'bootstrap', width: '100%' });
+		if(box.children('option').length > 5)	
+			box.select2({ theme: 'bootstrap', width: '100%' });
 		else
-			$(this).select2({ theme: 'bootstrap', width: '100%', minimumResultsForSearch: Infinity });
+			box.select2({ theme: 'bootstrap', width: '100%', minimumResultsForSearch: Infinity });
+		
+		if(box.val() != '')
+			box.change();
 	});	
 
 	//

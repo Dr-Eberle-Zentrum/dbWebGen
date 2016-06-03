@@ -6,6 +6,8 @@
 			Displayed one main pageadd			
 		- bootstrap_css: string (optional) (default: https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css) 
 			Specify a bootstrap CSS theme, if you do not want to use the default theme.
+		- page_icon: string (optional)
+			Specify a path to an web page icon (aka 'favicon').
 		- plugins: array (optional)
 			Custom PHP files that will be included using require_once(). These plugins can contain functions that can be referenced anywhere in this file where external procedures can be provided (e.g. $LOGIN/initializer_proc) 			
 		- page_size: int
@@ -210,7 +212,14 @@
 			- max: number (optional)
 				for T_NUMBER, define the maximum value for the field
 			- step: number or string (optional) (default: 1)
-				for T_NUMBER, define the step size for up/down (e.g. 3 or 0.01). If not restricted, use 'any'	
+				for T_NUMBER, define the step size for up/down (e.g. 3 or 0.01). If not restricted, use 'any'
+			- conditional_form_label: array (optional)
+				In MODE_NEW & MODE_EDIT forms, this controls field labels based on the value of another field (currently the other field must be T_ENUM or T_LOOKUP).
+				- controlled_by: string
+					The field within the same table that controls the label
+				- mapping: array
+					Hash array with key := value of the other field, and value := corresponding label of this field.
+					If the othe field has a value that is not represented in this mapping hash, the label will be the default field label
 		- sort: array (optional)
 			Used for default sorting of tables in MODE_LIST. Associative array with key := fieldname (or SQL expression) and value := {'asc', 'desc'}
 			e.g. [ 'lastname' => 'asc, 'firstname' => 'asc' ]

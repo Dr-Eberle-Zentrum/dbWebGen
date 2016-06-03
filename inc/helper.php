@@ -29,6 +29,19 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
+	function get_field_label(/*const*/ &$field, /*const*/ &$record) {
+	//------------------------------------------------------------------------------------------
+		if(!isset($field['conditional_form_label']))
+			return $field['label'];
+		
+		$conrolling_field_value = $record[$field['conditional_form_label']['controlled_by']];
+		if(!isset($field['conditional_form_label']['mapping'][$conrolling_field_value]))
+			return $field['label'];
+		
+		return $field['conditional_form_label']['mapping'][$conrolling_field_value];
+	}
+	
+	//------------------------------------------------------------------------------------------
 	function is_popup() {
 	//------------------------------------------------------------------------------------------
 		return isset($_GET['popup']);
@@ -302,6 +315,13 @@
 		global $APP;
 		return isset($APP['bootstrap_css']) ? $APP['bootstrap_css'] :
 			'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css';
+	}
+	
+	//------------------------------------------------------------------------------------------
+	function page_icon() {
+	//------------------------------------------------------------------------------------------
+		global $APP;
+		return isset($APP['page_icon']) ? $APP['page_icon'] : '';
 	}
 	
 	//------------------------------------------------------------------------------------------

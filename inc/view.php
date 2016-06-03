@@ -126,7 +126,7 @@
 			if(!$APP['view_display_null_fields'] && $val === NULL)
 				continue;
 			
-			echo "<div class='form-group'><label class='col-sm-3 control-label'>". html($fields[$col]['label']) . ":</label>\n";
+			echo "<div class='form-group'><label class='col-sm-3 control-label'>". get_field_label($fields[$col], $record) . "</label>\n";
 			
 			$val = prepare_field_display_val($table, $record, $fields[$col], $col, $val);
 			
