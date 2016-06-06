@@ -225,13 +225,18 @@
 			$term['sql'] = sprintf("$field_trafo %s $query_trafo", db_esc($search_field), $op);		
 		}
 		
-		#debug_log(arr_str($term));
+		#debug_log('term: ', $term);
 		return $term;
 	}
 	
 	//------------------------------------------------------------------------------------------
-	function debug_log($msg) {
+	function debug_log(/* variable argument list */) {
 	//------------------------------------------------------------------------------------------
+		$msg = '';
+		
+		foreach(func_get_args() as $arg)
+			$msg .= is_array($arg) ? arr_str($arg) : strval($arg);
+			
 		$_SESSION['msg'][] = "<div class='alert alert-info'>$msg</div>";
 	}
 	

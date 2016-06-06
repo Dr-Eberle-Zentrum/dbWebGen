@@ -181,7 +181,7 @@
 			$query = build_query($table_name, $table, $offset, MODE_LIST, null, $params_arr);
 			
 			#debug_log($query);
-			#debug_log(arr_str($params_arr));
+			#debug_log($params_arr);
 			
 			$res = $db->prepare($query);
 			if($res === FALSE)
@@ -196,7 +196,7 @@
 			$col_longest_content = array();
 						
 			while($record = $res->fetch(PDO::FETCH_ASSOC)) {				
-				#debug_log(arr_str($record));
+				#debug_log($record);
 				$id_str = '';				
 				
 				foreach($table['primary_key']['columns'] as $pk) {					

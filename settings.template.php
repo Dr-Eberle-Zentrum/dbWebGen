@@ -36,6 +36,10 @@
 			In MODE_LIST, column width is determined by cell content and set using CSS min-width. Specify here the maximum min-width that should be assigned
 		- list_mincolwidth_pxperchar: int (optional) (default: 6)
 			When determining min-width columns in MODE_LIST, how many pixels should be calculated for each character
+		- custom_related_list_proc: string (optional)
+			Name of a plugin function to call for extending the "List Related" dropdown in MODE_VIEW. This list of related records uses the search function to produce a list of records in a foreign table referencing the current one-
+			Function parameters: $table_name (name of the current table), const &$table (table info - not to be modified), const &$pk_vals (hash with primary key values of currently viewed record), &$rel_list (current array of related list links).
+			$rel_list can be extended with hash arrays containing values for the following keys: table_name (name of the related table), field_name (name of the field to search in the related table), display_label (item label to display in the dropdown menu)
 	======================================================================================================== */	
 	$APP = array(				
 		'plugins' => array(),

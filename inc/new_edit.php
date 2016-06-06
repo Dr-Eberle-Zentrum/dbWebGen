@@ -13,7 +13,7 @@
 		
 		// get the unique form id (either from POST, or generate)
 		$form_id = isset($_POST['__form_id__']) ? $_POST['__form_id__'] : ($_POST['__form_id__'] = uniqid('__form_id__', true));
-		#debug_log("$form_id = " . arr_str($_SESSION[$form_id]));
+		#debug_log("$form_id = ", $_SESSION[$form_id]);
 		
 		if($_GET['mode'] == MODE_NEW) {
 			echo "<h1>New {$table['item_name']}</h1>\n";
@@ -53,7 +53,7 @@
 			
 			echo "<h1>$page_title</h1>\n";
 			
-			#debug_log("POST = " . arr_str($_POST));
+			#debug_log("POST = ", $_POST);
 			if(!isset($_POST['__item_id__'])) { // if not already posted (with errors obviously), then get from DB
 				if(!build_post_array_for_edit_mode($table_name, $table, $edit_id, $parent_form))
 					return false;
@@ -157,7 +157,7 @@ EOT;
 				$edit_id[get_inline_fieldname_fk_other()]);
 			
 			if($arr_details !== false) {			
-				#debug_log('Retrieving from session var = ' . arr_str($arr_details));
+				#debug_log('Retrieving from session var = ', $arr_details);
 				// user has already edited these details. copy from session var
 				foreach($arr_details['details'] as $col => $val) {
 					$_POST[$col] = $val;
@@ -707,7 +707,7 @@ EOT;
 		if($stmt === FALSE)
 			return proc_error('SQL statement preparation failed.', $db);
 		
-		#debug_log($sql . "\nvalues := " . arr_str($values));
+		#debug_log($sql, "\nvalues := ", $values);
 		
 		if(FALSE === $stmt->execute($values))
 			return proc_error('SQL statement execution failed.', $db);
@@ -843,7 +843,7 @@ EOT;
 						$inline_details = get_inline_linkage_details($form_id, $field_name, $values[$i], $primary_keys);						
 						
 						if($inline_details !== false) {
-							#debug_log("Inline details found for $field_name / {$values[$i]}" . arr_str($inline_details));						
+							#debug_log("Inline details found for $field_name / {$values[$i]}", $inline_details);
 							$inline_params = array_merge($inline_details['params'], array());
 							
 							$pk_values = array(
@@ -854,7 +854,7 @@ EOT;
 							$sql_update = get_sql_update($linkage_info['table'], $TABLES[$linkage_info['table']],
 								$inline_details['columns'], $inline_params, $pk_values);
 								
-							#debug_log($sql_update . arr_str($inline_params));
+							#debug_log($sql_update, $inline_params);
 							// prep & exec
 							$details_upd = $db->prepare($sql_update);
 							if($details_upd === false)
@@ -924,7 +924,7 @@ EOT;
 					// no details available, continue with default values
 					$default_params[POS_FK_OTHER] = $value;
 
-					#debug_log("Default linkage: $default_sql". arr_str($default_params));
+					#debug_log("Default linkage: $default_sql", $default_params);
 					if($default_stmt->execute($default_params) === false)
 						proc_info("Record was stored, but could not set related record $value for '$field_name'", $db);
 				}
@@ -935,7 +935,7 @@ EOT;
 					$sql_insert = get_sql_insert($field_info['linkage']['table'], $TABLES[$field_info['linkage']['table']],
 						$inline_details['columns']);
 						
-					#debug_log("Inline details for $field, linked item $value := " . arr_str($inline_details) . "\n   SQL: $sql_insert");
+					#debug_log("Inline details for $field, linked item $value := ", $inline_details, "\n   SQL: $sql_insert");
 					
 					// execute the SQL					
 					$details_stmt = $db->prepare($sql_insert);

@@ -94,6 +94,9 @@
 			}
 		}
 		
+		if(isset($APP['custom_related_list_proc']) && function_exists($APP['custom_related_list_proc']))
+			$APP['custom_related_list_proc']($table_name, $table, $pk_vals, $rel_list);
+		
 		if(count($rel_list) > 0) {
 			$addl_data .= "<div class='btn-group'><button type='button' class='btn btn-default dropdown-toggle ' data-toggle='dropdown'><span class='glyphicon glyphicon-link'></span> List Related <span class='caret'></span></button><ul class='dropdown-menu' role='menu'>\n";
 			foreach($rel_list as $rel) {				

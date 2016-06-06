@@ -16,7 +16,7 @@
 		// collapsible
 		echo '<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#main-navbar"><span class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>';			
 			
-		echo'<a class="navbar-brand" href="?">' . $APP['title'] . '</a></div>';
+		echo '<a class="navbar-brand" href="?">' . $APP['title'] . '</a></div>';
 
 		if(is_logged_in()) { 
 			build_main_menu($menu); 

@@ -13,8 +13,7 @@
 	require_once 'settings.php';
 	require_once ENGINE_PATH . 'inc/helper.php';
 	require_once ENGINE_PATH . 'inc/container.php';
-	require_once ENGINE_PATH . 'inc/login.php';
-	require_once ENGINE_PATH . 'inc/func.php';
+	require_once ENGINE_PATH . 'inc/login.php';	
 	
 	session_init();
 	
@@ -36,6 +35,7 @@
 			exit;
 			
 		case MODE_FUNC:
+			require_once ENGINE_PATH . 'inc/func.php';
 			process_func();
 			exit;
 	}
