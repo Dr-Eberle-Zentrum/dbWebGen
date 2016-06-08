@@ -112,6 +112,8 @@
 		- initializer_proc: string (optional)
 			Name of a function called at the very beginnging of processing. The function is called only when there is a logged in user.
 			No arguments. NOTE: in some cases this function is NOT allowed to write anything to the output buffer!
+		- allow_change_password: bool (optional) (default: true)
+			Whether or not to allow each user to change their password
 	======================================================================================================== */
 	$LOGIN = array(
 		'users_table' => 'users',
@@ -120,6 +122,7 @@
 		'password_field' => 'password',
 		'name_field' => 'name',
 		'password_hash_func' => 'md5',
+		'allow_change_password' => true,
 		'form' => array('username' => 'Username', 'password' => 'Password'),
 	);
 	

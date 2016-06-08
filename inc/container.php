@@ -37,8 +37,14 @@
 			}
 			echo '</ul>'; 
 	
+			$user_details_href = '?' . http_build_query(array(
+				'table' => $LOGIN['users_table'],
+				'mode' => MODE_VIEW,
+				$LOGIN['primary_key'] =>  $_SESSION['user_id']
+			));
+			
 			echo '<ul class="nav navbar-nav navbar-right">'.
-				'<li><a name=""><span class="glyphicon glyphicon-user"></span> '. 
+				'<li><a name="" href="'. $user_details_href .'"><span class="glyphicon glyphicon-user"></span> '. 
 				(isset($LOGIN['name_field']) ? $_SESSION['user_data'][$LOGIN['name_field']] : '') . 
 				'</a></li>'.
 				'<li><a href="#" id="logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li></ul>';

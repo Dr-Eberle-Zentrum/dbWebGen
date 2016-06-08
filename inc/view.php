@@ -13,7 +13,7 @@
 			return proc_error('Invalid table name or table not configured.');
 		
 		$table = $TABLES[$table_name];
-		if(!is_allowed($table, $_GET['mode']))
+		if(!is_allowed($table, $_GET['mode']) && !is_own_user_record(true))
 			return proc_error('You are not allowed to perform this action.');
 		
 		$fields = $table['fields'];
@@ -60,7 +60,7 @@
 			$addl_data .= "</ul></div>";
 		}
 		
-		if(is_allowed($table, MODE_EDIT))
+		if(is_allowed($table, MODE_EDIT) || is_own_user_record(true))
 			$addl_data .= "<a title='".html("Edit This {$table['item_name']}")."' href='". build_get_params(array('mode' => MODE_EDIT)) ."' class='btn btn-default '><span class='glyphicon glyphicon-edit'></span> Edit</a>";
 		
 		if(is_allowed($table, MODE_DELETE))

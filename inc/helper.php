@@ -46,6 +46,13 @@
 	//------------------------------------------------------------------------------------------
 		return isset($_GET['popup']);
 	}
+	
+	//------------------------------------------------------------------------------------------
+	function is_password_change_allowed() { // default: true
+	//------------------------------------------------------------------------------------------
+		global $LOGIN;
+		return !isset($LOGIN['allow_change_password']) || $LOGIN['allow_change_password'] === true;
+	}
 		
 	//------------------------------------------------------------------------------------------
 	function first($a) {
@@ -656,6 +663,18 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
+	function is_own_user_record(/* bool */ $check_if_password_change_allowed = true) {
+	//------------------------------------------------------------------------------------------
+		global $LOGIN;
+		
+		return is_logged_in()
+			&& (!$check_if_password_change_allowed || ($check_if_password_change_allowed && is_password_change_allowed()))
+			&& $_GET['table'] === $LOGIN['users_table']
+			&& isset($_GET[$LOGIN['primary_key']])
+			&& $_GET[$LOGIN['primary_key']] == strval($_SESSION['user_id']);
+	}
+	
+	//------------------------------------------------------------------------------------------
 	function proc_error($txt, $db = null, $clear_msg_buffer = false) {
 	//------------------------------------------------------------------------------------------
 		if($clear_msg_buffer)
@@ -669,7 +688,10 @@
 			$msg .= "</ul>\n";
 		}
 		$msg .= "</div>\n";
-		$_SESSION['msg'][] = $msg;
+		$_SESSION['msg'][] = $msg;		
+		
+		#debug_log(debug_backtrace());
+		
 		return false;
 	}
 	

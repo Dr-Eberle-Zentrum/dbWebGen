@@ -3,12 +3,13 @@
 	function render_form() {
 	//------------------------------------------------------------------------------------------
 		global $TABLES;
+		
 		$table_name = $_GET['table'];
 		if(!isset($TABLES[$table_name]))
 			return proc_error('Invalid table name or table not configured.');
 		$table = $TABLES[$table_name];
 		
-		if(!is_allowed($table, $_GET['mode']))
+		if(!is_allowed($table, $_GET['mode']) && !is_own_user_record(true))
 			return proc_error('You are not allowed to perform this action.');
 		
 		// get the unique form id (either from POST, or generate)
@@ -260,13 +261,18 @@ EOT;
 	function render_control($form_id, $field_name, $field, $focus, $prefilled) {
 	//------------------------------------------------------------------------------------------	
 		global $TABLES;
+		global $LOGIN;
 		$table = $TABLES[$_GET['table']];
 		
 		$is_required = isset($field['required']) && $field['required'] === true;
 		$required_attr = ''; ($is_required ? " required='true' " : '');		
 		$width = 7; //($is_required ? 9 : 8); // spare place for NULL checkbox		
 		$autofocus = $focus? ' autofocus ' : '';	
-		$disabled = $prefilled? " readonly " : '';		
+		
+		if(!is_allowed($table, $_GET['mode']) && is_own_user_record(true))
+			$disabled = ($field_name != $LOGIN['password_field'] ? ' readonly disabled ' : '');
+		else
+			$disabled = $prefilled? ' readonly disabled ' : '';
 		
 		switch($field['type']) {
 			case T_UPLOAD:
@@ -590,7 +596,7 @@ EOT;
 		
 		$table = $TABLES[$table_name];
 		
-		if(!is_allowed($table, $_GET['mode']))
+		if(!is_allowed($table, $_GET['mode']) && !is_own_user_record(true))
 			return proc_error('You are not allowed to perform this action.');
 		
 		$columns = array();
@@ -598,8 +604,30 @@ EOT;
 		$values = array();
 		$arr_inline_details = array();
 		
+		// store the name of the password field in the users table if an underpriviledged user is editing their own user record
+		$password_only_field = ($_GET['mode'] == MODE_EDIT 
+			&& !is_allowed($table, $_GET['mode']) 
+			&& is_own_user_record(true) 
+			? $LOGIN['password_field'] : null);
+		
 		foreach($table['fields'] as $field_name => $field_info) {
-			if(is_inline() && isset($_POST[$field_name])) // we wanna store the raw stuff for the form
+			// we process non-editable fields in any case
+			if(!is_field_editable($field_info)) {
+				if(isset($field_info['default'])) {
+					$columns[] = $field_name;	
+					$values[] = get_default($field_info['default']);					
+				}
+				
+				// no further processing
+				continue;
+			}
+			
+			// we ignore all fields except the password field, if an underpriviledged user is changing their own user record
+			if($password_only_field !== null && $password_only_field !== $field_name)				
+				continue;
+			
+			// we wanna store the raw stuff for the form
+			if(is_inline() && isset($_POST[$field_name])) 
 				$arr_inline_details[$field_name] = $_POST[$field_name];
 			
 			if($field_info['type'] == T_UPLOAD) {				
@@ -615,17 +643,6 @@ EOT;
 					$values[] = $_FILES[$field_name]['name'];
 				}
 				
-				continue;
-			}
-			
-			if(!is_field_editable($field_info)) {
-				if(isset($field_info['default'])) {
-					$columns[] = $field_name;	
-					$values[] = get_default($field_info['default']);
-					continue;
-				}
-				
-				// otherwise continue anyway
 				continue;
 			}
 			
