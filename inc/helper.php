@@ -449,7 +449,14 @@
 		else
 			$ret = htmlspecialchars($text, ENT_COMPAT | ENT_HTML401);
 		
-		return $html_linebreaks ? nl2br($ret) : $ret;
+		if($html_linebreaks)
+			$ret = nl2br($ret);
+		
+		global $APP;
+		if(isset($APP['preprocess_html_func']))
+			$ret = $APP['preprocess_html_func']($ret);
+		
+		return $ret;
 	}
 	
 	//------------------------------------------------------------------------------------------
