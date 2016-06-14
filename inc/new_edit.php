@@ -287,7 +287,8 @@ EOT;
 			
 			case T_TEXT_LINE:
 				$width = get_input_size_class($field, $width);
-				echo "<div class='col-sm-$width'><input $disabled $required_attr type='text' class='form-control' id='{$field_name}' name='{$field_name}' maxlength='{$field['len']}' value=\"".html_val($field_name)."\" $autofocus /></div>\n";
+				$maxlen = isset($field['len']) ? "maxlength='{$field['len']}'" : '';
+				echo "<div class='col-sm-$width'><input $disabled $required_attr type='text' class='form-control' id='{$field_name}' name='{$field_name}' $maxlen value=\"".html_val($field_name)."\" $autofocus /></div>\n";
 				if(!$is_required) render_setnull($field_name, $field);
 				break;
 				
