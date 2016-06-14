@@ -43,6 +43,8 @@
 		- preprocess_html_func: string (optional)
 			Name of a function in a plugin to preprocesses any HTML output before it is written to the output buffer.
 			Argument: $html (string with current text), Return: preprocessed string
+		- additional_callable_plugin_functions: array (optional)
+			List of function names that are allowed to be called via MODE_PLUGIN.
 	======================================================================================================== */	
 	$APP = array(				
 		'plugins' => array(),

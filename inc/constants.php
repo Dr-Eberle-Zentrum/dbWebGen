@@ -48,6 +48,12 @@
 	define('SEARCH_PARAM_OPTION', 'match');
 	define('SEARCH_PARAM_LOOKUP', 'lookup');
 	
+	// params for MODE_PLUGIN
+	define('PLUGIN_PARAM_FUNC', 'func');
+	define('PLUGIN_PARAM_NAVBAR', 'navbar');
+	define('PLUGIN_NAVBAR_ON', 'on');
+	define('PLUGIN_NAVBAR_OFF', 'off');
+	
 	// dynamic runtime replacements for default field values
 	define('REPLACE_DYNAMIC_SESSION_USER', '%SESSION_USER%');
 	
@@ -68,4 +74,5 @@
 	define('MODE_CREATE_DONE', 'create_done');
 	define('MODE_LOGOUT', 'logout');	
 	define('MODE_FUNC', 'func');
+	define('MODE_PLUGIN', 'plugin'); // used to build the main page content in an external function
 ?>

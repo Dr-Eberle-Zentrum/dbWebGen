@@ -5,6 +5,12 @@
 		global $APP;
 		global $LOGIN;
 		
+		if(isset($_GET['mode']) 
+			&& $_GET['mode'] == MODE_PLUGIN 
+			&& isset($_GET[PLUGIN_PARAM_NAVBAR]) 
+			&& $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_OFF)
+			return;
+		
 		if(is_popup() || is_inline())
 			return;
 		
@@ -94,7 +100,7 @@
 				}
 			}
 			
-			else if(!isset($_GET['table'])) {
+			else if(!isset($_GET['table']) && (!isset($_GET['mode']) || $_GET['mode'] !== MODE_PLUGIN)) {
 				if(isset($APP['render_main_page_proc']))
 					$APP['render_main_page_proc']();
 				else
@@ -126,6 +132,19 @@
 					case MODE_VIEW:
 						require_once ENGINE_PATH . 'inc/view.php';
 						render_view();
+						break;
+						
+					case MODE_PLUGIN:
+						if(!isset($APP['additional_callable_plugin_functions']))
+							return proc_error('There are no registered plugin functions to call.');
+						
+						if(!isset($_GET[PLUGIN_PARAM_FUNC]) 
+							|| !in_array($_GET[PLUGIN_PARAM_FUNC], $APP['additional_callable_plugin_functions'])
+							|| !function_exists($_GET[PLUGIN_PARAM_FUNC]))
+							return proc_error('Invalid function specified.');
+						
+						// call the rendering function
+						$_GET[PLUGIN_PARAM_FUNC]();
 						break;
 						
 					default:

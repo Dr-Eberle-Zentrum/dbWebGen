@@ -155,3 +155,9 @@ form.bg-gray {
 	font-size: 125%;
 	line-height: 1em;
 }
+
+body,html{height:100%}
+
+.fill-height {
+	width: 100%;	
+}

@@ -135,8 +135,32 @@ $(window).load(function() {
 	$('button[data-create-url]').click(function() {		
 		window.open($(this).data('create-url'), $(this).data('create-title'),
 			'scrollbars=1,location=0,menubar=0,resizable=1,width=400,height=600');
-	});		
+	});	
+
+	//
+	// adjust fill height div
+	$(window).resize(adjust_div_full_height);	
 });
+
+//
+// adjust fill-height div to maximum height
+//
+function adjust_div_full_height() {
+	var div = $('div.fill-height');
+	if(!div)
+		return;
+	
+	var height = 0;
+	var body = window.document.body;
+	if (window.innerHeight) {
+		height = window.innerHeight;
+	} else if (body.parentElement.clientHeight) {
+		height = body.parentElement.clientHeight;
+	} else if (body && body.clientHeight) {
+		height = body.clientHeight;
+	}		
+	div.css('height', (height - div.offset().top) + "px");
+}
 
 //
 // "Edit Details" event handler for T_LOOKUP / MULTIPLE
