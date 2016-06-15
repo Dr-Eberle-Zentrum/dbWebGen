@@ -161,3 +161,11 @@ body,html{height:100%}
 .fill-height {
 	width: 100%;	
 }
+
+#network-loading-progress {
+	display: none;
+	position: absolute;
+	z-index: 10000;
+	width: 100%;
+	text-align: center;	
+}
