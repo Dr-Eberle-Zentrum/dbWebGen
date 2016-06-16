@@ -147,7 +147,7 @@ $(window).load(function() {
 //
 function adjust_div_full_height() {
 	var div = $('div.fill-height');
-	if(!div)
+	if(div.length === 0)
 		return;
 	
 	var height = 0;
