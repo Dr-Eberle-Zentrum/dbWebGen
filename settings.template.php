@@ -9,7 +9,7 @@
 		- page_icon: string (optional)
 			Specify a path to an web page icon (aka 'favicon').
 		- plugins: array (optional)
-			Custom PHP files that will be included using require_once(). These plugins can contain functions that can be referenced anywhere in this file where external procedures can be provided (e.g. $LOGIN/initializer_proc) 			
+			Custom PHP files that will be included using require_once(). These plugins can contain functions that can be referenced anywhere in this file where external procedures can be provided (e.g. $LOGIN/initializer_proc). The index of the array can be any key that can be used to access the actual file name of the plugin from within the code.		
 		- page_size: int
 			Pagination setting for MODE_LIST: max. number of items per page		
 		- pages_prevnext: int
@@ -44,7 +44,7 @@
 			Name of a function in a plugin to preprocesses any HTML output before it is written to the output buffer.
 			Argument: $html (string with current text), Return: preprocessed string
 		- additional_callable_plugin_functions: array (optional)
-			List of function names that are allowed to be called via MODE_PLUGIN.
+			List of function names that are allowed to be called via MODE_PLUGIN.		
 	======================================================================================================== */	
 	$APP = array(				
 		'plugins' => array(),

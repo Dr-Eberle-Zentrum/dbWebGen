@@ -3,6 +3,7 @@
 	function process_func() {
 	//------------------------------------------------------------------------------------------
 		global $TABLES;
+		global $APP;
 		
 		if(!isset($_GET['target']))
 			return proc_error('Invalid function call');
@@ -29,6 +30,10 @@
 				return;
 		}
 		
-		return proc_error('Invalid function call');
+		if(!isset($APP['additional_callable_plugin_functions']) || !in_array($_GET['target'], $APP['additional_callable_plugin_functions']))
+			return proc_error('Invalid function call');
+		
+		// call func.
+		$_GET['target']();
 	}
 ?>

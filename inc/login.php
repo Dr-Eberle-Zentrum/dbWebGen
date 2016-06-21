@@ -60,29 +60,6 @@ END;
 	}
 	
 	//------------------------------------------------------------------------------------------
-	function session_init() {
-	// NOTE: there must not be any outputs to the output buffer in this method
-	//------------------------------------------------------------------------------------------
-		global $LOGIN;
-		global $APP;		
-		
-		if(isset($APP['timezone']))
-			date_default_timezone_set($APP['timezone']);
-		
-		if(isset($APP['plugins']))
-			foreach($APP['plugins'] as $plugin)
-				require_once $plugin;
-		
-		session_start();
-		
-		if(!isset($_SESSION['msg']))
-			$_SESSION['msg'] = array();
-		
-		if(isset($LOGIN['initializer_proc']) && $LOGIN['initializer_proc'] != '')
-			call_user_func($LOGIN['initializer_proc']); // allow the app to do some initialization
-	}
-	
-	//------------------------------------------------------------------------------------------
 	function is_logged_in() {
 	//------------------------------------------------------------------------------------------
 		global $LOGIN;

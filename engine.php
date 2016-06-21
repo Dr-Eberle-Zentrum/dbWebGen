@@ -15,7 +15,23 @@
 	require_once ENGINE_PATH . 'inc/container.php';
 	require_once ENGINE_PATH . 'inc/login.php';	
 	
-	session_init();
+	// initialize session and plugins and stuff 
+	{
+		if(isset($APP['timezone']))
+			date_default_timezone_set($APP['timezone']);
+		
+		if(isset($APP['plugins']))
+			foreach(array_values($APP['plugins']) as $plugin)
+				require_once $plugin; // we want to load plugins in global scope
+		
+		session_start();
+		
+		if(!isset($_SESSION['msg']))
+			$_SESSION['msg'] = array();
+		
+		if(isset($LOGIN['initializer_proc']) && $LOGIN['initializer_proc'] != '')
+			call_user_func($LOGIN['initializer_proc']); // allow the app to do some initialization
+	}
 	
 	// any special processing?
 	switch(safehash($_GET, 'mode', '')) {
