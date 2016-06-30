@@ -100,7 +100,11 @@
 				}
 			}
 			
-			else if(!isset($_GET['table']) && (!isset($_GET['mode']) || $_GET['mode'] !== MODE_PLUGIN)) {
+			if(!isset($_GET['mode']))
+				$_GET['mode'] = MODE_LIST;
+			
+			if(!isset($_GET['table']) && in_array($_GET['mode'], array(MODE_LIST, MODE_NEW, MODE_EDIT, MODE_VIEW))) {
+				// for these modes 'table' param must be there
 				if(isset($APP['render_main_page_proc']))
 					$APP['render_main_page_proc']();
 				else
@@ -108,9 +112,6 @@
 			}
 				
 			else {
-				if(!isset($_GET['mode']))
-					$_GET['mode'] = MODE_LIST;		
-				
 				switch($_GET['mode']) {
 					case MODE_NEW:
 						require_once ENGINE_PATH . 'inc/new_edit.php';
@@ -132,6 +133,11 @@
 					case MODE_VIEW:
 						require_once ENGINE_PATH . 'inc/view.php';
 						render_view();
+						break;
+						
+					case MODE_QUERY:
+						require_once ENGINE_PATH . 'inc/query.php';						
+						(new QueryPage)->render();
 						break;
 						
 					case MODE_PLUGIN:

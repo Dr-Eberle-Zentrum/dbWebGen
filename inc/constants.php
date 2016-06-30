@@ -68,6 +68,7 @@
 	define('MODE_EDIT', 'edit');
 	define('MODE_LIST', 'list');
 	define('MODE_VIEW', 'view');
+	define('MODE_QUERY', 'query');
 	
 	// pseudo modes
 	define('MODE_DELETE', 'delete');

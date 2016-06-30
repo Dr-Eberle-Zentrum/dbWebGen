@@ -14,6 +14,7 @@
 	require_once ENGINE_PATH . 'inc/helper.php';
 	require_once ENGINE_PATH . 'inc/container.php';
 	require_once ENGINE_PATH . 'inc/login.php';	
+	require_once ENGINE_PATH . 'inc/page.php';
 	
 	// initialize session and plugins and stuff 
 	{
