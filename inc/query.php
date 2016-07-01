@@ -1,7 +1,10 @@
 <?
 	/*
+	BAR
 	select lastname_translit "Persons by Family Name", count(*)::int "Number of Persons", max(length(forename_translit))::int "Longest Name" from persons group by 1 order by 2 desc limit 10
 	
+	SANKEY
+	select (select name from users u where u.id=h.edit_user) "User", (select signature from documents d where d.id = h.id) "Document", count(*)::int "Edits" from documents_history h group by id, edit_user order by 3 desc limit 50	
 	*/
 	
 	//==========================================================================================
@@ -15,18 +18,23 @@
 		//--------------------------------------------------------------------------------------
 			parent::__construct();
 			
-			$this->sql = $this->get_post('sql', '');
+			$this->sql = trim($this->get_post('sql', ''));
 		}
 	
 		//--------------------------------------------------------------------------------------
 		public function render() {
 		//--------------------------------------------------------------------------------------
+			if(mb_substr(mb_strtolower($this->sql), 0, 6) !== 'select') {
+				proc_error('Invalid SQL query. Only SELECT statements are allowed!');
+				$this->sql = null;
+			}
+			
 			if($this->has_post_values())
 				$this->add_script();
 
 			$this->build_query_part();
 			$this->build_settings_part();
-			$this->build_visualization_part();			
+			$this->build_visualization_part();
 			$this->layout();
 		}
 		
@@ -61,6 +69,14 @@ HTML;
 		}
 		
 		//--------------------------------------------------------------------------------------
+		protected function get_sankey_settings() { 
+		//--------------------------------------------------------------------------------------
+			return <<<HTML
+				<p>A sankey diagram is a visualization used to depict a flow from one set of values to another. The things being connected are called nodes and the connections are called links. Sankeys are best used when you want to show a many-to-many mapping between two domains (e.g., universities and majors) or multiple paths through a set of stages (for instance, Google Analytics uses sankeys to show how traffic flows from pages to other pages on your web site).</p>
+HTML;
+		}
+		
+		//--------------------------------------------------------------------------------------
 		protected function get_barchart_settings() { 
 		//--------------------------------------------------------------------------------------
 			return <<<HTML
@@ -88,12 +104,14 @@ HTML;
 							<label class="control-label" for="viz-type">Visualization</label>
 							{$this->render_select('viz-type', 'table', array(
 								'table' => 'Table',
-								'barchart' => 'Bar Chart'
+								'barchart' => 'Bar Chart',
+								'sankey' => 'Sankey Chart'
 							))}																
 						</div>						
 						<div class='viz-options form-group'>
 							<div id='viz-option-table'>{$this->get_table_settings()}</div>
 							<div id='viz-option-barchart'>{$this->get_barchart_settings()}</div>
+							<div id='viz-option-sankey'>{$this->get_sankey_settings()}</div>
 						</div>
 					</div>					
 				</div>
@@ -109,7 +127,7 @@ STR;
 		//--------------------------------------------------------------------------------------
 		protected function build_visualization_part() {
 		//--------------------------------------------------------------------------------------
-			$this->viz_ui = '<div class="bg-gray col-sm-7" id="chart_div" style="min-height:400px;">Query results will appear here.</div>';
+			$this->viz_ui = '<label for="chart_div">Result Visualization</label><div class="col-sm-7" id="chart_div">Query results will appear here.</div>';
 			
 			if(!$this->sql)
 				return;
@@ -122,46 +140,68 @@ STR;
 			if($stmt->execute() === false)
 				return proc_error('Failed to execute statement', $db);
 			
-			echo <<<HTML
+			$this->viz_ui .= <<<HTML
 			<script>
-				google.charts.load('current', {packages: ['corechart', 'bar']});
-				google.charts.setOnLoadCallback(drawTitleSubtitle);
+				google.charts.load('current', {packages: [ {$this->get_chart_packages()} ]});
+				google.charts.setOnLoadCallback(draw_chart);				
 
-				function drawTitleSubtitle() {
-					  var data = google.visualization.arrayToDataTable([
+				function draw_chart() {
+					console.log('draw_chart');
+					var data = google.visualization.arrayToDataTable([
 HTML;
 
 			$first = true;
 			while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 					if($first) {
-						echo json_encode(array_keys($row)) . ",\n";
+						$this->viz_ui .= json_encode(array_keys($row)) . ",\n";
 						$first = false;
 					}
-					echo json_encode(array_values($row)) . ",\n";
+					$this->viz_ui .= json_encode(array_values($row)) . ",\n";
 			}
 
-			echo <<<HTML
+			$this->viz_ui .= <<<HTML
 					]);
-					var options = {
-						chart: {
-							title: '',
-							subtitle: '',
-							chartArea: { left: '5px', right: '12px' }
-						},
-						hAxis: {
-							title: 'Total Population',
-							minValue: 0,
-						},
-						vAxis: {
-							title: 'City'
-						},
-						bars: 'horizontal'
-					};
-					var material = new google.charts.Bar(document.getElementById('chart_div'));
-					material.draw(data, options);
-			}
+					var options = {$this->get_chart_options()};		
+					options['width'] = $('#chart_div').width() - 15;
+					var chart = new {$this->get_chart_classname()}(document.getElementById('chart_div'));					
+					chart.draw(data, options);
+				}		
+				
+				$('#chart_div').deferredResize(draw_chart, 500);
 			</script>
 HTML;
+		}
+		
+		//--------------------------------------------------------------------------------------
+		public function get_chart_options() {
+		//--------------------------------------------------------------------------------------
+			$options = array();
+			switch($this->get_post('viz-type')) {
+				case 'barchart': 
+					$options['bars'] = $this->get_post('barchart-direct');
+					break;
+			}			
+			return json_encode($options);
+		}
+		
+		//--------------------------------------------------------------------------------------
+		public function get_chart_classname() {
+		//--------------------------------------------------------------------------------------
+			switch($this->get_post('viz-type')) {
+				case 'table': return 'google.visualization.Table';
+				case 'barchart': return 'google.charts.Bar';
+				case 'sankey': return 'google.visualization.Sankey';
+			}
+		}
+		
+		//--------------------------------------------------------------------------------------
+		public function get_chart_packages() {
+		//--------------------------------------------------------------------------------------
+			switch($this->get_post('viz-type')) {
+				case 'table': return "'table'";
+				case 'barchart': return "'bar'";
+				case 'sankey': return "'sankey'";
+			}
 		}
 		
 		//--------------------------------------------------------------------------------------
