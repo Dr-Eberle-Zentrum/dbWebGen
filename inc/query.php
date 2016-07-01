@@ -4,14 +4,24 @@
 	select lastname_translit "Persons by Family Name", count(*)::int "Number of Persons", max(length(forename_translit))::int "Longest Name" from persons group by 1 order by 2 desc limit 10
 	
 	SANKEY
-	select (select name from users u where u.id=h.edit_user) "User", (select signature from documents d where d.id = h.id) "Document", count(*)::int "Edits" from documents_history h group by id, edit_user order by 3 desc limit 50	
+	select (select name from users u where u.id=h.edit_user) "User", (select signature from documents d where d.id = h.id) "Document", count(*)::int "Edits" from documents_history h group by id, edit_user order by 3 desc limit 50
 	*/
+	
+	require_once 'chart.base.php';
+	foreach(array_keys(QueryPage::$chart_types) as $type)
+		require_once "chart.$type.php";
 	
 	//==========================================================================================
 	class QueryPage extends dbWebGenPage {
 	//==========================================================================================
-		protected $sql;
+		protected $sql, $view;
 		protected $query_ui, $settings_ui, $viz_ui;
+		public static $chart_types = array(
+			'table' => 'Table', 
+			'bar' => 'Bar Chart',
+			'sankey' => 'Sankey Chart',
+			'candlestick' => 'Candlestick Chart'
+		);
 	
 		//--------------------------------------------------------------------------------------
 		public function __construct() {
@@ -19,12 +29,13 @@
 			parent::__construct();
 			
 			$this->sql = trim($this->get_post('sql', ''));
+			$this->view = $this->get_urlparam(QUERY_PARAM_VIEW, QUERY_VIEW_AUTO);
 		}
 	
 		//--------------------------------------------------------------------------------------
 		public function render() {
 		//--------------------------------------------------------------------------------------
-			if(mb_substr(mb_strtolower($this->sql), 0, 6) !== 'select') {
+			if($this->has_post_values() && mb_substr(mb_strtolower($this->sql), 0, 6) !== 'select') {
 				proc_error('Invalid SQL query. Only SELECT statements are allowed!');
 				$this->sql = null;
 			}
@@ -61,39 +72,13 @@ QUI;
 		}
 		
 		//--------------------------------------------------------------------------------------
-		protected function get_table_settings() { 
-		//--------------------------------------------------------------------------------------
-			return <<<HTML
-				<p>The query result will be visualized as a table.</p>
-HTML;
-		}
-		
-		//--------------------------------------------------------------------------------------
-		protected function get_sankey_settings() { 
-		//--------------------------------------------------------------------------------------
-			return <<<HTML
-				<p>A sankey diagram is a visualization used to depict a flow from one set of values to another. The things being connected are called nodes and the connections are called links. Sankeys are best used when you want to show a many-to-many mapping between two domains (e.g., universities and majors) or multiple paths through a set of stages (for instance, Google Analytics uses sankeys to show how traffic flows from pages to other pages on your web site).</p>
-HTML;
-		}
-		
-		//--------------------------------------------------------------------------------------
-		protected function get_barchart_settings() { 
-		//--------------------------------------------------------------------------------------
-			return <<<HTML
-			<p>Put labels in the first column, followed by one column per data series.</p>
-			<div class="form-group">
-				<label class="control-label">Bar Direction</label>
-				<div>
-					<label class="radio-inline">{$this->render_radio('barchart-direct', 'horizontal')}Horizontal</label>
-					<label class="radio-inline">{$this->render_radio('barchart-direct', 'vertical',true)}Vertical</label>
-				</div>
-			</div>
-HTML;
-		}
-		
-		//--------------------------------------------------------------------------------------
 		protected function build_settings_part() {
 		//--------------------------------------------------------------------------------------
+			$select = $this->render_select('viz-type', first(array_keys(QueryPage::$chart_types)), QueryPage::$chart_types);
+			$settings = '';
+			foreach(QueryPage::$chart_types as $type => $name)
+				$settings .= "<div id='viz-option-$type'>" . ChartFactory::get($type, $this)->settings_html() . "</div>\n";
+			
 			$this->settings_ui = <<<STR
 				<div class="panel panel-default">
 					<div class="panel-heading">
@@ -102,16 +87,10 @@ HTML;
 					<div class="panel-body">						
 						<div class="form-group">
 							<label class="control-label" for="viz-type">Visualization</label>
-							{$this->render_select('viz-type', 'table', array(
-								'table' => 'Table',
-								'barchart' => 'Bar Chart',
-								'sankey' => 'Sankey Chart'
-							))}																
+							{$select}
 						</div>						
 						<div class='viz-options form-group'>
-							<div id='viz-option-table'>{$this->get_table_settings()}</div>
-							<div id='viz-option-barchart'>{$this->get_barchart_settings()}</div>
-							<div id='viz-option-sankey'>{$this->get_sankey_settings()}</div>
+							{$settings}							
 						</div>
 					</div>					
 				</div>
@@ -127,7 +106,15 @@ STR;
 		//--------------------------------------------------------------------------------------
 		protected function build_visualization_part() {
 		//--------------------------------------------------------------------------------------
-			$this->viz_ui = '<label for="chart_div">Result Visualization</label><div class="col-sm-7" id="chart_div">Query results will appear here.</div>';
+			$this->viz_ui = '';
+			
+			$size = $this->view === QUERY_VIEW_RESULT ? 12 : 7;
+			$css_class = $this->view === QUERY_VIEW_RESULT ? 'result-full fill-height' : 'result-column';
+			
+			if($this->view != QUERY_VIEW_RESULT)
+				$this->viz_ui .= "<label for='chart_div'>Result Visualization</label>\n";
+			
+			$this->viz_ui .= "<div class='col-sm-$size $css_class' id='chart_div'></div>\n";
 			
 			if(!$this->sql)
 				return;
@@ -140,9 +127,11 @@ STR;
 			if($stmt->execute() === false)
 				return proc_error('Failed to execute statement', $db);
 			
+			$chart = ChartFactory::get($this->get_post('viz-type'), $this);
+			
 			$this->viz_ui .= <<<HTML
 			<script>
-				google.charts.load('current', {packages: [ {$this->get_chart_packages()} ]});
+				google.charts.load('current', { packages: {$chart->packages_js()} } );
 				google.charts.setOnLoadCallback(draw_chart);				
 
 				function draw_chart() {
@@ -161,9 +150,10 @@ HTML;
 
 			$this->viz_ui .= <<<HTML
 					]);
-					var options = {$this->get_chart_options()};		
-					options['width'] = $('#chart_div').width() - 15;
-					var chart = new {$this->get_chart_classname()}(document.getElementById('chart_div'));					
+					var options = {$chart->options_js()};		
+					options.width = $('#chart_div').width() - 15;
+					var chart = new {$chart->class_name()}(document.getElementById('chart_div'));
+					{$chart->before_draw_js()}
 					chart.draw(data, options);
 				}		
 				
@@ -173,49 +163,20 @@ HTML;
 		}
 		
 		//--------------------------------------------------------------------------------------
-		public function get_chart_options() {
-		//--------------------------------------------------------------------------------------
-			$options = array();
-			switch($this->get_post('viz-type')) {
-				case 'barchart': 
-					$options['bars'] = $this->get_post('barchart-direct');
-					break;
-			}			
-			return json_encode($options);
-		}
-		
-		//--------------------------------------------------------------------------------------
-		public function get_chart_classname() {
-		//--------------------------------------------------------------------------------------
-			switch($this->get_post('viz-type')) {
-				case 'table': return 'google.visualization.Table';
-				case 'barchart': return 'google.charts.Bar';
-				case 'sankey': return 'google.visualization.Sankey';
-			}
-		}
-		
-		//--------------------------------------------------------------------------------------
-		public function get_chart_packages() {
-		//--------------------------------------------------------------------------------------
-			switch($this->get_post('viz-type')) {
-				case 'table': return "'table'";
-				case 'barchart': return "'bar'";
-				case 'sankey': return "'sankey'";
-			}
-		}
-		
-		//--------------------------------------------------------------------------------------
 		public function layout() {
 		//--------------------------------------------------------------------------------------
-echo <<<HTML
+			if($this->view === QUERY_VIEW_AUTO) {
+		echo <<<HTML
 			<form class='' role='form' method='post' enctype='multipart/form-data'>
 				<div class='col-sm-5'>
 					<div>{$this->query_ui}</div>
 					<div>{$this->settings_ui}</div>
 				</div>			
 			</form>
-			{$this->viz_ui}
 HTML;
+			}
+			
+			echo $this->viz_ui;
 		}		
 	};	
 ?>

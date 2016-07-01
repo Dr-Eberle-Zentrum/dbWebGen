@@ -178,7 +178,7 @@ textarea#sql {
 	display: none;
 }
 
-#chart_div {
+#chart_div.result-column {
 	/*background-color: rgb(248,248,248);*/
 	border: 1px solid rgb(218,218,218);
 	border-radius: 5px;
@@ -188,4 +188,16 @@ textarea#sql {
 	overflow-y: auto;
 	min-height: 300px;
 	height: 750px;	
+}
+
+#chart_div.result-full {
+	/*background-color: rgb(248,248,248);*/
+	padding: 10px;	
+	overflow: auto;	
+}
+
+ul.columns {
+	margin-top: -10px;
+	list-style: none;
+	padding-left: 1em;
 }

@@ -54,6 +54,11 @@
 	define('PLUGIN_NAVBAR_ON', 'on');
 	define('PLUGIN_NAVBAR_OFF', 'off');
 	
+	// params for MODE_QUERY
+	define('QUERY_PARAM_VIEW', 'view');
+	define('QUERY_VIEW_AUTO', 'auto'); // default
+	define('QUERY_VIEW_RESULT', 'result'); // result only
+	
 	// dynamic runtime replacements for default field values
 	define('REPLACE_DYNAMIC_SESSION_USER', '%SESSION_USER%');
 	

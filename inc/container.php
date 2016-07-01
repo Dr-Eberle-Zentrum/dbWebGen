@@ -6,7 +6,7 @@
 		global $LOGIN;
 		
 		if(isset($_GET['mode']) 
-			&& $_GET['mode'] == MODE_PLUGIN 
+			&& !in_array($_GET['mode'], array(MODE_VIEW, MODE_EDIT, MODE_LIST, MODE_NEW)) 
 			&& isset($_GET[PLUGIN_PARAM_NAVBAR]) 
 			&& $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_OFF)
 			return;
