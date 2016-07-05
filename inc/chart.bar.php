@@ -2,6 +2,7 @@
 	//==========================================================================================
 	class dbWebGenChart_bar extends dbWebGenChart_Google {
 	//==========================================================================================
+		// select lastname_translit "Persons by Family Name", count(*)::int "Number of Persons", max(length(forename_translit))::int "Longest Name" from persons group by 1 order by 2 desc limit 10
 		
 		//--------------------------------------------------------------------------------------
 		public function settings_html() { 

@@ -1,12 +1,4 @@
 <?
-	/*
-	BAR
-	select lastname_translit "Persons by Family Name", count(*)::int "Number of Persons", max(length(forename_translit))::int "Longest Name" from persons group by 1 order by 2 desc limit 10
-	
-	SANKEY
-	select (select name from users u where u.id=h.edit_user) "User", (select signature from documents d where d.id = h.id) "Document", count(*)::int "Edits" from documents_history h group by id, edit_user order by 3 desc limit 50
-	*/
-	
 	require_once 'chart.base.php';
 	require_once 'chart.google.base.php';
 	foreach(array_keys(QueryPage::$chart_types) as $type)
@@ -23,8 +15,8 @@
 			'bar' => 'Bar Chart',
 			'candlestick' => 'Candlestick Chart',
 			'geo' => 'Geo Chart',
-			'sankey' => 'Sankey Chart',	
-			'leaflet' => 'Leaflet Map',		
+			'leaflet' => 'Leaflet Map',
+			'sankey' => 'Sankey Chart'
 		);
 	
 		//--------------------------------------------------------------------------------------

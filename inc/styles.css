@@ -202,6 +202,10 @@ ul.columns {
 	padding-left: 1em;
 }
 
+.leaflet-popup-content {
+	overflow: overlay;
+}
+
 .leaflet-popup-content > table {
 	border-collapse: separate;
     border-spacing: 2px;
@@ -214,4 +218,8 @@ ul.columns {
 .leaflet-popup-content > table th {
 	background-color: whitesmoke;
 	vertical-align: top;
+}
+
+.top-margin-zero {
+	margin-top: 0;
 }

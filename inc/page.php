@@ -53,6 +53,16 @@
 		}
 		
 		//--------------------------------------------------------------------------------------
+		public function render_checkbox($name, $value, $checked_default = false) {
+		//--------------------------------------------------------------------------------------			
+			$is_checked = (!$this->has_post_values() && $checked_default) 
+				|| $this->get_post($name) == $value;
+				
+			$checked_attr = $is_checked ? 'checked' : '';			
+			return "<input type='checkbox' value='$value' name='$name' $checked_attr>";
+		}
+		
+		//--------------------------------------------------------------------------------------
 		public function has_post_values() {
 		//--------------------------------------------------------------------------------------			
 			return count($_POST) > 0;

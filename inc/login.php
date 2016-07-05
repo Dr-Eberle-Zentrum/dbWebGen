@@ -94,6 +94,9 @@ END;
 		unset($_SESSION['user_id']);
 		unset($_SESSION['user_data']);
 		
+		session_unset();
+		session_destroy(); 
+		
 		return true;
 	}
 ?>

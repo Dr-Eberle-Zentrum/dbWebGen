@@ -29,6 +29,12 @@
 				require_once $plugin; // we want to load plugins in global scope
 		
 		session_start();
+		if(isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 3600)) {
+			session_unset();
+			session_destroy();
+			session_start();
+		}
+		$_SESSION['LAST_ACTIVITY'] = time();		
 		
 		if(!isset($_SESSION['msg']))
 			$_SESSION['msg'] = array();
