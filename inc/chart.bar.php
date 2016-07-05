@@ -1,18 +1,18 @@
 <?
 	//==========================================================================================
-	class dbWebGen_chart_bar extends dbWebGen_chart_base {
+	class dbWebGenChart_bar extends dbWebGenChart_Google {
 	//==========================================================================================
 		
 		//--------------------------------------------------------------------------------------
 		public function settings_html() { 
 		//--------------------------------------------------------------------------------------
 			return <<<HTML
-			<p>Put labels in the first column, followed by one column per data series.</p>
+			<p>Renders data as a bar chart. Put group labels in the 1st column, followed by one column per group listing the data (<a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/barchart#data-format">see details</a>).</p>
 			<div class="form-group">
 				<label class="control-label">Bar Direction</label>
 				<div>
-					<label class="radio-inline">{$this->page->render_radio('bar-direction', 'horizontal')}Horizontal</label>
-					<label class="radio-inline">{$this->page->render_radio('bar-direction', 'vertical', true)}Vertical</label>
+					<label class="radio-inline">{$this->page->render_radio('bar-direction', 'horizontal', true)}Horizontal</label>
+					<label class="radio-inline">{$this->page->render_radio('bar-direction', 'vertical')}Vertical</label>
 				</div>
 			</div>
 			<!-- STACKED DOES NOT WORK !<div class="form-group">

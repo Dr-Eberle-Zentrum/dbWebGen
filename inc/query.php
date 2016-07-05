@@ -8,6 +8,7 @@
 	*/
 	
 	require_once 'chart.base.php';
+	require_once 'chart.google.base.php';
 	foreach(array_keys(QueryPage::$chart_types) as $type)
 		require_once "chart.$type.php";
 	
@@ -15,12 +16,15 @@
 	class QueryPage extends dbWebGenPage {
 	//==========================================================================================
 		protected $sql, $view;
+		
 		protected $query_ui, $settings_ui, $viz_ui;
 		public static $chart_types = array(
 			'table' => 'Table', 
 			'bar' => 'Bar Chart',
-			'sankey' => 'Sankey Chart',
-			'candlestick' => 'Candlestick Chart'
+			'candlestick' => 'Candlestick Chart',
+			'geo' => 'Geo Chart',
+			'sankey' => 'Sankey Chart',	
+			'leaflet' => 'Leaflet Map',		
 		);
 	
 		//--------------------------------------------------------------------------------------
@@ -31,6 +35,24 @@
 			$this->sql = trim($this->get_post('sql', ''));
 			$this->view = $this->get_urlparam(QUERY_PARAM_VIEW, QUERY_VIEW_AUTO);
 		}
+		
+		//--------------------------------------------------------------------------------------
+		public function view($new_val = null) { 
+		//--------------------------------------------------------------------------------------
+			if($new_val !== null) 
+				$this->view = $new_val;
+			
+			return $this->view;
+		}
+		
+		//--------------------------------------------------------------------------------------
+		public function sql($new_val = null) { 
+		//--------------------------------------------------------------------------------------
+			if($new_val !== null) 
+				$this->sql = $new_val;
+			
+			return $this->sql;
+		}
 	
 		//--------------------------------------------------------------------------------------
 		public function render() {
@@ -40,19 +62,16 @@
 				$this->sql = null;
 			}
 			
-			if($this->has_post_values())
-				$this->add_script();
+			$chart = null;
+			if($this->has_post_values()) {				
+				$chart = dbWebGenChart::create($this->get_post('viz-type'), $this);
+				$chart->add_required_scripts();
+			}
 
 			$this->build_query_part();
 			$this->build_settings_part();
-			$this->build_visualization_part();
-			$this->layout();
-		}
-		
-		//--------------------------------------------------------------------------------------
-		protected function add_script() {
-		//--------------------------------------------------------------------------------------
-			echo '<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>';
+			$this->build_visualization_part($chart);
+			$this->layout($chart);
 		}
 		
 		//--------------------------------------------------------------------------------------
@@ -77,7 +96,7 @@ QUI;
 			$select = $this->render_select('viz-type', first(array_keys(QueryPage::$chart_types)), QueryPage::$chart_types);
 			$settings = '';
 			foreach(QueryPage::$chart_types as $type => $name)
-				$settings .= "<div id='viz-option-$type'>" . ChartFactory::get($type, $this)->settings_html() . "</div>\n";
+				$settings .= "<div id='viz-option-$type'>" . dbWebGenChart::create($type, $this)->settings_html() . "</div>\n";
 			
 			$this->settings_ui = <<<STR
 				<div class="panel panel-default">
@@ -103,8 +122,9 @@ QUI;
 STR;
 		}
 		
+		
 		//--------------------------------------------------------------------------------------
-		protected function build_visualization_part() {
+		protected function build_visualization_part($chart) {
 		//--------------------------------------------------------------------------------------
 			$this->viz_ui = '';
 			
@@ -116,50 +136,17 @@ STR;
 			
 			$this->viz_ui .= "<div class='col-sm-$size $css_class' id='chart_div'></div>\n";
 			
-			if(!$this->sql)
+			if($chart === null || !$this->sql)
 				return;
 			
 			$db = db_connect();
 			$stmt = $db->prepare($this->sql);
 			if($stmt === false)
-				return proc_error('Failed to prepare statement', $db);
-			
+				return proc_error('Failed to prepare statement', $db);			
 			if($stmt->execute() === false)
 				return proc_error('Failed to execute statement', $db);
 			
-			$chart = ChartFactory::get($this->get_post('viz-type'), $this);
-			
-			$this->viz_ui .= <<<HTML
-			<script>
-				google.charts.load('current', { packages: {$chart->packages_js()} } );
-				google.charts.setOnLoadCallback(draw_chart);				
-
-				function draw_chart() {
-					console.log('draw_chart');
-					var data = google.visualization.arrayToDataTable([
-HTML;
-
-			$first = true;
-			while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-					if($first) {
-						$this->viz_ui .= json_encode(array_keys($row)) . ",\n";
-						$first = false;
-					}
-					$this->viz_ui .= json_encode(array_values($row)) . ",\n";
-			}
-
-			$this->viz_ui .= <<<HTML
-					]);
-					var options = {$chart->options_js()};		
-					options.width = $('#chart_div').width() - 15;
-					var chart = new {$chart->class_name()}(document.getElementById('chart_div'));
-					{$chart->before_draw_js()}
-					chart.draw(data, options);
-				}		
-				
-				$('#chart_div').deferredResize(draw_chart, 500);
-			</script>
-HTML;
+			$this->viz_ui .= "<script>\n" . $chart->get_js($stmt) . "</script>\n";
 		}
 		
 		//--------------------------------------------------------------------------------------

@@ -6,6 +6,9 @@
 	mb_internal_encoding('UTF-8');
 	mb_http_output('UTF-8');
 	
+	// append scripts using add_javascript() and add_stylesheet() 
+	$META_INCLUDES = array();
+	
 	if(!defined('ENGINE_PATH'))
 		die('This is the engine, you put your app into another directory and define ENGINE_PATH to point here. Note: ENGINE_PATH must end with a slash.');	
 	
@@ -72,7 +75,8 @@
   <link href="https://select2.github.io/select2-bootstrap-theme/css/select2-bootstrap.css" rel="stylesheet"><!-- Bootstrap theme from https://github.com/select2/select2-bootstrap-theme -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.min.js"></script>  
   <link href="<?= ENGINE_PATH ?>inc/styles.css" rel="stylesheet">  
-  <script src="<?= ENGINE_PATH ?>inc/dbweb.js"></script>  
+  <script src="<?= ENGINE_PATH ?>inc/dbweb.js"></script>
+  <!--META_INCLUDES_GO_HERE-->
 </head>
 <body>
 
@@ -91,7 +95,11 @@
 	if(process_redirect())
 		exit;
 	
-	echo $page_head;
+	echo str_replace(
+		'<!--META_INCLUDES_GO_HERE-->', 
+		implode("\n", $META_INCLUDES), 
+		$page_head);
+	
 	render_messages();
 	if(isset($page_body) && $page_body != null)
 		echo $page_body;

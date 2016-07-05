@@ -23,6 +23,28 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
+	function get_help_popup($title, $text) {
+	//------------------------------------------------------------------------------------------
+		return "<a href='javascript:void(0)' title='$title' data-purpose='help' data-toggle='popover' data-placement='bottom' data-content='" . 
+			htmlentities($text, ENT_QUOTES) .
+			"'><span class='glyphicon glyphicon-info-sign'></span></a>\n";		
+	}
+	
+	//------------------------------------------------------------------------------------------
+	function add_javascript($src) {
+	//------------------------------------------------------------------------------------------
+		global $META_INCLUDES;
+		$META_INCLUDES[] = "<script type='text/javascript' src='$src'></script>";
+	}
+	
+	//------------------------------------------------------------------------------------------
+	function add_stylesheet($src) {
+	//------------------------------------------------------------------------------------------
+		global $META_INCLUDES;
+		$META_INCLUDES[] = "<link rel='stylesheet' href='$src' />";
+	}	
+	
+	//------------------------------------------------------------------------------------------
 	function is_inline() {
 	//------------------------------------------------------------------------------------------
 		return isset($_GET['inline']);

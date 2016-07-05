@@ -1,48 +1,30 @@
 <?
 	//==========================================================================================
-	class ChartFactory {
-	//==========================================================================================
-		public static function get($chart_type, $page) {
-			$class_name = 'dbWebGen_chart_' . $chart_type;
-			return new $class_name($page);
-		}
-	};
-	
-	//==========================================================================================
-	abstract class dbWebGen_chart_base {
+	abstract class dbWebGenChart {
 	//==========================================================================================
 		protected $page;
 		
+		//--------------------------------------------------------------------------------------
 		public function __construct($page) {
+		//--------------------------------------------------------------------------------------
 			$this->page = $page;
 		}
 		
-		public function settings_html() { 
-			return ''; 
+		//--------------------------------------------------------------------------------------
+		// returns a chart instance based on the chart type
+		public static function create($chart_type, $page) {
+		//--------------------------------------------------------------------------------------
+			$class_name = 'dbWebGenChart_' . $chart_type;
+			return new $class_name($page);
 		}
 		
-		public function options_js() {
-			return json_encode($this->options());
-		}
+		// returns html form for chart settings
+		abstract public /*string*/ function settings_html();
 		
-		public function packages_js() {
-			return json_encode($this->packages());
-		}
+		// override if additional scripts are needed for this type
+		abstract public /*void*/ function add_required_scripts();
 		
-		// any default options. call this from subclasses, then add to default array
-		protected function options() {			
-			return array();
-		}
-		
-		// any js to be rendered before the actual draw() call.
-		public function before_draw_js() {
-			return '';
-		}
-		
-		// return google charts class name to instantiate
-		abstract public function class_name();
-		
-		// return google charts packages to include
-		abstract protected function packages();
+		// returns js code to fill the chart div
+		abstract public /*string*/ function get_js(/*PDOStatement*/ $query_result);
 	};
 ?>

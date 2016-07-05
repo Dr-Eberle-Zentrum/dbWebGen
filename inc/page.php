@@ -24,7 +24,7 @@
 		//--------------------------------------------------------------------------------------
 		public function render_select($name, $default_value, $options) {
 		//--------------------------------------------------------------------------------------			
-			$html = "<select id='$name' name='$name'>\n";
+			$html = "<select class='form-control' id='$name' name='$name'>\n";
 			foreach($options as $value => $label) {
 				$is_checked = (!$this->has_post_values() && $value == $default_value) 
 					|| $this->get_post($name) == $value;					
@@ -33,6 +33,13 @@
 			}
 			$html .= "\n</select>";
 			return $html;
+		}
+		
+		//--------------------------------------------------------------------------------------
+		public function render_textbox($name, $default_value) {
+		//--------------------------------------------------------------------------------------
+			$value = unquote($this->get_post($name, $default_value));
+			return "<input class='form-control' type='text' value='$value' id='$name' name='$name'></input>";
 		}
 		
 		//--------------------------------------------------------------------------------------

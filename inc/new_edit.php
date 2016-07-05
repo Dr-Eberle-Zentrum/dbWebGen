@@ -252,9 +252,7 @@ EOT;
 		if(!isset($field['help']) || $field['help'] == '')
 			return;
 				
-		echo "<a href='javascript:void(0)' title='Help' data-purpose='help' data-toggle='popover' data-placement='bottom' data-content='" . 
-			htmlentities($field['help'], ENT_QUOTES) .
-			"'><span class='glyphicon glyphicon-info-sign'></span></a>\n";		
+		echo get_help_popup('Help', $field['help']);
 	}
 	
 	//------------------------------------------------------------------------------------------
