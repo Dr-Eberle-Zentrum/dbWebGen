@@ -4,6 +4,7 @@
 	//==========================================================================================
 		
 		//--------------------------------------------------------------------------------------
+		// form field @name must be prefixed with exact charttype followed by dash
 		public function settings_html() { 
 		//--------------------------------------------------------------------------------------
 			$region_helptext = <<<HELPTEXT
@@ -47,18 +48,6 @@ HELPTEXT;
 				<label for="geo-region" class="control-label">Displayed Region {$region_helphtml}</label>
 				{$this->page->render_textbox('geo-region', 'world')}
 			</div>
-			
-			<!-- STACKED DOES NOT WORK !<div class="form-group">
-				<label class="control-label">Stacking of Values</label>
-				<div>
-					{$this->page->render_select('bar-stacking', 0, array(
-						0 => 'None',
-						'absolute' => 'Absolute values',
-						'percent' => 'Relative values as a percentage of 100%',
-						'relative' => 'Relative values as a fraction of 1'						
-					))}
-				</div>
-			</div>-->
 HTML;
 		}
 		
