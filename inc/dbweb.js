@@ -162,7 +162,8 @@ $(window).load(function() {
 
 	//
 	// adjust fill height div
-	$(window).resize(adjust_div_full_height);	
+	$(window).resize(adjust_div_full_height);
+	adjust_div_full_height();
 });
 
 //

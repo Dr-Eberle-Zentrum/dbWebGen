@@ -35,6 +35,7 @@
 	
 	// special function names called via MODE_FUNC
 	define('LINKED_ITEM_HTML', 'get_linked_item_html');
+	define('GET_SHAREABLE_QUERY_LINK', 'get_shareable_query_link');
 	
 	// search options
 	define('SEARCH_ANY', 'any');
@@ -56,8 +57,11 @@
 	
 	// params for MODE_QUERY
 	define('QUERY_PARAM_VIEW', 'view');
-	define('QUERY_VIEW_AUTO', 'auto'); // default
+	define('QUERY_VIEW_FULL', 'full'); // default
 	define('QUERY_VIEW_RESULT', 'result'); // result only
+	
+	// length of identifier for stored queries
+	define('STORED_QUERY_ID_LENGTH', 12);
 	
 	// dynamic runtime replacements for default field values
 	define('REPLACE_DYNAMIC_SESSION_USER', '%SESSION_USER%');

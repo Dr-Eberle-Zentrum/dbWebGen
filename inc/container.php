@@ -5,11 +5,28 @@
 		global $APP;
 		global $LOGIN;
 		
-		if(isset($_GET['mode']) 
-			&& !in_array($_GET['mode'], array(MODE_VIEW, MODE_EDIT, MODE_LIST, MODE_NEW)) 
-			&& isset($_GET[PLUGIN_PARAM_NAVBAR]) 
-			&& $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_OFF)
+		// when to turn off navigation bar?
+		if(
+			// if mode is set
+			isset($_GET['mode']) 
+			
+			// if not logged in, we show the navbar, since it will only show the app name anyway
+			&& is_logged_in()			
+			
+			&& (
+				// either deliberately turned off
+				(!in_array($_GET['mode'], array(MODE_VIEW, MODE_EDIT, MODE_LIST, MODE_NEW))
+				&& isset($_GET[PLUGIN_PARAM_NAVBAR]) 
+				&& $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_OFF)
+			
+				// or we are visualizing a stored query
+				|| ($_GET['mode'] == MODE_QUERY 
+					&& isset($_GET['id']))
+				)
+			)
+		{
 			return;
+		}
 		
 		if(is_popup() || is_inline())
 			return;
@@ -92,10 +109,12 @@
 		
 		try {
 			if(!is_logged_in()) {
-				if(count($_POST) == 0 || !process_login())
+				if(count($_POST) == 0 || !process_login()) {
 					render_login();
+					return;
+				}
 				else {
-					header("Location: {$_SERVER['REQUEST_URI']}");
+					header("Location: {$_SERVER['REQUEST_URI']}");					
 					exit;
 				}
 			}

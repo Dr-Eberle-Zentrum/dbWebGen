@@ -186,14 +186,17 @@ textarea#sql {
 	resize: vertical;
 	overflow-x: auto;
 	overflow-y: auto;
-	min-height: 300px;
+	min-height: 100px;
 	height: 750px;
 }
 
 #chart_div.result-full {
 	/*background-color: rgb(248,248,248);*/
-	padding: 10px;	
-	overflow: auto;	
+	padding: 0;	
+	margin: 0;
+	overflow: auto;
+	min-height: 100px;
+	height: 750px;
 }
 
 ul.columns {
@@ -222,4 +225,12 @@ ul.columns {
 
 .top-margin-zero {
 	margin-top: 0;
+}
+
+.viz-share-url {
+	font-size: 75%;
+	opacity: 0.7;
+	margin-bottom: 0.5em;
+	margin-top: -0.5em;
+	display: none;
 }

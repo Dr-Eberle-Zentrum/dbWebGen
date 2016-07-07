@@ -35,10 +35,27 @@
 		}
 		
 		//--------------------------------------------------------------------------------------
+		// shall we subtract scrollbar from visualization width? default true
+		protected function shall_subtract_scrollbar() {			
+		//--------------------------------------------------------------------------------------
+			return true;
+		}
+		
+		//--------------------------------------------------------------------------------------
 		// any js to be rendered before the actual draw() call.
 		public function before_draw_js() {
 		//--------------------------------------------------------------------------------------
 			return '';
+		}
+		
+		//--------------------------------------------------------------------------------------
+		public /*string*/ function data_to_js(&$row, $row_nr) {
+		//--------------------------------------------------------------------------------------
+			$r = '';
+			if($row_nr === 0) // first row => render headers
+				$r .= json_encode(array_keys($row)) . ",\n";				
+			
+			return $r . json_encode(array_values($row), JSON_NUMERIC_CHECK) . ",\n";
 		}
 		
 		//--------------------------------------------------------------------------------------
@@ -54,19 +71,18 @@
 					var data = google.visualization.arrayToDataTable([
 JS;
 
-			$first = true;
-			while($row = $query_result->fetch(PDO::FETCH_ASSOC)) {
-					if($first) {
-						$viz_ui .= json_encode(array_keys($row)) . ",\n";
-						$first = false;
-					}
-					$viz_ui .= json_encode(array_values($row), JSON_NUMERIC_CHECK) . ",\n";
-			}
+			// for those chart types that do not have built in scrollbar (like table) we need to subtract scrollbar width
+			$subtract_width = $this->shall_subtract_scrollbar() ? 20 : 0;
+			
+			$row_nr = 0;
+			while($row = $query_result->fetch(PDO::FETCH_ASSOC)) {				
+				$viz_ui .= $this->data_to_js($row, $row_nr++);
+			}			
 
 			$viz_ui .= <<<JS
 					]);
 					var options = {$this->options_js()};		
-					options.width = $('#chart_div').width() - 15;
+					options.width = $('#chart_div').width() - {$subtract_width};
 					var chart = new {$this->class_name()}(document.getElementById('chart_div'));
 					{$this->before_draw_js()}
 					chart.draw(data, options);

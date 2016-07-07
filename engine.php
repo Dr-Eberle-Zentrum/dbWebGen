@@ -44,7 +44,7 @@
 	}
 	
 	// any special processing?
-	switch(safehash($_GET, 'mode', '')) {
+	if(is_logged_in()) switch(safehash($_GET, 'mode', '')) {
 		case MODE_DELETE:
 			require_once ENGINE_PATH . 'inc/delete.php';	
 			if(!process_delete())				

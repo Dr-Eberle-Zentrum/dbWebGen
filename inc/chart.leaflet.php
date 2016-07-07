@@ -148,6 +148,16 @@ SETTINGS;
 		}
 		
 		//--------------------------------------------------------------------------------------
+		public /*string*/ function data_to_js(&$row, $row_nr) {
+		//--------------------------------------------------------------------------------------
+			$r = '';
+			if($row_nr === 0) // first row => render headers
+				$r .= json_encode(array_keys($row)) . ",\n";				
+			
+			return $r . json_encode(array_values($row), JSON_NUMERIC_CHECK) . ",\n";
+		}
+		
+		//--------------------------------------------------------------------------------------
 		// returns html/js to render page
 		public /*string*/ function get_js(/*PDOStatement*/ $query_result) {
 		//--------------------------------------------------------------------------------------

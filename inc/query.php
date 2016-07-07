@@ -1,31 +1,114 @@
 <?
-	require_once 'chart.base.php';
-	require_once 'chart.google.base.php';
-	foreach(array_keys(QueryPage::$chart_types) as $type)
-		require_once "chart.$type.php";
+	if(!defined('QUERYPAGE_NO_INCLUDES')) {
+		require_once 'chart.base.php';
+		require_once 'chart.google.base.php';
+		foreach(array_keys(QueryPage::$chart_types) as $type)
+			require_once "chart.$type.php";
+	}
 	
 	//==========================================================================================
 	class QueryPage extends dbWebGenPage {
 	//==========================================================================================
-		protected $sql, $view;
+		protected $sql, $view;		
+		protected $query_ui, $settings_ui, $viz_ui, $store_ui;
+		protected $error_msg;
 		
-		protected $query_ui, $settings_ui, $viz_ui;
 		public static $chart_types = array(
 			'table' => 'Table', 
 			'bar' => 'Bar Chart',
 			'candlestick' => 'Candlestick Chart',
 			'geo' => 'Geo Chart',
 			'leaflet' => 'Leaflet Map',
-			'sankey' => 'Sankey Chart'
+			'sankey' => 'Sankey Chart',
+			'timeline' => 'Timeline'
 		);
 	
 		//--------------------------------------------------------------------------------------
 		public function __construct() {
 		//--------------------------------------------------------------------------------------
+			global $APP;
 			parent::__construct();
 			
-			$this->sql = trim($this->get_post('sql', ''));
-			$this->view = $this->get_urlparam(QUERY_PARAM_VIEW, QUERY_VIEW_AUTO);
+			$this->error_msg = null;
+			
+			if(isset($APP['querypage_permissions_func']) && !$APP['querypage_permissions_func']()) {
+				$this->sql = null;
+				$this->error_msg = 'You are not allowed to view this.';
+			}
+			
+			if($this->is_stored_query() && !$this->fetch_stored_query()) {
+				$this->sql = null;
+				$this->error_msg = 'Could not retrieve the stored query';
+			}
+			else {
+				$this->sql = trim($this->get_post('sql', ''));
+				$this->view = $this->get_urlparam(QUERY_PARAM_VIEW, QUERY_VIEW_FULL);
+			}
+		}
+		
+		//--------------------------------------------------------------------------------------
+		public static function is_stored_query() {
+		//--------------------------------------------------------------------------------------
+			return isset($_GET['id']); // && mb_strlen($_GET['id']) == STORED_QUERY_ID_LENGTH;
+		}
+		
+		//--------------------------------------------------------------------------------------
+		// returns false or query id token on success
+		public static function store_query(&$error_msg) {
+		//--------------------------------------------------------------------------------------
+			global $APP;
+			if(!isset($APP['querypage_stored_queries_table']))
+				return false;
+			
+			$db = db_connect();
+			if($db === false) {
+				$error_msg = 'Could not connect to DB';
+				return false;
+			}
+			
+			if(!QueryPage::create_stored_queries_table($db)) {
+				$error_msg = 'Could not create table';
+				return false;
+			}
+			
+			$sql = "insert into {$APP['querypage_stored_queries_table']} (id, title, description, params_json) values(?, ?, ?, ?)";
+			$stmt = $db->prepare($sql);
+			if($stmt === false) {
+				$error_msg = 'Could not prepare query';
+				return false;
+			}
+			
+			$params = array(
+				/*id*/ get_random_token(STORED_QUERY_ID_LENGTH),
+				/*title*/ safehash($_POST, 'storechart-title'),
+				/*description*/ safehash($_POST, 'storechart-description'),
+				/*params_json*/ json_encode(safehash($_POST, 'storechart-json'))
+			);
+			
+			if($stmt->execute($params) === false) {
+				$error_msg = 'Failed to execute query with ' . arr_str($params);
+				return false;
+			}
+			
+			return $params[0];
+		}
+		
+		//--------------------------------------------------------------------------------------
+		protected static function create_stored_queries_table(&$db) {
+		//--------------------------------------------------------------------------------------
+			global $APP;
+			
+			$id_len = STORED_QUERY_ID_LENGTH;
+			
+			$create_sql = <<<SQL
+				create table if not exists {$APP['querypage_stored_queries_table']} (
+					id char({$id_len}) primary key,					
+					title varchar(100),
+					description varchar(1000),
+					params_json text not null
+				)
+SQL;
+			return false !== $db->exec($create_sql);
 		}
 		
 		//--------------------------------------------------------------------------------------
@@ -47,23 +130,61 @@
 		}
 	
 		//--------------------------------------------------------------------------------------
+		protected function fetch_stored_query() {
+		//--------------------------------------------------------------------------------------
+			global $APP;		
+			
+			if(isset($APP['querypage_stored_queries_table']) && isset($_GET['id'])) {
+				// retrieve query details
+				$db = db_connect();
+				if($db === false)
+					return false;
+				
+				$stmt = $db->prepare("select * from {$APP['querypage_stored_queries_table']} where id = ?");
+				if($stmt === false)
+					return false;
+				
+				if($stmt->execute(array($_GET['id'])) === false)
+					return false;
+				
+				if($stored_query = $stmt->fetch(PDO::FETCH_ASSOC)) {
+					$_POST = $_POST + (array) json_decode($stored_query['params_json']);
+					$_GET[QUERY_PARAM_VIEW] = QUERY_VIEW_RESULT;
+					return true;
+				}
+			}
+			
+			return false;
+		}
+	
+		//--------------------------------------------------------------------------------------
 		public function render() {
 		//--------------------------------------------------------------------------------------
-			if($this->has_post_values() && mb_substr(mb_strtolower($this->sql), 0, 6) !== 'select') {
-				proc_error('Invalid SQL query. Only SELECT statements are allowed!');
-				$this->sql = null;
+			if($this->error_msg !== null) {
+				// something went wrong in c'tor
+				return proc_error($this->error_msg);
 			}
 			
 			$chart = null;
-			if($this->has_post_values()) {				
+			$this->store_ui = '';
+			
+			if($this->has_post_values()) {
+				if(mb_substr(mb_strtolower($this->sql), 0, 6) !== 'select') {
+					proc_error('Invalid SQL query. Only SELECT statements are allowed!');
+					$this->sql = null;
+				}
+				
 				$chart = dbWebGenChart::create($this->get_post('viz-type'), $this);
 				$chart->add_required_scripts();
+				$this->build_stored_query_part();
 			}
-
+			
 			$this->build_query_part();
-			$this->build_settings_part();
+			$this->build_settings_part();			
 			$this->build_visualization_part($chart);
 			$this->layout($chart);
+			
+			return true;
 		}
 		
 		//--------------------------------------------------------------------------------------
@@ -114,19 +235,79 @@ QUI;
 STR;
 		}
 		
+		//--------------------------------------------------------------------------------------
+		protected function build_stored_query_part() {
+		//--------------------------------------------------------------------------------------
+			if(!$this->sql || $this->sql === '')
+				return;
+			
+			$link_url = '?' . http_build_query(array(
+				'mode' => MODE_FUNC,
+				'target' => GET_SHAREABLE_QUERY_LINK
+			));
+			
+			$post_data = json_encode($_POST);
+			$title = json_encode(safehash($_POST, 'storechart-title'));
+			$description = json_encode(safehash($_POST, 'storechart-description'));
+			
+			$this->store_ui = <<<HTML
+				&nbsp;
+				<a id='viz-share' role='button' href='javascript:void(0)'><span title='Share this live query visualization' class='glyphicon glyphicon-link'></span> Get Shareable Link</a>
+				<div class='viz-share-url'></div>
+				<script>
+					$('#viz-share').click(function() {
+						var button = $(this);
+						$.post('{$link_url}', {
+							'storechart-title' : $title,
+							'storechart-description' : $description,
+							'storechart-json': $post_data
+						}, function(url_query) {
+							if(url_query && url_query.substring(0, 1) != '?') { // error
+								$('.viz-share-url').html(url_query).show(); 
+								return;
+							}
+							else {
+								button.hide();
+								var link = $('<a/>', {id: 'shared', target: '_blank', href: url_query});
+								link.text(document.location.origin + document.location.pathname + url_query);
+								$('.viz-share-url').text('').show().append(link);						
+							}									
+						}).fail(function() {
+							$('.viz-share-url').text('Error: Could not generate a shareable URL.').show();
+						});
+					});
+				</script>
+HTML;
+		}
 		
 		//--------------------------------------------------------------------------------------
 		protected function build_visualization_part($chart) {
 		//--------------------------------------------------------------------------------------
 			$this->viz_ui = '';
 			
-			$size = $this->view === QUERY_VIEW_RESULT ? 12 : 7;
-			$css_class = $this->view === QUERY_VIEW_RESULT ? 'result-full fill-height' : 'result-column';
+			if($this->view === QUERY_VIEW_RESULT) {
+				$size = 12;
+				$css_class = 'result-full fill-height';
+				
+				// remove padding of main container to fill page
+				$this->viz_ui .= <<<JS
+					<script>
+						$(document).ready(function() {
+							$('#main-container').css('padding', '0');
+						});
+					</script>
+JS;
+			}
+			else {
+				$size = 7;
+				$css_class = 'result-column';
+			}
 			
+			$this->viz_ui .= "<div class='col-sm-$size'>\n";			
 			if($this->view != QUERY_VIEW_RESULT)
-				$this->viz_ui .= "<label for='chart_div'>Result Visualization</label>\n";
-			
-			$this->viz_ui .= "<div class='col-sm-$size $css_class' id='chart_div'></div>\n";
+				$this->viz_ui .= "  <label for='chart_div'>Result Visualization</label>{$this->store_ui}\n";
+			$this->viz_ui .= "  <div class='$css_class' id='chart_div'></div>\n";
+			$this->viz_ui .= "</div>\n";
 			
 			if($chart === null || !$this->sql)
 				return;
@@ -144,14 +325,14 @@ STR;
 		//--------------------------------------------------------------------------------------
 		public function layout() {
 		//--------------------------------------------------------------------------------------
-			if($this->view === QUERY_VIEW_AUTO) {
-		echo <<<HTML
-			<form class='' role='form' method='post' enctype='multipart/form-data'>
-				<div class='col-sm-5'>
-					<div>{$this->query_ui}</div>
-					<div>{$this->settings_ui}</div>
-				</div>			
-			</form>
+			if($this->view === QUERY_VIEW_FULL) {
+				echo <<<HTML
+				<form class='' role='form' method='post' enctype='multipart/form-data'>
+					<div class='col-sm-5'>
+						<div>{$this->query_ui}</div>
+						<div>{$this->settings_ui}</div>						
+					</div>			
+				</form>
 HTML;
 			}
 			
