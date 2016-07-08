@@ -36,10 +36,10 @@
 		}
 		
 		//--------------------------------------------------------------------------------------
-		public function render_textbox($name, $default_value) {
+		public function render_textbox($name, $default_value, $css = '') {
 		//--------------------------------------------------------------------------------------
 			$value = unquote($this->get_post($name, $default_value));
-			return "<input class='form-control' type='text' value='$value' id='$name' name='$name'></input>";
+			return "<input class='form-control $css' type='text' value='$value' id='$name' name='$name'></input>";
 		}
 		
 		//--------------------------------------------------------------------------------------
@@ -53,13 +53,13 @@
 		}
 		
 		//--------------------------------------------------------------------------------------
-		public function render_checkbox($name, $value, $checked_default = false) {
+		public function render_checkbox($name, $value, $checked_default = false, $css = '') {
 		//--------------------------------------------------------------------------------------			
 			$is_checked = (!$this->has_post_values() && $checked_default) 
 				|| $this->get_post($name) == $value;
 				
 			$checked_attr = $is_checked ? 'checked' : '';			
-			return "<input type='checkbox' value='$value' name='$name' $checked_attr>";
+			return "<input class='$css' type='checkbox' value='$value' name='$name' $checked_attr>";
 		}
 		
 		//--------------------------------------------------------------------------------------
