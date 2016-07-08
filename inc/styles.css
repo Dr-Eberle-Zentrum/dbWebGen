@@ -234,3 +234,7 @@ ul.columns {
 	margin-top: -0.5em;
 	display: none;
 }
+
+div.null_field {
+	display: none;
+}

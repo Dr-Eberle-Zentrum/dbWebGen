@@ -117,26 +117,57 @@
 		}
 		
 		if($addl_data != '')			
-			echo "<div class='btn-group'>{$addl_data}</div>\n";
+			echo "<p><div class='btn-group'>{$addl_data}</div></p>\n";
 		
-		echo "<p><form class='form-horizontal bg-gray' role='form' data-type='view'>\n";
+		$table_html = '';
+		$table_html .= "<p><form class='form-horizontal bg-gray' role='form' data-type='view'>\n";
 		
+		$empty_count = 0;
 		foreach($record as $col => $val) {
 			if(!isset($fields[$col]))
 				continue;
 			
+			$field_label = get_field_label($fields[$col], $record);
+		
 			# display null values?
-			if(!$APP['view_display_null_fields'] && $val === NULL)
-				continue;
+			$css_null = '';
+			if(!$APP['view_display_null_fields'] && $val === NULL) {
+				$empty_count++;
+				$css_null = 'null_field';
+			}
 			
-			echo "<div class='form-group'><label class='col-sm-3 control-label'>". get_field_label($fields[$col], $record) . "</label>\n";
+			$table_html .= "<div class='form-group $css_null'><label class='col-sm-3 control-label'>{$field_label}</label>\n";
 			
 			$val = prepare_field_display_val($table, $record, $fields[$col], $col, $val);
 			
-			echo "<div class='col-sm-9 column-value'>{$val}</div></div>\n";	
+			$table_html .= "<div class='col-sm-9 column-value'>{$val}</div></div>\n";	
 		}
 		
-		echo "</form></p>";	
+		if($empty_count > 0) {
+			$btn_label = $empty_count == 1 ? 'Show this field' : 'Show these fields';
+			$empty_fields = $empty_count == 1 ? 'one empty field' : $empty_count . ' empty fields';
+			
+			$empty_fields = <<<HTML
+				<p id='show_null_fields'>
+					This {$table['item_name']} has {$empty_fields}.
+					<a role='button' class='btn btn-default' href='javascript:void(0)'>
+						<span class='glyphicon glyphicon-eye-open'></span> {$btn_label}
+					</a>
+				</p>
+				<script>
+					$('#show_null_fields').click(function() {
+						$('.null_field').toggle();
+						$(this).toggle();
+					});
+				</script>
+HTML;
+			$table_html = $empty_fields . $table_html;
+		}
+		
+		$table_html .= "</form></p>";	
+		
+		echo $table_html;
+		
 		if(is_allowed($table, MODE_DELETE))
 			enable_delete();
 
