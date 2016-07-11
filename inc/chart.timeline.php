@@ -49,30 +49,24 @@ HTML;
 			return $cols;
 		}
 		
+		private $start_value_seen = false;
+		
 		//--------------------------------------------------------------------------------------
-		public /*string*/ function data_to_js(&$row, $row_nr) {
+		public /*string*/ function value_to_js($value, &$column_info) {
 		//--------------------------------------------------------------------------------------
-			// convert numeric to date or timeofday
-			
-			$json = array();
-			$c = 0;
-			$started = false;
-			foreach($row as $col_name => $col_value) {								
-				if($col_value !== null && $this->column_infos[$c]['js_type'] == 'date') {
-					if($started)
-						$json[] = "new Date('{$col_value}-12-31')";
-					else
-						$json[] = "new Date('{$col_value}-01-01')";
-					$started = true;
+			if($value !== null && $column_info['js_type'] == 'date') {
+				if($this->start_value_seen) {					
+					$this->start_value_seen = false;
+					return "new Date('{$value}-12-31')";
 				}
-				else
-					$json[] = json_encode($col_value);
+				else {
+					$this->start_value_seen = true;
+					return "new Date('{$value}-01-01')";					
+				}
+			}
 				
-				$c++;
-			}			
-			
-			return '[' . implode(', ', $json) . ']';
-		}		
+			return parent::value_to_js($value, $column_info);
+		}
 		
 		//--------------------------------------------------------------------------------------
 		protected function options() {			

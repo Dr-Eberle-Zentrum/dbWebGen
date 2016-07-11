@@ -2,7 +2,7 @@
 	//==========================================================================================
 	class dbWebGenChart_leaflet extends dbWebGenChart {
 	//==========================================================================================
-		// select st_y(coordinates), st_x(coordinates), name_translit "Name (translit.)", name_arabic "Name (Arabic)", name "Country/Region", type "Type", information "Information", st_y(coordinates)::decimal(7,4) "Latitude", st_x(coordinates)::decimal(7,4) "Longitude", p.id "ID" from places p, countries_and_regions c where c.id = p.country_region and not coordinates is null
+		// select st_y(st_transform(coordinates,3857)), st_x(st_transform(coordinates,3857)), name_translit "Name (translit.)", name_arabic "Name (Arabic)", name "Country/Region", type "Type", information "Information", p.id "ID", st_astext(coordinates) "Coordinates" from places p, countries_and_regions c where c.id = p.country_region and not coordinates is null
 		
 		//--------------------------------------------------------------------------------------
 		// returns html form for chart settings		
@@ -109,12 +109,22 @@
 					))}
 				</div>
 				<div class="form-group">
-					<label class="control-label">Options</label>
+					<label class="control-label">Display Options</label>
 					<div class='checkbox top-margin-zero'>
 						<label>{$this->page->render_checkbox('leaflet-scale', 'ON', true)}Show Scale</label>
 					</div>
 					<div class='checkbox'>
 						<label>{$this->page->render_checkbox('leaflet-minimap', 'ON', false)}Show Overview Map</label>
+					</div>
+					<label class="control-label">Spatial Reference System</label>
+					<p>Select the coordinate system that Leaflet should use. The source data needs to be transformed to this projection.</p>
+					<div class='form-group'>
+						{$this->page->render_select('leaflet-crs', 'L.CRS.EPSG3857', array(
+							'L.CRS.EPSG3857' => 'EPSG:3857 Pseudo-Mercator (Leaflet default)',
+							'L.CRS.EPSG4326' => 'EPSG:4326 WGS 84',
+							'L.CRS.EPSG3395' => 'EPSG:3395 World Mercator',
+							'L.CRS.Simple' => 'Direct projection'
+						))}
 					</div>
 				</div>
 				<script>
@@ -193,6 +203,7 @@ SETTINGS;
 				}
 				
 				var map = L.map('chart_div', {
+					crs: {$this->page->get_post('leaflet-crs', 'L.CRS.EPSG3857')},
 					zoomControl: true,
 					// minZoom: 1,
 					// maxZoom: 21, 

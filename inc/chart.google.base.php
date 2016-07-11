@@ -59,6 +59,7 @@
 			for($i=0; $i<$stmt->columnCount(); $i++) {
 				// type can be 'string', 'number', 'boolean', 'date', 'datetime', and 'timeofday'
 				$col_info = $stmt->getColumnMeta($i);
+				#debug_log($col_info);
 				switch($col_info['native_type']) {
 					case 'int': case 'int2': case 'int4': case 'int8': case 'numeric': case 'float4': case 'float8':
 						$col_info['js_type'] = 'number'; break;						
@@ -84,7 +85,6 @@
 				
 				$col_info['index'] = $i;				
 				$this->column_infos[] = $col_info;
-				#debug_log($col_info);
 				
 				$cols[] = array(
 					'type' => $col_info['js_type'],
@@ -93,13 +93,58 @@
 				);
 			}
 			
+			#debug_log($this->column_infos);			
 			return $cols;
+		}
+		
+		//--------------------------------------------------------------------------------------
+		public /*string*/ function value_to_js($value, &$column_info) {
+		//--------------------------------------------------------------------------------------
+			if($value === null)
+				return json_encode($value);
+			
+			// javascript month in [0,11] !!!
+			
+			switch($column_info['js_type']) {
+				case 'timeofday':
+					$d = strtotime($value);
+					return $d === false ? 
+						json_encode($value) : 
+						sprintf('new Date(0,0,0,%s)', date('G,i,s', $d));
+					
+				case 'date':				
+					$d = strtotime($value);
+					return $d === false ? 
+						json_encode($value) : 
+						sprintf('new Date(%s,%s,%s)', date('Y', $d), intval(date('n', $d)) - 1, date('j', $d));					
+					
+				case 'datetime':
+					return "new Date('{$value}')";
+					$d = strtotime($value);
+					if(d === false)
+						return json_encode($value);
+					
+					$microsecs = intval(date('u', $d));			
+					sprintf('new Date(%s,%s,%s%s)', date('Y', $d), intval(date('n', $d)) - 1, date('j,G,i,s', $d), 
+						$microsecs == 0 ? '' : ".{$microsecs}");
+					
+				case 'number':
+					return json_encode($value, JSON_NUMERIC_CHECK);
+					
+				default:
+					return json_encode($value);
+			}
 		}
 		
 		//--------------------------------------------------------------------------------------
 		public /*string*/ function data_to_js(&$row, $row_nr) {
 		//--------------------------------------------------------------------------------------
-			return json_encode(array_values($row), JSON_NUMERIC_CHECK);
+			$json = array();
+			$col_nr = 0;
+			foreach($row as $col_name => $value)
+				$json[] = $this->value_to_js($value, $this->column_infos[$col_nr++]);
+			
+			return '[' . implode(', ', $json) . ']';
 		}
 		
 		//--------------------------------------------------------------------------------------
