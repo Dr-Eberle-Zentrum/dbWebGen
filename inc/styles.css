@@ -170,7 +170,7 @@ body,html{height:100%}
 	text-align: center;	
 }
 
-textarea#sql {
+textarea.monospace, textarea#sql {
 	font-family: monospace
 }
 
@@ -203,6 +203,11 @@ ul.columns {
 	margin-top: -10px;
 	list-style: none;
 	padding-left: 1em;
+}
+
+ol.columns {
+	margin-top: -10px;	
+	padding-left: 1.5em;
 }
 
 .leaflet-popup-content {
@@ -238,3 +243,15 @@ ul.columns {
 div.null_field {
 	display: none;
 }
+
+.noresize {
+  resize: none; 
+}
+
+.vresize {
+  resize: vertical; 
+}
+  
+.hresize {
+  resize: horizontal;  
+}  

@@ -36,6 +36,13 @@
 		}
 		
 		//--------------------------------------------------------------------------------------
+		public function render_textarea($name, $default_value, $css = '') {
+		//--------------------------------------------------------------------------------------
+			$value = html($this->get_post($name, $default_value));
+			return "<textarea class='form-control $css' id='$name' name='$name'>{$value}</textarea>";
+		}
+		
+		//--------------------------------------------------------------------------------------
 		public function render_textbox($name, $default_value, $css = '') {
 		//--------------------------------------------------------------------------------------
 			$value = unquote($this->get_post($name, $default_value));

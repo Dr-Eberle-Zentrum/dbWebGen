@@ -23,6 +23,7 @@
 			'candlestick' => 'Candlestick Chart',
 			'geo' => 'Geo Chart',
 			'leaflet' => 'Leaflet Map',
+			'network_visjs' => 'Network (vis.js)',
 			'sankey' => 'Sankey Chart',
 			'timeline' => 'Timeline'
 		);
@@ -201,7 +202,7 @@ SQL;
 			$this->query_ui = <<<QUI
 				<div class="form-group">
 					<label class="control-label" for="{$sql_field}">SQL Query</label>
-					<textarea class="form-control" id="{$sql_field}" name="{$sql_field}" rows="10">{$sql_html}</textarea>
+					<textarea class="form-control vresize" id="{$sql_field}" name="{$sql_field}" rows="10">{$sql_html}</textarea>
 				</div>
 				<div class="form-group">
 					<button class="btn btn-primary" type="submit">Execute</button>
