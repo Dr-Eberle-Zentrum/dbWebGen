@@ -16,6 +16,8 @@
 		protected $chart;
 		protected $query_ui, $settings_ui, $viz_ui, $store_ui;
 		protected $error_msg;
+		protected $db;		
+		protected $stored_title, $stored_description; // set only from stored query
 		
 		public static $chart_types = array(
 			'table' => 'Table', 
@@ -36,6 +38,8 @@
 			
 			$this->chart = null;
 			$this->error_msg = null;
+			$this->db = db_connect();
+			$this->stored_title = $this->stored_description = '';
 			
 			if(isset($APP['querypage_permissions_func']) && !$APP['querypage_permissions_func']()) {
 				$this->sql = null;
@@ -135,6 +139,12 @@ SQL;
 			
 			return $this->sql;
 		}
+		
+		//--------------------------------------------------------------------------------------
+		public function db() {
+		//--------------------------------------------------------------------------------------
+			return $this->db;
+		}
 	
 		//--------------------------------------------------------------------------------------
 		protected function fetch_stored_query() {
@@ -143,11 +153,7 @@ SQL;
 			
 			if(isset($APP['querypage_stored_queries_table']) && isset($_GET['id'])) {
 				// retrieve query details
-				$db = db_connect();
-				if($db === false)
-					return false;
-				
-				$stmt = $db->prepare("select * from {$APP['querypage_stored_queries_table']} where id = ?");
+				$stmt = $this->db->prepare("select * from {$APP['querypage_stored_queries_table']} where id = ?");
 				if($stmt === false)
 					return false;
 				
@@ -157,6 +163,9 @@ SQL;
 				if($stored_query = $stmt->fetch(PDO::FETCH_ASSOC)) {
 					$_POST = $_POST + (array) json_decode($stored_query['params_json']);
 					$_GET[QUERY_PARAM_VIEW] = QUERY_VIEW_RESULT;
+					
+					$this->stored_title = $stored_query['title'] !== null ? trim($stored_query['title']) : '';
+					$this->stored_description = $stored_query['description'] !== null ? trim($stored_query['description']) : '';					
 					return true;
 				}
 			}
@@ -270,18 +279,24 @@ STR;
 			$title = json_encode(safehash($_POST, 'storedquery-title'));
 			$description = json_encode(safehash($_POST, 'storedquery-description'));
 			
-			$this->store_ui = <<<HTML
-				&nbsp;
-				<a id='viz-share' role='button' href='javascript:void(0)'><span title='Share this live query visualization' class='glyphicon glyphicon-link'></span> Get Shareable Link</a>
-				<div class='viz-share-url'></div>
+			$share_popup = <<<SHARE
+				<form>
+				<p>Please provide a title and a description for the stored query (optional):</p>
+				<p><input class="form-control" placeholder="Title" id="stored_query_title" /></p>
+				<p><textarea class="form-control vresize" placeholder="Description" id="stored_query_description"></textarea></p>
+				<p><input id="viz-share" class="form-control btn btn-primary" value="Create Link" /></p>				
+				</form>
 				<script>
 					$('#viz-share').click(function() {
-						var button = $(this);
-						$.post('{$link_url}', {
-							'storedquery-title' : $title,
-							'storedquery-description' : $description,
-							'storedquery-json': $post_data
-						}, function(url_query) {
+						var button = $('#viz-share-popup');
+						button.prop("disabled", true);
+						
+						var post_obj = {};
+						post_obj['storedquery-title'] = $('#stored_query_title').val();
+						post_obj['storedquery-description'] = $('#stored_query_description').val();
+						post_obj['storedquery-json'] = $post_data;
+						
+						$.post('{$link_url}', post_obj, function(url_query) {
 							if(url_query && url_query.substring(0, 1) != '?') { // error
 								$('.viz-share-url').html(url_query).show(); 
 								return;
@@ -291,10 +306,25 @@ STR;
 								var link = $('<a/>', {id: 'shared', target: '_blank', href: url_query});
 								link.text(document.location.origin + document.location.pathname + url_query);
 								$('.viz-share-url').text('').show().append(link);						
-							}									
+							}
+							button.popover('hide');
 						}).fail(function() {
 							$('.viz-share-url').text('Error: Could not generate a shareable URL.').show();
 						});
+					});
+				</script>
+SHARE;
+			$share_popup = htmlentities($share_popup, ENT_QUOTES);
+			
+			$this->store_ui = <<<HTML
+				&nbsp;
+				<a id='viz-share-popup' href='javascript:void(0)' data-purpose='help' data-toggle='popover' data-placement='bottom' data-content='{$share_popup}'><span title='Share this live query visualization' class='glyphicon glyphicon-link'></span> Get Shareable Link</a>
+				<div class='viz-share-url'></div>
+				<script>					
+					$('#viz-share-popup').on('shown.bs.popover', function() {
+						$('#stored_query_title').val('');
+						$('#stored_query_description').val('');
+						$('#viz-share-popup').prop("disabled", false);
 					});
 				</script>
 HTML;
@@ -310,13 +340,19 @@ HTML;
 				$css_class = 'result-full fill-height';
 				
 				// remove padding of main container to fill page
-				$this->viz_ui .= <<<JS
+				/*$this->viz_ui .= <<<JS
 					<script>
 						$(document).ready(function() {
 							$('#main-container').css('padding', '0');
 						});
 					</script>
-JS;
+JS;*/
+
+				$css = isset($_GET[PLUGIN_PARAM_NAVBAR]) && $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_ON ? 'margin-top:0' : '';
+				if($this->stored_title != '')
+					$this->viz_ui .= "<h3 style='$css'>" . html($this->stored_title) . "</h3>\n";
+				if($this->stored_description != '')
+					$this->viz_ui .= '<p>' . html($this->stored_description) . "</p>\n";
 			}
 			else {
 				$size = 7;
@@ -332,12 +368,11 @@ JS;
 			if($this->chart === null || !$this->sql)
 				return;
 			
-			$db = db_connect();
-			$stmt = $db->prepare($this->sql);
+			$stmt = $this->db->prepare($this->sql);
 			if($stmt === false)
-				return proc_error('Failed to prepare statement', $db);			
+				return proc_error('Failed to prepare statement', $this->db);			
 			if($stmt->execute() === false)
-				return proc_error('Failed to execute statement', $db);
+				return proc_error('Failed to execute statement', $this->db);
 			
 			$this->viz_ui .= "<script>\n" . $this->chart->get_js($stmt) . "</script>\n";
 		}

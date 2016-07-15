@@ -21,7 +21,12 @@
 			
 				// or we are visualizing a stored query
 				|| ($_GET['mode'] == MODE_QUERY 
-					&& isset($_GET['id']))
+					&& isset($_GET['id'])
+					&& 
+						// not explictly turned on
+						!(isset($_GET[PLUGIN_PARAM_NAVBAR])
+						&& $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_ON)
+					)
 				)
 			)
 		{

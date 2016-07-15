@@ -2,7 +2,6 @@
 	//==========================================================================================
 	class dbWebGenChart_network_visjs extends dbWebGenChart {
 	//==========================================================================================
-		// 
 		
 		//--------------------------------------------------------------------------------------
 		// returns html form for chart settings		
@@ -13,11 +12,11 @@
 HELP;
 
 			$nodequery_help = <<<HELPTEXT
-				<p>This field is optional. To display more information about nodes, enter a query that retrieves the following columns for each node:</p>
+				<p>Optionally use this field to provide an SQL query that provides information about nodes. The query should have named columns as follows:</p>
 				<ol class='columns'>
-					<li>Node ID (string)</li>
-					<li>Node label (string)</li>
-					<li>Node group (string) - optional; can be used together with options to define custom icons for each node group. <a target="_blank" href="http://ionicons.com/">ionicons</a> are supported</li>				
+					<li><code>id</code>Node ID (string or integer)</li>
+					<li><code>label</code>Node label (string)</li>
+					<li><code>options</code>: <a target="_blank" href="http://visjs.org/docs/network/nodes.html">Node options</a> (JSON string) - optional; define individual options for each node in JSON notation. Individual options override node options provided in the <i>Custom Options</i> box below.</li>
 				</ol>
 HELPTEXT;
 			$nodequery_help = get_help_popup('Node Query', $nodequery_help);
@@ -25,53 +24,58 @@ HELPTEXT;
 			
 			$visjs_options = <<<OPTIONS
 {
-  layout: {
-    improvedLayout: true
+  "layout": {
+    "improvedLayout": true
   },
-  interaction: {
-    dragNodes: true,
-    hover: true
+  "interaction": {
+    "dragNodes": true,
+    "hover": true
   },
-  physics: {
-    solver: 'forceAtlas2Based',
-    stabilization: {
-      iterations: 300,
-      updateInterval: 50
+  "physics": {
+    "solver": "forceAtlas2Based",
+    "stabilization": {
+      "iterations": 300,
+      "updateInterval": 50
     },
-    adaptiveTimestep: true
+    "adaptiveTimestep": true
   },
-  nodes: {
-    font: '16px arial black',
-    icon: {
-      size: 75
+  "nodes": {
+    "font": "16px arial black",
+    "shape": "icon",
+    "icon": {
+      "size": 75,
+	  "face": "Ionicons",
+      "code": "\uf47e",
+      "color":"darkgreen"
     },
-    scaling: {
-      label: {
-        min: 12,
-        max: 20
+    "scaling": {
+      "label": {
+        "min": 12,
+        "max": 20
       }
     }
   },
-  edges: {
-    smooth: {
-      type: 'dynamic'
+  "edges": {
+    "smooth": {
+      "type": "dynamic"
     },
-    color: '#888888',
-    font: '11px arial #888888',
-    hoverWidth: 3,
-    selectionWidth: 3
+    "color": "#888888",
+    "font": "11px arial #888888",
+    "hoverWidth": 3,
+    "selectionWidth": 3
   }
 }
 OPTIONS;
 			return <<<SETTINGS
 				<p>Displays the query result as a network graph. The query result must be an edge list with the following named columns:</p>
 				<ol class='columns'>
-					<li><code>source</code>: Source node ID (string)</li>						
-					<li><code>target</code>: Target node ID (string)</li>
+					<li><code>source</code>: Source node ID (string or integer)</li>						
+					<li><code>target</code>: Target node ID (string or integer)</li>
 					<li><code>weight</code>: Edge weight controlling the width in pixels of the edge (number) - optional, default = 1</li>
-					<li><code>label</code>: Edge label (string) - optional</li>
-					<li><code>arrows</code>: Arrow direction. Possible values: 'none' (no arrows), 'from' (pointing to source), 'to' (pointing to target), 'from to' (both directions) - optional, default = 'none'</li>
-				</ol>					
+					<li><code>label</code>: Edge label (string) - optional</li>					
+					<li><code>options</code>: <a target="_blank" href="http://visjs.org/docs/network/edges.html">Edge options</a> (JSON string) - optional; define individual options for each edge in JSON notation. Individual options override edge options provided in the <i>Custom Options</i> box below.</li>
+				</ol>
+				<p><a target="_blank" href="http://ionicons.com/">ionicons</a> are supported as node icons.</p>
 				<label class='control-label'>Node Query {$nodequery_help}</label>
 				<p>{$this->page->render_textarea('network_visjs-nodequery', '', 'monospace vresize')}</p>
 				<label class='control-label'>Custom Options {$options_help}</label>				
@@ -97,7 +101,8 @@ SETTINGS;
 			if($options_json === '')
 				$options_json = '{}';
 			
-			$options = json_decode($options_json);			
+			$options = json_decode($options_json, true);			
+						
 			$iterations = isset($options['physics']['stabilization']['iterations']) ? $options['physics']['stabilization']['iterations'] : 300;
 			
 			$nodes = array();
@@ -114,15 +119,57 @@ SETTINGS;
 				if(isset($row['label']))
 					$edge['label'] = strval($row['label']);
 				
-				if(isset($row['arrows']))
-					$edge['arrows'] = $row['arrows'];
+				if(isset($row['options'])) {
+					$edge_options = json_decode($row['options'], true);
+					if($edge_options !== null)
+						$edge += $edge_options;
+				}
 					
 				$edges[] = $edge;
 				
+				// add source and/or target nodes to node list
 				foreach(array('source', 'target') as $col)
 					if(!isset($nodes[$row[$col]]))
 						$nodes[$row[$col]] = array('id' => $row[$col], 'label' => $row[$col]);
 			}
+			
+			
+			do { // check nodes query to define nodes list
+				$nodes_sql = trim($this->page->get_post('network_visjs-nodequery', ''));
+				if($nodes_sql != '' && mb_substr(mb_strtolower($nodes_sql), 0, 6) !== 'select') {
+					proc_error('Invalid Node Query. Only SELECT statements are allowed. Query is ignored.');
+					break;
+				}			
+				
+				if($nodes_sql === '')
+					break;
+					
+				$nodes_stmt = $this->page->db()->prepare($nodes_sql);
+				if($nodes_stmt === false) {
+					proc_error('Node Query produces error during preparation.', $this->page->db());
+					break;
+				}
+				
+				if($nodes_stmt->execute() === false) {
+					proc_error('Node Query produces error during execution.', $this->page->db());
+					break;
+				}
+						
+				while($node = $nodes_stmt->fetch(PDO::FETCH_ASSOC)) {
+					if(!isset($nodes[$node['id']]))
+						continue;
+					
+					$nodes[$node['id']]['label'] = $node['label'];
+					if(!isset($node['options']))
+						continue;
+					
+					$node_options = json_decode($node['options'], true);
+					if($node_options === null)
+						continue;
+					
+					$nodes[$node['id']] += $node_options;
+				}				
+			} while(false);
 			
 			$nodes_json = json_encode(array_values($nodes));
 			$edges_json = json_encode($edges);
@@ -174,8 +221,21 @@ SETTINGS;
 						$('#stop_simu').on('click', function() {
 							network.stopSimulation();							
 						});
+						
+						network.fit();
 					}, 0);
 				});
+				
+				network.on('doubleClick', function(arg) {
+					var clicked_item = null;					
+					if(arg.nodes.length == 1)
+						clicked_item = data.nodes.get(arg.nodes[0]);
+					else if(arg.edges.length == 1)
+						clicked_item = data.edges.get(arg.edges[0]);					
+					if(clicked_item !== null && clicked_item.hasOwnProperty('href_view'))
+						window.open(clicked_item.href_view).focus();				
+				});
+
 				
 				network.on('stabilized', function(arg) {
 					progress_bar.hide();

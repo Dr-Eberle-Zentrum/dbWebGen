@@ -3,7 +3,7 @@
 	abstract class dbWebGenChart {
 	//==========================================================================================
 		protected $page;	
-		protected $type;
+		protected $type;		
 		
 		//--------------------------------------------------------------------------------------
 		public function __construct($type, $page) {
