@@ -165,7 +165,7 @@ body,html{height:100%}
 #network-loading-progress {
 	display: none;
 	position: absolute;
-	z-index: 10000;
+	z-index: 555;
 	width: 100%;
 	text-align: center;	
 }

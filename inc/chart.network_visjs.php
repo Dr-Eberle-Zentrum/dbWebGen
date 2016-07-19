@@ -78,6 +78,9 @@ OPTIONS;
 				<p><a target="_blank" href="http://ionicons.com/">ionicons</a> are supported as node icons.</p>
 				<label class='control-label'>Node Query {$nodequery_help}</label>
 				<p>{$this->page->render_textarea('network_visjs-nodequery', '', 'monospace vresize')}</p>
+				<div class='checkbox top-margin-zero'>
+					<label>{$this->page->render_checkbox('network_visjs-hidenodes', 'ON', false)}Remove nodes missing in the Node Query result</label>
+				</div>				
 				<label class='control-label'>Custom Options {$options_help}</label>				
 				<p>{$this->page->render_textarea('network_visjs-options', $visjs_options, 'monospace vresize')}</p>
 SETTINGS;
@@ -100,7 +103,7 @@ SETTINGS;
 			$options_json = trim($this->page->get_post('network_visjs-options', ''));
 			if($options_json === '')
 				$options_json = '{}';
-			
+				
 			$options = json_decode($options_json, true);			
 						
 			$iterations = isset($options['physics']['stabilization']['iterations']) ? $options['physics']['stabilization']['iterations'] : 300;
@@ -154,10 +157,14 @@ SETTINGS;
 					proc_error('Node Query produces error during execution.', $this->page->db());
 					break;
 				}
-						
+				
+				$node_query_ids = array();
+				
 				while($node = $nodes_stmt->fetch(PDO::FETCH_ASSOC)) {
 					if(!isset($nodes[$node['id']]))
 						continue;
+					
+					$node_query_ids[] = $node['id'];
 					
 					$nodes[$node['id']]['label'] = $node['label'];
 					if(!isset($node['options']))
@@ -168,7 +175,16 @@ SETTINGS;
 						continue;
 					
 					$nodes[$node['id']] += $node_options;
-				}				
+				}
+
+				if('ON' != $this->page->get_post('network_visjs-hidenodes', 'OFF')) 
+					continue;
+				
+				// remove nodes that are not in the node query result
+				foreach($nodes as $node_id => $node_info)
+					if(!in_array($node_id, $node_query_ids))
+						unset($nodes[$node_id]);
+					
 			} while(false);
 			
 			$nodes_json = json_encode(array_values($nodes));

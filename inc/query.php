@@ -284,7 +284,7 @@ STR;
 				<p>Please provide a title and a description for the stored query (optional):</p>
 				<p><input class="form-control" placeholder="Title" id="stored_query_title" /></p>
 				<p><textarea class="form-control vresize" placeholder="Description" id="stored_query_description"></textarea></p>
-				<p><input id="viz-share" class="form-control btn btn-primary" value="Create Link" /></p>				
+				<p><input id="viz-share" type="submit" class="form-control btn btn-primary" value="Create Link" /></p>				
 				</form>
 				<script>
 					$('#viz-share').click(function() {
@@ -301,16 +301,17 @@ STR;
 								$('.viz-share-url').html(url_query).show(); 
 								return;
 							}
-							else {
-								button.hide();
-								var link = $('<a/>', {id: 'shared', target: '_blank', href: url_query});
-								link.text(document.location.origin + document.location.pathname + url_query);
-								$('.viz-share-url').text('').show().append(link);						
-							}
+							
+							button.hide();
+							var link = $('<a/>', {id: 'shared', target: '_blank', href: url_query});
+							link.text(document.location.origin + document.location.pathname + url_query);
+							$('.viz-share-url').text('').show().append(link);						
 							button.popover('hide');
 						}).fail(function() {
-							$('.viz-share-url').text('Error: Could not generate a shareable URL.').show();
+							$('.viz-share-url').text('Error: Could not generate a shareable URL.').show();							
 						});
+						
+						return false; // do not submit form!
 					});
 				</script>
 SHARE;
@@ -321,7 +322,7 @@ SHARE;
 				<a id='viz-share-popup' href='javascript:void(0)' data-purpose='help' data-toggle='popover' data-placement='bottom' data-content='{$share_popup}'><span title='Share this live query visualization' class='glyphicon glyphicon-link'></span> Get Shareable Link</a>
 				<div class='viz-share-url'></div>
 				<script>					
-					$('#viz-share-popup').on('shown.bs.popover', function() {
+					$('#viz-share-popup').on('shown.bs.popover', function() {						
 						$('#stored_query_title').val('');
 						$('#stored_query_description').val('');
 						$('#viz-share-popup').prop("disabled", false);
