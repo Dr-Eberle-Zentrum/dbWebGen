@@ -48,7 +48,7 @@
 			
 			if($this->is_stored_query() && !$this->fetch_stored_query()) {
 				$this->sql = null;
-				$this->error_msg = 'Could not retrieve the stored query';
+				$this->error_msg = 'Could not retrieve the stored query';				
 			}
 			else {
 				$this->sql = trim($this->get_post(QUERYPAGE_FIELD_SQL, ''));
@@ -162,7 +162,8 @@ SQL;
 				
 				if($stored_query = $stmt->fetch(PDO::FETCH_ASSOC)) {
 					$_POST = $_POST + (array) json_decode($stored_query['params_json']);
-					$_GET[QUERY_PARAM_VIEW] = QUERY_VIEW_RESULT;
+					if(!isset($_GET[QUERY_PARAM_VIEW]))
+						$_GET[QUERY_PARAM_VIEW] = QUERY_VIEW_RESULT;
 					
 					$this->stored_title = $stored_query['title'] !== null ? trim($stored_query['title']) : '';
 					$this->stored_description = $stored_query['description'] !== null ? trim($stored_query['description']) : '';					

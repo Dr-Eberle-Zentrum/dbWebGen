@@ -207,10 +207,12 @@
 				$table_body .= "<tr><td class='fit'>\n";
 				$action_icons = array();
 				
-				if(isset($table['render_link']) && is_allowed($table, MODE_LINK)) {					
-					$action_icons[] = "<a href='" .
-						sprintf($table['render_link']['href_format'], $record[$table['render_link']['field']]) .
-						"'><span title='{$table['render_link']['title']}' class='glyphicon glyphicon-eye-open'></span></a>";
+				if(isset($table['render_links']) && is_allowed($table, MODE_LINK)) {
+					foreach($table['render_links'] as $render_link) {
+						$action_icons[] = "<a href='" .
+							sprintf($render_link['href_format'], $record[$render_link['field']]) .
+							"'><span title='{$render_link['title']}' class='glyphicon glyphicon-{$render_link['icon']}'></span></a>";
+					}
 				}
 				
 				if(is_allowed($table, MODE_VIEW)) {

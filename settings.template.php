@@ -266,15 +266,19 @@
 					Name of a handler function that will be called for the current record. Arguments: (1) name of the current table (2) table info from this settings file (3) the record retrieved from the database using PDO::FETCH_ASSOC and (4) this very custom action hash, which means that any additional key/value pairs you add to this array will get passed to the handler function.
 		- list_in_related: bool (optional) (default: true)
 			In MODE_VIEW, there is a dropdown linking to tables where the current record is linked through a foreign key (T_LOOKUP). If you do not want this table to appear in this list at all, set this to true.
-		- render_link: array (optional)
-			If MODE_LINK and MODE_LIST are allowed in this table, then there will be an extra icon in the table in MODE_LIST for each record that allows to view the actual object represented by the record. The following associative array has to be provided:
+		- render_links: array (optional)
+			If MODE_LINK and MODE_LIST are allowed in this table, then there will be an extra icon in the table in MODE_LIST for each record that allows to view the actual object represented by the record. An associative array has to be provided for each entry in this array:
+				- icon: string
+					The name of a glyphicon that works with bootstrap, e.g. "eye-open" or "trash". See a list here: http://www.w3schools.com/bootstrap/bootstrap_ref_comp_glyphs.asp
 				- href_format: string
 					A URL template that will be used in a sprintf() call, with the 'field' key of this array (see next). Hence this string should contain one %s
 				- field: string
 					Name of the field whose value will be used to replace %s in href_format
 				- title: string
 					Title (tooltip) shown when hovering over the link icon in MODE_LIST
-			Example: 'render_link' => array('href_format' => 'uploads_images/%s', 'field' => 'filename', title => 'Show the damn file')				
+			Example: 'render_links' => array(
+					array('icon' => 'eye-open', 'href_format' => 'uploads_images/%s', 'field' => 'filename', title => 'Show the damn file')
+				)
 	======================================================================================================== */
 	$TABLES = array(
 	);
