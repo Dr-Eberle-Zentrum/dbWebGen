@@ -236,6 +236,8 @@
 				- mapping: array
 					Hash array with key := value of the other field, and value := corresponding label of this field.
 					If the othe field has a value that is not represented in this mapping hash, the label will be the default field label
+			- list_hide: boolean (optional) (default: false)
+				Determines whether this field is hidden from the table in MODE_LIST
 		- sort: array (optional)
 			Used for default sorting of tables in MODE_LIST. Associative array with key := fieldname (or SQL expression) and value := {'asc', 'desc'}
 			e.g. [ 'lastname' => 'asc, 'firstname' => 'asc' ]
@@ -264,6 +266,15 @@
 					Name of a handler function that will be called for the current record. Arguments: (1) name of the current table (2) table info from this settings file (3) the record retrieved from the database using PDO::FETCH_ASSOC and (4) this very custom action hash, which means that any additional key/value pairs you add to this array will get passed to the handler function.
 		- list_in_related: bool (optional) (default: true)
 			In MODE_VIEW, there is a dropdown linking to tables where the current record is linked through a foreign key (T_LOOKUP). If you do not want this table to appear in this list at all, set this to true.
+		- render_link: array (optional)
+			If MODE_LINK and MODE_LIST are allowed in this table, then there will be an extra icon in the table in MODE_LIST for each record that allows to view the actual object represented by the record. The following associative array has to be provided:
+				- href_format: string
+					A URL template that will be used in a sprintf() call, with the 'field' key of this array (see next). Hence this string should contain one %s
+				- field: string
+					Name of the field whose value will be used to replace %s in href_format
+				- title: string
+					Title (tooltip) shown when hovering over the link icon in MODE_LIST
+			Example: 'render_link' => array('href_format' => 'uploads_images/%s', 'field' => 'filename', title => 'Show the damn file')				
 	======================================================================================================== */
 	$TABLES = array(
 	);

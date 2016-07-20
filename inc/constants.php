@@ -80,6 +80,7 @@
 	define('MODE_QUERY', 'query');
 	
 	// pseudo modes
+	define('MODE_LINK', 'link'); // providing a link for rendering the actual object, not the record
 	define('MODE_DELETE', 'delete');
 	define('MODE_CREATE_DONE', 'create_done');
 	define('MODE_LOGOUT', 'logout');	

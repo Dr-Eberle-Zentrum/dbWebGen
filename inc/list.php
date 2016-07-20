@@ -207,8 +207,15 @@
 				$table_body .= "<tr><td class='fit'>\n";
 				$action_icons = array();
 				
-				if(is_allowed($table, MODE_VIEW))
-					$action_icons[] = "<a href='?table={$table_name}&amp;mode=".MODE_VIEW."{$id_str}'><span title='View this record' class='glyphicon glyphicon-zoom-in'></span></a>";
+				if(isset($table['render_link']) && is_allowed($table, MODE_LINK)) {					
+					$action_icons[] = "<a href='" .
+						sprintf($table['render_link']['href_format'], $record[$table['render_link']['field']]) .
+						"'><span title='{$table['render_link']['title']}' class='glyphicon glyphicon-eye-open'></span></a>";
+				}
+				
+				if(is_allowed($table, MODE_VIEW)) {
+					$action_icons[] = "<a href='?table={$table_name}&amp;mode=".MODE_VIEW."{$id_str}'><span title='View this record' class='glyphicon glyphicon-zoom-in'></span></a>";					
+				}
 				
 				if(is_allowed($table, MODE_EDIT))
 					$action_icons[] = "<a href='?table={$table_name}&amp;mode=".MODE_EDIT."{$id_str}'><span title='Edit this record' class='glyphicon glyphicon-edit'></span></a>";
@@ -229,7 +236,7 @@
 				
 				$col_no = 0;
 				foreach($record as $col => $val) {
-					if(!isset($fields[$col]))
+					if(!isset($fields[$col]) || is_field_hidden_in_list($fields[$col]))
 						continue;
 					
 					$css = '';
@@ -258,7 +265,7 @@
 			for($i=0; $i<$res->columnCount(); $i++) {
 				$meta = $res->getColumnMeta($i);
 				$col = $meta['name'];
-				if(!isset($fields[$col]))
+				if(!isset($fields[$col]) || is_field_hidden_in_list($fields[$col]))
 					continue;
 				
 				$minwidth = '';
