@@ -48,7 +48,8 @@
 		
 		$record = $stmt->fetch(PDO::FETCH_ASSOC);
 		
-		$addl_data = '';				
+		$addl_data = '';	
+
 		if(isset($table['additional_steps'])) {
 			$addl_data .= "<div class='btn-group'><button type='button' class='btn btn-default dropdown-toggle ' data-toggle='dropdown'><span class='glyphicon glyphicon-forward'></span> Add Related Data <span class='caret'></span></button><ul class='dropdown-menu' role='menu'>\n";
 			foreach($table['additional_steps'] as $add_table => $add_info) {
@@ -71,6 +72,14 @@
 		
 		if(is_allowed($table, MODE_LIST))
 			$addl_data .= "<a title='".html("List All {$table['display_name']}")."' href='?" . http_build_query(array('table'=>$table_name, 'mode'=>MODE_LIST)) ."' class='btn btn-default '><span class='glyphicon glyphicon-list'></span> List All</a>";
+		
+		if(isset($table['render_links']) && is_allowed($table, MODE_LINK)) {
+			foreach($table['render_links'] as $render_link) {
+				$addl_data .= "<a href='" .
+					sprintf($render_link['href_format'], $record[$render_link['field']]) .
+					"' title='{$render_link['title']}' class='btn btn-default'><span class='glyphicon glyphicon-{$render_link['icon']}'></span></a>";
+			}
+		}
 	
 		// now check for related data in other tables
 		$rel_list = array();

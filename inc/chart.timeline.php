@@ -18,6 +18,9 @@
 				<div class='checkbox'>
 					<label>{$this->page->render_checkbox('timeline-has-singleColor', 'ON', false)}Single color for all bars: {$this->page->render_textbox('timeline-singleColor', 'darkgreen')}</label>
 				</div>
+				<div class='checkbox'>
+					<label>{$this->page->render_checkbox('timeline-tooltips', 'ON', true)}Show tooltips</label>
+				</div>				
 			</div>
 HTML;
 		}
@@ -27,13 +30,6 @@ HTML;
 		//--------------------------------------------------------------------------------------
 			parent::add_required_scripts();
 		}		
-		
-		//--------------------------------------------------------------------------------------
-		// need to override this because of material options conversion
-		public function before_draw_js() {
-		//--------------------------------------------------------------------------------------
-			return '';
-		}
 		
 		//--------------------------------------------------------------------------------------
 		public /*array*/ function get_columns(&$stmt) {
@@ -76,6 +72,9 @@ HTML;
 					'showRowLabels' => ($this->page->get_post('timeline-showRowLabels') == 'ON'),
 					'singleColor' => ($this->page->get_post('timeline-has-singleColor') == 'ON' ? 
 						$this->page->get_post('timeline-singleColor') : null)
+				),
+				'tooltip' => array(
+					'trigger' => ($this->page->get_post('timeline-tooltips') == 'ON' ? 'focus' : 'none')
 				)
 			);
 		}
