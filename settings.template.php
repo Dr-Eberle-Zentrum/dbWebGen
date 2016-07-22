@@ -9,7 +9,9 @@
 		- page_icon: string (optional)
 			Specify a path to an web page icon (aka 'favicon').
 		- plugins: array (optional)
-			Custom PHP files that will be included using require_once(). These plugins can contain functions that can be referenced anywhere in this file where external procedures can be provided (e.g. $LOGIN/initializer_proc). The index of the array can be any key that can be used to access the actual file name of the plugin from within the code.		
+			Custom PHP files that will be included using require_once(). These plugins can contain functions that can be referenced anywhere in this file where external procedures can be provided (e.g. $LOGIN/initializer_proc). The index of the array can be any key that can be used to access the actual file name of the plugin from within the code.
+		- cache_dir: string (optional, but recommended)
+			Path to the directory where this app and its plugin can store their cache files. The path must not end with a trailing slash. The process that runs the php scripts on your machine must have read & write access to this directory. If this setting is undefined, there will be no caching.
 		- page_size: int
 			Pagination setting for MODE_LIST: max. number of items per page		
 		- pages_prevnext: int

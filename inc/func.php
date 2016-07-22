@@ -1,4 +1,7 @@
 <?
+	// see engine.php for info which includes are available during MODE_FUNC calls.
+	// everything needed on top of that needs to be included here.	
+
 	//------------------------------------------------------------------------------------------
 	function process_func() {
 	//------------------------------------------------------------------------------------------
@@ -14,6 +17,10 @@
 				
 			case GET_SHAREABLE_QUERY_LINK:
 				get_sharable_query_link();
+				return;
+				
+			case VISJS_NETWORK_CACHE_POSITIONS:
+				visjs_network_cache_positions();
 				return;
 		}
 		
@@ -65,5 +72,13 @@
 			'mode' => MODE_QUERY,
 			'id' => $stored_query
 		));
+	}
+	
+	//------------------------------------------------------------------------------------------
+	function visjs_network_cache_positions() {
+	//------------------------------------------------------------------------------------------
+		require_once 'chart.base.php';
+		require_once 'chart.network_visjs.php';
+		dbWebGenChart_network_visjs::cache_positions_async();
 	}
 ?>

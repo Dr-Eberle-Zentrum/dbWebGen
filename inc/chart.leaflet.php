@@ -197,6 +197,8 @@ SETTINGS;
 			var data_markers = [];
 			
 			document.addEventListener("DOMContentLoaded", function() {
+				$('#chart_div').css('overflow', 'hidden');
+				
 				if(data_table.length == 0) {
 					$('#chart_div').html('<div class="alert alert-warning"><b>Note:</b> Your query did not return any records.</div>');
 					return;

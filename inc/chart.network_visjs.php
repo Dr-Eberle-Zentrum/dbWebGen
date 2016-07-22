@@ -95,6 +95,106 @@ SETTINGS;
 			add_stylesheet('https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css');
 		}
 		
+		//--------------------------------------------------------------------------------------	
+		public /*string|false*/ function cache_get_js() {
+		//--------------------------------------------------------------------------------------
+			global $APP;
+			
+			if(!isset($APP['cache_dir']) || isset($_GET['nocache']))
+				return false;
+			
+			$network_id = $this->page->get_stored_query_id();			
+			$dir = $this->cache_get_dir();
+			
+			// read cache
+			$t = @filemtime($dir . '/' . $network_id . '.definition');
+			
+			if($t === false) // probably does not exist yet
+				return false;
+				
+			if(time() - $t > $this->cache_get_ttl()) // cache expired
+				return false;
+				
+			$cache = @file_get_contents($dir . '/' . $network_id . '.definition');
+			if($cache === false)
+				return false;
+			
+			// check version
+			if(preg_match('/^<!-- (?P<ver>\d+) -->\n/', $cache, $matches) !== 1) 
+				return false; // can't find version info
+			
+			if(!isset($matches['ver']))
+				return false;
+			
+			if(intval($matches['ver']) < $this->cache_get_version())
+				return false; // this code is newer version -> don't return cache
+			
+			$pos = @file_get_contents($dir . '/' . $network_id . '.node_positions');
+			if($pos !== false)
+				$cache .= $pos;
+			
+			return $cache;
+		}
+		
+		//--------------------------------------------------------------------------------------
+		public /*bool*/ function cache_put_js($js) {
+		//--------------------------------------------------------------------------------------
+			global $APP;
+			if(!isset($APP['cache_dir']) || isset($_GET['nocache']))
+				return false;
+			
+			$network_id = $this->page->get_stored_query_id();			
+			$dir = $this->cache_get_dir();
+			
+			if(!@is_dir($dir)) {
+				if(!@mkdir($dir, 0777, true)) {
+					$error = error_get_last();				
+					proc_error($error['message']);
+				}
+			}
+			
+			// remove stored node positions (if any)
+			@unlink($dir . '/' . $network_id . '.node_positions');
+			
+			// make version
+			$version = "<!-- " . $this->cache_get_version() . " -->\n";
+			
+			return @file_put_contents($dir . '/' . $network_id . '.definition', $version . $js);
+		}
+		
+		//--------------------------------------------------------------------------------------
+		// this is called from MODE_FUNC
+		public static /*void*/ function cache_positions_async() {
+		//--------------------------------------------------------------------------------------
+			header('Concent-Type: text/plain; charset:utf-8');
+			
+			if(!isset($_POST['cache_dir']) || !isset($_POST['network_id']) || !isset($_POST['method'])) {				
+				echo 'ERROR';
+				return;
+			}
+			
+			$cache_file = $_POST['cache_dir'] . '/' . $_POST['network_id'] . '.node_positions';
+
+			if($_POST['method'] === 'poll_node_cache') {
+				// check whether we need to put node positions cache				
+				if(!@file_exists($cache_file))
+					echo '1'; // need put cache
+				else
+					echo '0'; // no need to put cache			
+			}			
+			else if($_POST['method'] === 'put_node_cache') {			
+				// write node positions cache
+				// check whether node positions already exist
+				if(@file_exists($cache_file))
+					return;
+				
+				// otherwise make file
+				$node_pos = '<script>' . $_POST['node_positions'] . '</script>';
+				@file_put_contents($cache_file, $node_pos);
+				echo 'OK';				
+			}
+		}
+		
 		//--------------------------------------------------------------------------------------
 		// returns html/js to render page
 		public /*string*/ function get_js(/*PDOStatement*/ $query_result) {
@@ -189,6 +289,59 @@ SETTINGS;
 			
 			$nodes_json = json_encode(array_values($nodes));
 			$edges_json = json_encode($edges);
+
+			// JS code for trying to get cached node positions
+			$positions_js = '';			
+			if($this->page->is_stored_query() && isset($APP['cache_dir'])) {
+				$cache_dir = $this->cache_get_dir();
+				$network_id = $this->page->get_stored_query_id();				
+				$func_url = '?' . http_build_query(array(
+					'mode' => MODE_FUNC,
+					'target' => VISJS_NETWORK_CACHE_POSITIONS
+				));				
+				
+				$positions_js = <<<POS_JS
+				// if cache dir is set, we first poll whether we need to update cache
+				// if so, we put the current network in the cache
+				if('$cache_dir' != '' && !stabilization_cancelled) {
+					stabilization_cancelled = true; // we do this caching only once
+					// put node cache
+					$.post(
+						'$func_url', 
+						{							
+							method: 'poll_node_cache', 
+							network_id: '$network_id',
+							cache_dir: '$cache_dir',
+						},
+						function(data) {
+							console.log('need to put node position cache? ' + data);
+							if(data != '1')
+								return;
+							
+							// build cache data
+							var pos_js = 'function set_node_positions() { network.setOptions({physics: {enabled:false}}); stabilization_cancelled = true; var node_positions = '; 
+							var pos_xy = network.getPositions();
+							pos_js += JSON.stringify(pos_xy);
+							pos_js += '; for(var node_id in node_positions) { ';
+							pos_js += 'if(!node_positions.hasOwnProperty(node_id)) continue; ';
+							pos_js += 'network.moveNode(node_id, node_positions[node_id].x, node_positions[node_id].y);'
+							pos_js += '} network.fit(); } ';
+							
+							$.post('$func_url', { 								
+								method: 'put_node_cache',
+								network_id: '$network_id',
+								cache_dir: '$cache_dir',
+								node_positions: pos_js
+							},
+							function(data) {
+								console.log('caching returns: ' + data);
+							});
+						}
+					);
+				}	
+POS_JS;
+			}
+			
 			
 			$js = <<<EOT
 			</script>
@@ -196,7 +349,9 @@ SETTINGS;
 				<div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="$iterations" style="width:0%"></div>
 			</div>		
 			<script>
-			var network;				
+			var network;
+			var stabilization_cancelled = false;			
+			
 			document.addEventListener('DOMContentLoaded', function() 
 			{
 				var container = document.getElementById('chart_div');	
@@ -212,10 +367,17 @@ SETTINGS;
 				
 				var options = $options_json;
 				
-				var progress_bar = $('#network-loading-progress')
-					.offset($(container).offset())
-					.css('width', $(container).width())
-					.toggle();
+				var progress_bar = null;			
+				if(typeof set_node_positions === 'function') { // we'll come from the cache, yo!
+					options.physics = false;
+					options.edges['smooth'] = {type: 'continuous'}; // dynamic edges have invisible nodes that spoil the drawing
+				}
+				else {			
+					progress_bar = $('#network-loading-progress')
+						.offset($(container).offset())
+						.css('width', $(container).width())
+						.toggle();
+				}
 				
 				network = new vis.Network(container, data, options);
 				
@@ -232,13 +394,15 @@ SETTINGS;
 						progress_bar.find('div')						
 							.attr('aria-valuenow', $iterations)
 							.css('width', '100%')
-							.html('Network is still stabilizing, but ready to explore. <a style="" id="stop_simu" href="javascript:void(0)">Stop stabilization</a>');
+							.html('Network is still stabilizing, but ready to explore. <a style="" id="stop_simu" href="javascript:void(0)">Click here to freeze network</a>');
+							
+						network.fit();
 							
 						$('#stop_simu').on('click', function() {
-							network.stopSimulation();							
+							network.stopSimulation();
+							stabilization_cancelled = true;
+							network.setOptions({ physics: false });
 						});
-						
-						network.fit();
 					}, 0);
 				});
 				
@@ -255,7 +419,14 @@ SETTINGS;
 				
 				network.on('stabilized', function(arg) {
 					progress_bar.hide();
+					
+					$positions_js
+					
+					network.setOptions({ physics: false });
 				});
+				
+				if(typeof set_node_positions === 'function')
+					set_node_positions();
 			});
 			</script>
 EOT;

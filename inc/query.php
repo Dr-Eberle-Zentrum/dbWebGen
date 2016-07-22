@@ -59,7 +59,20 @@
 		//--------------------------------------------------------------------------------------
 		public static function is_stored_query() {
 		//--------------------------------------------------------------------------------------
-			return isset($_GET['id']); // && mb_strlen($_GET['id']) == STORED_QUERY_ID_LENGTH;
+			return 
+			 	// stored query id provided
+				isset($_GET[QUERY_PARAM_ID])
+				
+				&& 
+				
+				// we're not in editing mode with post params
+				!isset($_POST['submit']);
+		}
+		
+		//--------------------------------------------------------------------------------------
+		public static function get_stored_query_id() {
+		//--------------------------------------------------------------------------------------
+			return $_GET[QUERY_PARAM_ID];
 		}
 		
 		//--------------------------------------------------------------------------------------
@@ -151,13 +164,13 @@ SQL;
 		//--------------------------------------------------------------------------------------
 			global $APP;		
 			
-			if(isset($APP['querypage_stored_queries_table']) && isset($_GET['id'])) {
+			if($this->is_stored_query() && isset($APP['querypage_stored_queries_table'])) {
 				// retrieve query details
 				$stmt = $this->db->prepare("select * from {$APP['querypage_stored_queries_table']} where id = ?");
 				if($stmt === false)
 					return false;
 				
-				if($stmt->execute(array($_GET['id'])) === false)
+				if($stmt->execute(array($this->get_stored_query_id())) === false)
 					return false;
 				
 				if($stored_query = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -215,7 +228,7 @@ SQL;
 					<textarea class="form-control vresize" id="{$sql_field}" name="{$sql_field}" rows="10">{$sql_html}</textarea>
 				</div>
 				<div class="form-group">
-					<button class="btn btn-primary" type="submit">Execute</button>
+					<button class="btn btn-primary" name="submit" type="submit">Execute</button>
 				</div>
 QUI;
 		}
@@ -370,13 +383,24 @@ JS;*/
 			if($this->chart === null || !$this->sql)
 				return;
 			
-			$stmt = $this->db->prepare($this->sql);
-			if($stmt === false)
-				return proc_error('Failed to prepare statement', $this->db);			
-			if($stmt->execute() === false)
-				return proc_error('Failed to execute statement', $this->db);
+			$js = false;
+			if($this->is_stored_query())
+				$js = $this->chart->cache_get_js();
 			
-			$this->viz_ui .= "<script>\n" . $this->chart->get_js($stmt) . "</script>\n";
+			if($js === false) {
+				$stmt = $this->db->prepare($this->sql);
+				if($stmt === false)
+					return proc_error('Failed to prepare statement', $this->db);			
+				if($stmt->execute() === false)
+					return proc_error('Failed to execute statement', $this->db);
+				
+				$js = $this->chart->get_js($stmt);
+				
+				if($this->is_stored_query())
+					$this->chart->cache_put_js($js);
+			}
+			
+			$this->viz_ui .= "<script>\n{$js}\n</script>\n";
 		}
 		
 		//--------------------------------------------------------------------------------------
