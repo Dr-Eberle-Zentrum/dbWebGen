@@ -39,6 +39,9 @@
 		// returnes cached js for visualization, or false if no cache exists
 		public /*string | false*/ function cache_get_js() { return false; }
 		
+		// store cached js of visualization; true on success, else false
+		public /*bool*/ function cache_put_js($js) {  }
+		
 		// returns the chart code version. this is only used for caching. 
 		// if this code is newer version than the cached version, the cache is emptied.	
 		// default version = 1; override and increment to ignore any existing cache

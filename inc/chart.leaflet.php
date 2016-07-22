@@ -197,10 +197,11 @@ SETTINGS;
 			var data_markers = [];
 			
 			document.addEventListener("DOMContentLoaded", function() {
-				$('#chart_div').css('overflow', 'hidden');
+				var chart_div = $('#chart_div');
+				chart_div.css('overflow', 'hidden');
 				
 				if(data_table.length == 0) {
-					$('#chart_div').html('<div class="alert alert-warning"><b>Note:</b> Your query did not return any records.</div>');
+					chart_div.html('<div class="alert alert-warning"><b>Note:</b> Your query did not return any records.</div>');
 					return;
 				}
 				
@@ -231,6 +232,11 @@ SETTINGS;
 				}
 				
 				map.fitBounds(L.featureGroup(data_markers).getBounds());
+				
+				// invalidate map after resize to make leaflet fetch missing tiles
+				chart_div.deferredResize(function() {					
+					map.invalidateSize(false);
+				}, 500);
 				
 				if('{$this->page->get_post('leaflet-minimap')}' === 'ON') {
 					new L.Control.MiniMap(L.tileLayer.provider('{$this->page->get_post('leaflet-basemap')}'), { 
