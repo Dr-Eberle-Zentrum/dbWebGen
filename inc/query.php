@@ -21,6 +21,7 @@
 		
 		public static $chart_types = array(
 			'table' => 'Table', 
+			'annotated_timeline' => 'Annotated Timeline',
 			'bar' => 'Bar Chart',
 			'candlestick' => 'Candlestick Chart',
 			'geo' => 'Geo Chart',

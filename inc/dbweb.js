@@ -164,6 +164,24 @@ $(window).load(function() {
 	// adjust fill height div
 	$(window).resize(adjust_div_full_height);
 	adjust_div_full_height();
+	
+	//
+	// mark changes in a table table 
+	// TODO: this is not used yet, but works and makes sense only when the 
+	// table view ordered descending chronologically by change
+	//
+	$('table[data-highlightchanges]').each(function() {
+		var table = $(this), tr_prev = [], row = 0;
+		table.find('tbody tr').each(function () {
+			var tr = $(this), col = 0;
+			tr.children('td').each(function() {
+				var td = $(this);
+				if(tr_prev[col] != undefined && tr_prev[col].html() != td.html())
+					tr_prev[col].addClass('bg-danger');				
+				tr_prev[col++] = td;
+			});
+		});
+	});
 });
 
 //
