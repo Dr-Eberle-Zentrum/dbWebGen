@@ -629,9 +629,15 @@ EOT;
 			if(is_inline() && isset($_POST[$field_name])) 
 				$arr_inline_details[$field_name] = $_POST[$field_name];
 			
-			if($field_info['type'] == T_UPLOAD) {				
-				if(!isset($_FILES[$field_name]) || $_FILES[$field_name]['size'] == 0)
+			if($field_info['type'] == T_UPLOAD) {		
+				if(!isset($_FILES[$field_name]))
 					return proc_error("Please browse for an upload for <b>{$field_info['label']}</b>.");
+				
+				if($_FILES[$field_name]['size'] == 0)
+					return proc_error("No file to upload selected for field <b>{$field_info['label']}</b>.");
+				
+				if($_FILES[$field_name]['error'] !== UPLOAD_ERR_OK)
+					return proc_error(get_file_upload_error_msg($_FILES[$field_name]['error']));
 				
 				$succ = handle_uploaded_file($table, $field_name, $field_info, $_FILES[$field_name]);
 				if($succ === false)
