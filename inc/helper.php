@@ -825,6 +825,15 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
+	function get_field_sort_expression(&$field) {
+	//------------------------------------------------------------------------------------------
+		if(!isset($field['sort_expr']))
+			return '%s';
+		
+		return $field['sort_expr'];
+	}
+	
+	//------------------------------------------------------------------------------------------
 	function is_field_hidden_in_list(&$field) {
 	//------------------------------------------------------------------------------------------
 		return isset($field['list_hide']) && $field['list_hide'] === true;
@@ -1169,14 +1178,14 @@
 			if(isset($_GET['sort']) && isset($table['fields'][$_GET['sort']])) {
 				$dir = isset($_GET['dir']) ? $_GET['dir'] : 'asc';
 				if($dir != 'asc' && $dir != 'desc')
-					$dir = 'asc';
+					$dir = 'asc';				
 				
-				$order_by[] = db_esc($_GET['sort']) . " $dir";
+				$order_by[] = sprintf(get_field_sort_expression($table['fields'][$_GET['sort']]), db_esc($_GET['sort'])) . " $dir";
 			}
 			
 			if(count($order_by) == 0 && isset($table['sort']) && is_array($table['sort']) && count($table['sort']) > 0 ) {
 				foreach($table['sort'] as $field_name => $dir) {
-					$order_by[] = db_esc($field_name) . " $dir";
+					$order_by[] = sprintf(get_field_sort_expression($table['fields'][$field_name]), db_esc($field_name)) . " $dir";						
 					
 					// fake the $_GET for later
 					$_GET['sort'] = $field_name;

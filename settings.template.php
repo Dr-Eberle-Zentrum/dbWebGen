@@ -240,6 +240,8 @@
 					If the othe field has a value that is not represented in this mapping hash, the label will be the default field label
 			- list_hide: boolean (optional) (default: false)
 				Determines whether this field is hidden from the table in MODE_LIST
+			- sort_expr: string (optional) (default: '%s')
+				If a table is sorted in MODE_LIST, this expression defines how the field to sort is handled in the ORDER BY clause using sprintf(). The default '%s' expression results in a "normal" sorting using ORDER BY with simply the fieldname. Use this setting e.g. for custom sorting using functions. Example: 'naturalsort(%s)'
 		- sort: array (optional)
 			Used for default sorting of tables in MODE_LIST. Associative array with key := fieldname (or SQL expression) and value := {'asc', 'desc'}
 			e.g. [ 'lastname' => 'asc, 'firstname' => 'asc' ]
