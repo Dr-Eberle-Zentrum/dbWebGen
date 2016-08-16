@@ -182,6 +182,11 @@ $(window).load(function() {
 			});
 		});
 	});
+	
+	// make sure disabled controls are also sent when a form is submitted
+	$('form').bind('submit', function () {
+		$(this).find(':input').prop('disabled', false);
+	});
 });
 
 //
