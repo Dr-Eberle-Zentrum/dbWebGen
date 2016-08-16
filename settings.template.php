@@ -261,7 +261,7 @@
 				- foreign_key: document
 					Foreign key field that links to this table from the n:m table
 			e.g. in table customers: 
-			'additional_steps' => array('orders' => array('label' => 'Orders of this customer', 'foreign_key': 'customer_id'))
+			'additional_steps' => array('orders' => array('label' => 'Orders of this customer', 'foreign_key' => 'customer_id'))
 		- custom_actions: array (optional)
 			Array of arrays, each representing a custom action that is offered in particular viewing modes through particular buttons. Each custom action is an associative array consisting at least of the following keys:
 				- mode: string

@@ -1,5 +1,11 @@
 # dbWebGen - Database Web Generator for PHP
-This PHP application automatically generates web forms to create, edit, view and browse data records in relational databases. 
+This PHP application automatically generates a responsive web app on top of your relational database. The app allows users to 
+* Create and edit records via web forms, taking into account foreign keys and other constraints
+* View stored records along with related records from other tables
+* Browse and filter records in a table
+* Query the database, visualize the results, and share the visualizations. Currenty the engine offers various visualizations like tables, bar charts, sankeys, timelines, graphs/networks, geomaps and others.
+
+Developers may add custom functionality and extensions to the engine through hook functions in plugins, and admins may exploit an [extensive array of settings](settings.template.php) controlling the engine.
 
 ## Requirements
 * Webserver running PHP (lowest tested version is 5.3)
@@ -14,7 +20,7 @@ This PHP application automatically generates web forms to create, edit, view and
 * Direct your web browser to the app folder and be happy.
 
 ## Example Database and App
-An example can be seen in the [dbWebGen-demo](https://github.com/eScienceCenter/dbWebGen-demo) repository
+An example app using this engine can be seen in the [dbWebGen-demo](https://github.com/eScienceCenter/dbWebGen-demo) repository
 
 ## License
 This code is licensed under the MIT license. See the [LICENSE](LICENSE) file.
