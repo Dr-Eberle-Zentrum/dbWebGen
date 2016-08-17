@@ -276,6 +276,7 @@ STR;
 			if(!$this->chart || !$this->sql || $this->sql === '')
 				return;
 			
+			global $APP;
 			if(!isset($APP['querypage_stored_queries_table']))
 				return;
 						
