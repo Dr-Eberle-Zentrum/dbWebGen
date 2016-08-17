@@ -81,8 +81,10 @@
 		public static function store_query(&$error_msg) {
 		//--------------------------------------------------------------------------------------
 			global $APP;
-			if(!isset($APP['querypage_stored_queries_table']))
+			if(!isset($APP['querypage_stored_queries_table'])) {
+				$error_msg = 'In $APP the querypage_stored_queries_table setting is missing in settings.php';
 				return false;
+			}
 			
 			$db = db_connect();
 			if($db === false) {
@@ -274,6 +276,9 @@ STR;
 			if(!$this->chart || !$this->sql || $this->sql === '')
 				return;
 			
+			if(!isset($APP['querypage_stored_queries_table']))
+				return;
+						
 			$link_url = '?' . http_build_query(array(
 				'mode' => MODE_FUNC,
 				'target' => GET_SHAREABLE_QUERY_LINK

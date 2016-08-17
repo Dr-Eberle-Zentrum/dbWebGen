@@ -48,7 +48,7 @@
 		- additional_callable_plugin_functions: array (optional)
 			List of function names that are allowed to be called via MODE_PLUGIN.	
 		- querypage_stored_queries_table: string (optional)
-			If this is set, users are allowed to store and share queries via the database in MODE_QUERY. This setting controls the name of the table that will be created for this purpose in the database.
+			If this is set, users are allowed to store and share queries via the database in MODE_QUERY. This setting controls the name of the table that will be created for this purpose in the database. If this is not set, users will not be able to store/share queries.
 		- querypage_permissions_func: string (optional)
 			Name of a function that returns a boolean value indicating whether the current user is allowed to interact with the page
 	======================================================================================================== */	
