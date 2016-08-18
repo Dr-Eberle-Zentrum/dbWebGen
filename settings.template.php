@@ -61,7 +61,7 @@
 		'pages_prevnext' => 2,
 		'mainmenu_tables_autosort' => true,
 		'search_lookup_resolve' => true,
-		'search_string_transformation' => 'lower(%s::text)',
+		'search_string_transformation' => 'lower((%s)::text)',
 		'null_label' => "<span class='nowrap' title='If you check this box, no value will be stored for this field. This may reflect missing, unknown, unspecified or inapplicable information. Note that no value (missing information) is different to providing an empty value: an empty value is a value.'>No Value</span>"			
 	);
 	

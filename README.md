@@ -24,3 +24,14 @@ An example app using this engine can be seen in the [dbWebGen-demo](https://gith
 
 ## License
 This code is licensed under the MIT license. See the [LICENSE](LICENSE) file.
+
+## Screenshots
+Below are some screenshots from a database app that uses dbWebGen to allow users to work with historic documents from 19th century Oman. Click any thumbnail to view at full resolution.
+
+[![Data in a Table](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/list_documents_th.png)](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/list_documents.png)  
+[![View a Record](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/view_document_th.png)](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/view_document.png)  
+[![New Record Form](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/new_document_recipient_th.png)](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/new_document_recipient.png)  
+[![Edit Record Form](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/edit_document_th.png)](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/edit_document.png)  
+[![Query with Network Visualization](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/query_network_th.png)](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/query_network.png)  
+[![Query with Map Visualization](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/query_map_th.png)](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/query_map.png)  
+[![Responsive Edit](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/edit_responsive_th.png)](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/edit_responsive.png)
