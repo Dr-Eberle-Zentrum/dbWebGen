@@ -22,9 +22,6 @@ Developers may add custom functionality and extensions to the engine through hoo
 ## Example Database and App
 An example app using this engine can be seen in the [dbWebGen-demo](https://github.com/eScienceCenter/dbWebGen-demo) repository
 
-## License
-This code is licensed under the MIT license. See the [LICENSE](LICENSE) file.
-
 ## Screenshots
 Below are some screenshots from a database app that uses dbWebGen to allow users to work with historic documents from 19th century Oman. Click any thumbnail to view at full resolution.
 
@@ -35,3 +32,6 @@ Below are some screenshots from a database app that uses dbWebGen to allow users
 [![Query with Network Visualization](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/query_network_th.png)](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/query_network.png)  
 [![Query with Map Visualization](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/query_map_th.png)](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/query_map.png)  
 [![Responsive Edit](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/edit_responsive_th.png)](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/edit_responsive.png)
+
+## License
+This code is licensed under the MIT license. See the [LICENSE](LICENSE) file.
