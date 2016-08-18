@@ -26,6 +26,7 @@ An example app using this engine can be seen in the [dbWebGen-demo](https://gith
 Below are some screenshots from a database app that uses dbWebGen to allow users to work with historic documents from 19th century Oman. Click any thumbnail to view at full resolution.
 
 [![Data in a Table](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/list_documents_th.png)](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/list_documents.png)  
+[![Search Filter](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/filter_persons_th.png)](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/filter_persons.png)  
 [![View a Record](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/view_document_th.png)](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/view_document.png)  
 [![New Record Form](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/new_document_recipient_th.png)](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/new_document_recipient.png)  
 [![Edit Record Form](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/edit_document_th.png)](https://esciencecenter.github.io/assets/dbWebGen/screenshots/alhamra/edit_document.png)  
