@@ -520,6 +520,20 @@
 		if($field['type'] == T_ENUM && $val !== NULL) {
 			$val = html($field['values'][$val]);
 		}
+		else if($field['type'] == T_NUMBER && $val !== NULL) {			
+			if(isset($field['max_decimals'])) {
+				if(is_array($field['max_decimals'])) {
+					if(isset($field['max_decimals'][$_GET['mode']]))
+						$val = (float) number_format($val, $field['max_decimals'][$_GET['mode']]);
+					else
+						$val = (float) $val;
+				}
+				else
+					$val = (float) number_format($val, $field['max_decimals']);				
+			}
+			else
+				$val = (float) $val;
+		}
 		else if($field['type'] == T_PASSWORD) {
 			$val = '●●●●●';
 		}		
