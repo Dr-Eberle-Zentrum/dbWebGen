@@ -524,12 +524,12 @@
 			if(isset($field['max_decimals'])) {
 				if(is_array($field['max_decimals'])) {
 					if(isset($field['max_decimals'][$_GET['mode']]))
-						$val = (float) number_format($val, $field['max_decimals'][$_GET['mode']]);
+						$val = (float) number_format($val, $field['max_decimals'][$_GET['mode']], '.', '');
 					else
 						$val = (float) $val;
 				}
 				else
-					$val = (float) number_format($val, $field['max_decimals']);				
+					$val = (float) number_format($val, $field['max_decimals'], '.', '');
 			}
 			else
 				$val = (float) $val;
