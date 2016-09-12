@@ -147,8 +147,8 @@ SETTINGS;
 		// override if additional scripts are needed for this type
 		public /*void*/ function add_required_scripts() {
 		//--------------------------------------------------------------------------------------
-			add_javascript('https://npmcdn.com/leaflet@0.7.7/dist/leaflet.js');
-			add_stylesheet('https://npmcdn.com/leaflet@0.7.7/dist/leaflet.css');
+			add_javascript('https://unpkg.com/leaflet@0.7.7/dist/leaflet.js');
+			add_stylesheet('https://unpkg.com/leaflet@0.7.7/dist/leaflet.css');
 			add_javascript('https://leaflet-extras.github.io/leaflet-providers/leaflet-providers.js');
 			
 			if($this->page->get_post('leaflet-minimap') === 'ON') {
