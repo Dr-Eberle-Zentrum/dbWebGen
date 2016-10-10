@@ -228,10 +228,11 @@ EOT;
 		$is_checked = !isset($_POST["{$field_name}__null__"]) || $_POST["{$field_name}__null__"] == 'true';
 		$checked_attr = $is_checked? "checked='checked'" : '';
 		$visibility = (isset($field['show_setnull']) && $field['show_setnull'] === true ? '' : 'invisible');
+		$null_label = isset($APP['null_label']) ? $APP['null_label'] : 'NULL';
 		
 		echo 
 			"<div class='checkbox col-sm-1 $visibility'><label><input type='hidden' name='{$field_name}__null__' value='false' />".
-			"<input name='{$field_name}__null__' type='checkbox' value='true' $checked_attr />{$APP['null_label']}</label></div>";
+			"<input name='{$field_name}__null__' type='checkbox' value='true' $checked_attr />$null_label</label></div>";
 	}
 	
 	//------------------------------------------------------------------------------------------

@@ -75,17 +75,17 @@
 	define('MULTIPLE_RECORDS_SEPARATOR', ' ● ');
 	
 	// viewing modes (reflected in URL parameter mode=XXX)
-	define('MODE_NEW', 'new');
-	define('MODE_EDIT', 'edit');
-	define('MODE_LIST', 'list');
-	define('MODE_VIEW', 'view');
+	define('MODE_NEW', 'new'); // table-level action
+	define('MODE_EDIT', 'edit'); // table-level action
+	define('MODE_LIST', 'list'); // table-level action
+	define('MODE_VIEW', 'view'); // table-level action
 	define('MODE_QUERY', 'query');
 	
 	// pseudo modes
-	define('MODE_LINK', 'link'); // providing a link for rendering the actual object, not the record
-	define('MODE_DELETE', 'delete');
+	define('MODE_LINK', 'link'); // table-level action, providing a link for rendering the actual object, not the record
+	define('MODE_DELETE', 'delete'); // table-level action
 	define('MODE_CREATE_DONE', 'create_done');
 	define('MODE_LOGOUT', 'logout');	
 	define('MODE_FUNC', 'func');
-	define('MODE_PLUGIN', 'plugin'); // used to build the main page content in an external function
+	define('MODE_PLUGIN', 'plugin'); // used to build the main page content in an external function	
 ?>
