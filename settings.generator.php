@@ -84,7 +84,7 @@ SQL;
 	// target var
 	$TABLES = array();
 	
-	// loop through all tables
+	// loop through all tables and generate table info stub
 	foreach($tables as $table_name) {
 		// general table info
 		$TABLES[$table_name] = array(
@@ -94,15 +94,19 @@ SQL;
 			'actions' => array(MODE_EDIT, MODE_NEW, MODE_VIEW, MODE_LIST, MODE_DELETE, MODE_LINK),			
 			'fields' => array()
 		);
-		
+	}
+	
+	// loop again and fill the stubs
+	foreach($tables as $table_name) {
 		// add all fields
 		$columns_query = <<<SQL
 			SELECT *
 			FROM information_schema.columns
 			WHERE table_name = ?
+			AND table_schema = ?
 			ORDER BY ordinal_position
 SQL;
-		$res = db_exec($columns_query, array($table_name));
+		$res = db_exec($columns_query, array($table_name, $db_schema));
 		
 		$column_defaults = array();
 		
@@ -113,7 +117,7 @@ SQL;
 			// put default text line fields
 			$field = array(
 				'label' => $col['column_name'],
-				'type' => T_TEXT_LINE,
+				'type' => T_TEXT_LINE, // TODO identify type or value range (T_ENUM)
 				'required' => $col['is_nullable'] == 'YES' ? false : true,
 				'editable' => $col['is_updatable'] == 'YES' ? true : false
 			);
@@ -124,10 +128,33 @@ SQL;
 			$TABLES[$table_name]['fields'][$col['column_name']] = $field;
 		}
 		
-		// go through constraints
+		// go through PRIMARY KEY constraints
 		$primary_key = array(			
 			'columns' => array()
 		);		
+		
+		$constraints_query = <<<SQL
+			SELECT tc.constraint_name,
+				tc.constraint_type,				
+				kcu.column_name	
+				FROM information_schema.table_constraints tc				
+				LEFT outer JOIN information_schema.key_column_usage kcu
+				ON tc.constraint_catalog = kcu.constraint_catalog
+				AND tc.constraint_schema = kcu.constraint_schema
+				AND tc.constraint_name = kcu.constraint_name				
+				WHERE tc.constraint_type = 'PRIMARY KEY' 
+				AND tc.table_schema = ?
+				AND tc.table_name = ?
+SQL;
+
+		$res = db_exec($constraints_query, array($db_schema, $table_name));
+		while($cons = $res->fetch(PDO::FETCH_ASSOC)) {		
+			$primary_key['columns'][] = $cons['column_name'];			
+		}
+		
+		// go through FOREIGN KEY constraints
+		
+		$foreign_keys_info = array();
 		
 		$constraints_query = <<<SQL
 			SELECT tc.constraint_name,
@@ -144,35 +171,33 @@ SQL;
 				ON tc.constraint_catalog = ccu.constraint_catalog
 				AND tc.constraint_schema = ccu.constraint_schema
 				AND tc.constraint_name = ccu.constraint_name
-				WHERE tc.table_name = ?
+				WHERE tc.constraint_type = 'FOREIGN KEY' 
+				AND tc.table_schema = ?
+				AND tc.table_name = ?
 SQL;
 		
-		$res = db_exec($constraints_query, array($table_name));
-		while($cons = $res->fetch(PDO::FETCH_ASSOC)) {			
-			switch($cons['constraint_type']) {
-				case 'FOREIGN KEY':
-					$field = $TABLES[$table_name]['fields'][$cons['column_name']];
-					
-					$field['type'] = T_LOOKUP;
-					$field['lookup'] = array(
-						'cardinality' => CARDINALITY_SINGLE,
-						'table'  => $cons['references_table'],
-						'field'  => $cons['references_field'],
-						'display' => $cons['references_field'] 
-					);
-					
-					// overwrite default field info 
-					$TABLES[$table_name]['fields'][$cons['column_name']] = $field;
-					break;
-					
-				case 'PRIMARY KEY':
-					$primary_key['columns'][] = $cons['column_name'];					
-					break;
-			}
+		$res = db_exec($constraints_query, array($db_schema, $table_name));
+		while($cons = $res->fetch(PDO::FETCH_ASSOC)) {					
+			$field = $TABLES[$table_name]['fields'][$cons['column_name']];
+			
+			$field['type'] = T_LOOKUP;
+			$field['lookup'] = array(
+				'cardinality' => CARDINALITY_SINGLE,
+				'table'  => $cons['references_table'],
+				'field'  => $cons['references_field'],
+				'display' => $cons['references_field'] 
+			);
+			
+			// remember the foreign keys in a hash for later
+			$foreign_keys_info[$cons['column_name']] = $field; 
+			
+			// overwrite default field info 
+			$TABLES[$table_name]['fields'][$cons['column_name']] = $field;
 		}
 		
-		$primary_key['auto'] = false;
-		// if we have one key column only
+		$primary_key['auto'] = false;		
+		
+		// check whether the primary key is determined by a sequence:		
 		if(count($primary_key['columns']) == 1) {
 			// and there is a default val for the columns
 			if($column_defaults[$primary_key['columns'][0]] !== null) {
@@ -184,13 +209,63 @@ SQL;
 				}
 			}
 		}
+		
 		// set primary key
 		$TABLES[$table_name]['primary_key'] = $primary_key;
+		
+		// check whether this is a N:M table (for CARDINALITY_MULTIPLE)
+		// this is the case if this table has:
+		// * exactly two primary key fields
+		// * both are foreign keys to two different tables
+		// If both conditions hold we add this table as a linkage table in CARDINALTY_MULTIPLE field in both referenced tables
+		if(count($primary_key['columns']) == 2) {
+			$field1 = $field2 = null;
+			if(isset($foreign_keys_info[$primary_key['columns'][0]])
+				&& isset($foreign_keys_info[$primary_key['columns'][1]]))
+			{
+				$field0 = $foreign_keys_info[$primary_key['columns'][0]];
+				$field1 = $foreign_keys_info[$primary_key['columns'][1]];
 				
-		// TODO: include CARDINALITY_MULTIPLE lookup tables
-		// Check for n:m table linked to this table. for each one that does, check if:
-		// a) the other table has FK to exactly one more table, then T_LOOKUP with CARDINALITY_MULTIPLE
-		// b) more than one FK to other table, then we cannot put this as T_LOOKUP here
+				if($field0['lookup']['table'] != $field1['lookup']['table']) {
+					// here we go, add cardinality multiple lookup to both involved tables
+					$TABLES[$field0['lookup']['table']]['fields'][$table_name . '_fk'] = array(
+						'label' => $table_name . ' list',
+						'required' => false,
+						'editable' => true,
+						'type' => T_LOOKUP,
+						'lookup' => array(
+							'cardinality' => CARDINALITY_MULTIPLE,
+							'table'  => $field1['lookup']['table'],
+							'field'  => $field1['lookup']['field'],
+							'display' => $field1['lookup']['display']
+						),
+						'linkage' => array(
+							'table' => $table_name,
+							'fk_self' => $primary_key['columns'][0],
+							'fk_other' => $primary_key['columns'][1]
+						)
+					);
+					
+					$TABLES[$field1['lookup']['table']]['fields'][$table_name . '_fk'] = array(
+						'label' => $table_name . ' list',
+						'required' => false,
+						'editable' => true,
+						'type' => T_LOOKUP,
+						'lookup' => array(
+							'cardinality' => CARDINALITY_MULTIPLE,
+							'table'  => $field0['lookup']['table'],
+							'field'  => $field0['lookup']['field'],
+							'display' => $field0['lookup']['display']
+						),
+						'linkage' => array(
+							'table' => $table_name,
+							'fk_self' => $primary_key['columns'][1],
+							'fk_other' => $primary_key['columns'][0]
+						)
+					);
+				}
+			}
+		}
 	}
 
 	// ================================================
