@@ -170,11 +170,17 @@
 				If type=T_LOOKUP: this is a pseudo type that reflects foreign keys from either 1:n (CARDINALITY_SINGLE) or m:n relationships (CARDINALITY_MULTIPLE). Settings for 'lookup' must be provided if this type is assigned (see below).
 				If type=T_ENUM, 'values' must be set (see below)
 			- len: int
-				Length of the type. Relevant for T_TEXT_LINE.
+				Maximal number of characters that the input control can hold. Relevant only for T_TEXT_LINE.
 			- required: bool (default: false)
 				Whether or not a value is required for this field (= NOT NULL)
 			- editable: bool (default: true)
-				Whether or not this field should be offered in the new/edit forms. For an automatically generated primary key field or some computed field, this should be set to false. Even with editable=false, the field will be displayed in MODE_LIST and MODE_VIEW. If it is desired to completely hide this field from the user, the field itself should not be set in the fields array
+				Whether or not this field should be offered in the new/edit forms. For an automatically generated primary key field or some computed field, this should be set to false. Even with editable=false, the field will be displayed in MODE_LIST and MODE_VIEW. If it is desired to completely hide this field from the user, the field itself should not be set in the fields array.
+			- width_columns: int (optional) (default: calculated automatically for T_TEXT_LINE, otherwise 7)
+				Specifies the number of columns in the bootstrap grid occupied by the input control.
+			- height_rows: int (optional) (default: 5)
+				Specifies the number of rows to be offered by the input control. Only applicable with T_TEXT_AREA.
+			- resizeable: boolean (optional) (default: true)
+				Controls whether a control is vertically resizeable. Only applies to T_TEXT_AREA.
 			- help: string (optional)
 				Help text to display in the new/edit forms. Can contain HTML.
 			- show_setnull: bool (default: false)

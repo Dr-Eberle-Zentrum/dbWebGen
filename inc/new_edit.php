@@ -265,7 +265,7 @@ EOT;
 		
 		$is_required = isset($field['required']) && $field['required'] === true;
 		$required_attr = ''; ($is_required ? " required='true' " : '');		
-		$width = 7; //($is_required ? 9 : 8); // spare place for NULL checkbox		
+		$width = isset($field['width_columns']) ? $field['width_columns'] : 7;		
 		$autofocus = $focus? ' autofocus ' : '';	
 		
 		if(!is_allowed($table, $_GET['mode']) && is_own_user_record(true))
@@ -279,13 +279,17 @@ EOT;
 				break;
 				
 			case T_PASSWORD:
-				$width = get_input_size_class($field, $width);
+				if(!isset($field['width_columns'])) 
+					$width = get_input_size_class($field, $width);
+				
 				echo "<div class='col-sm-$width'><input $disabled $required_attr type='password' class='form-control' id='{$field_name}' name='{$field_name}' maxlength='{$field['len']}' value='' $autofocus /></div>\n";
 				if(!$is_required) render_setnull($field_name, $field);
 				break;
 			
 			case T_TEXT_LINE:
-				$width = get_input_size_class($field, $width);
+				if(!isset($field['width_columns'])) 
+					$width = get_input_size_class($field, $width);
+				
 				$maxlen = isset($field['len']) ? "maxlength='{$field['len']}'" : '';
 				echo "<div class='col-sm-$width'><input $disabled $required_attr type='text' class='form-control' id='{$field_name}' name='{$field_name}' $maxlen value=\"".html_val($field_name)."\" $autofocus /></div>\n";
 				if(!$is_required) render_setnull($field_name, $field);
@@ -301,7 +305,9 @@ EOT;
 				break;
 				
 			case T_TEXT_AREA:
-				echo "<div class='col-sm-$width'><textarea $disabled $required_attr class='form-control' id='{$field_name}' name='{$field_name}' rows='5' $autofocus>".html_val($field_name)."</textarea></div>\n";
+				$rows = isset($field['height_rows']) ? $field['height_rows'] : 5;
+				$resize = !isset($field['resizeable']) || $field['resizeable'] === true ? 'vresize' : 'noresize';
+				echo "<div class='col-sm-$width'><textarea $disabled $required_attr class='form-control $resize' id='{$field_name}' name='{$field_name}' rows='{$rows}' $autofocus>".html_val($field_name)."</textarea></div>\n";
 				if(!$is_required) render_setnull($field_name, $field);
 				break;
 				
@@ -334,7 +340,7 @@ EOT;
 				break;
 				
 			case T_POSTGIS_GEOM:
-				echo "<div class='col-sm-4'><input $disabled $required_attr type='text' class='form-control' id='{$field_name}' name='{$field_name}' value=\"".html_val($field_name)."\" $autofocus /></div>\n";
+				echo "<div class='col-sm-$width'><input $disabled $required_attr type='text' class='form-control' id='{$field_name}' name='{$field_name}' value=\"".html_val($field_name)."\" $autofocus /></div>\n";
 				if(!$is_required) render_setnull($field_name, $field);
 				break;
 				
@@ -350,7 +356,7 @@ EOT;
 				$lookup_table_attr = unquote($field['lookup']['table']);
 					
 				if($field['lookup']['cardinality'] == CARDINALITY_SINGLE) {
-					echo "<div class='col-sm-7'><select $disabled $required_attr class='form-control' id='{$field_name}_dropdown' name='{$field_name}' data-table='$lookup_table_attr' data-placeholder='Click to select' $autofocus>\n";					
+					echo "<div class='col-sm-$width'><select $disabled $required_attr class='form-control' id='{$field_name}_dropdown' name='{$field_name}' data-table='$lookup_table_attr' data-placeholder='Click to select' $autofocus>\n";					
 					$db = db_connect();
 					if($db === false)
 						return proc_error('Cannot connect to DB.');
@@ -410,7 +416,7 @@ EOT;
 					$items_div = '';					
 										
 					// the rest goes into the dropdown box
-					echo "<div class='col-sm-7'><select $disabled $required_attr class='form-control multiple-select-dropdown' id='{$field_name}_dropdown' data-table='$lookup_table_attr' data-placeholder='Click to select' $autofocus>\n";
+					echo "<div class='col-sm-$width'><select $disabled $required_attr class='form-control multiple-select-dropdown' id='{$field_name}_dropdown' data-table='$lookup_table_attr' data-placeholder='Click to select' $autofocus>\n";
 
 					// check whether additional fields can be set in the linkage table
 					$has_additional_editable_fields = has_additional_editable_fields($field['linkage']);

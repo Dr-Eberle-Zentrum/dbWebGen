@@ -107,6 +107,11 @@
 			
 		if(isset($APP['menu_complete_proc']) && trim($APP['menu_complete_proc']) != '')
 			/*call_user_func*/ $APP['menu_complete_proc']($menu);
+		
+		// remove any empty menu
+		foreach($menu as $index => $menu_info)
+			if(!isset($menu_info['items']) || count($menu_info['items']) == 0)
+				unset($menu[$index]);
 	}
 	
 	//------------------------------------------------------------------------------------------

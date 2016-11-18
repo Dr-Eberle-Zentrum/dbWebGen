@@ -116,14 +116,58 @@ SQL;
 			
 			// put default text line fields
 			$field = array(
-				'label' => $col['column_name'],
-				'type' => T_TEXT_LINE, // TODO identify type or value range (T_ENUM)
+				'label' => $col['column_name'],				
 				'required' => $col['is_nullable'] == 'YES' ? false : true,
 				'editable' => $col['is_updatable'] == 'YES' ? true : false
 			);
 			
 			if($col['character_maximum_length'] !== null)
 				$field['len'] = $col['character_maximum_length'];
+			
+			// field type
+			// select * from information_schema.columns where table_schema = 'public'
+			switch($col['data_type']) {
+				case 'boolean':
+					$field['type'] = T_ENUM;
+					$field['values'] = array(1 => 'Yes', 0 => 'No');
+					if($col['column_default'] !== null)
+						$field['default'] = $col['column_default'] === true ? 1 : 0;
+					$field['width_columns'] = 2;
+					break;
+					
+				case 'integer': case 'smallint': case 'bigint':
+					$field['type'] = T_NUMBER;
+					break;
+					
+				case 'numeric':
+					if($col['numeric_scale'] == 0)
+						$field['type'] = T_NUMBER;
+					else
+						$field['type'] = T_TEXT_LINE;
+					break;
+					
+				case 'bit':
+					$field['type'] = T_ENUM;
+					$field['values'] = array('0' => '0', '1' => '1');
+					$field['width_columns'] = 2;
+					break;
+				
+				case 'bit varying': case 'character varying': case 'character': case 'text':
+					if($col['character_maximum_length'] !== null) {
+						$field['type'] = T_TEXT_LINE;
+						$field['len'] = $col['character_maximum_length'];
+						
+						if($field['len'] > 50)
+							$field['resizeable'] = true;
+					}
+					else
+						$field['type'] = T_TEXT_AREA;
+					break;
+					
+				default:
+					$field['type'] = T_TEXT_LINE;
+					break;
+			}
 			
 			$TABLES[$table_name]['fields'][$col['column_name']] = $field;
 		}
