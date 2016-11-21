@@ -1,4 +1,10 @@
 <?
+/*
+	this is one ugly script that tries to extract a comfortable starting point for settings.php based on any given postgres database.
+	it can extract tables, columns, primary keys, foreign keys, check constraints (range of values) and enum types.
+	note: the db user you use with this script needs to have read permission on the target schema and on the information_schema
+*/
+
 	foreach(array('host' => 'localhost', 'port' => 5432, 'name' => '', 'user' => 'postgres', 'pass' => '', 'name' => '', 'schema' => 'public') as $k => $v)
 		${'db_' . $k} = isset($_POST[$k]) ? $_POST[$k] : $v;
 	
@@ -118,55 +124,124 @@ SQL;
 			$field = array(
 				'label' => $col['column_name'],				
 				'required' => $col['is_nullable'] == 'YES' ? false : true,
-				'editable' => $col['is_updatable'] == 'YES' ? true : false
+				'editable' => $col['is_updatable'] == 'YES' ? true : false,
+				'type' => T_TEXT_LINE // default 
 			);
 			
-			if($col['character_maximum_length'] !== null)
-				$field['len'] = $col['character_maximum_length'];
+			// if nextval from a sequence is the default value, make it not editable
+			if($field['editable']
+			  && preg_match('/^nextval\\(\'(.+)\'::regclass\\)$/', $col['column_default'], $matches)) 
+			{
+				$field['editable'] = false;
+			}
 			
-			// field type
-			// select * from information_schema.columns where table_schema = 'public'
-			switch($col['data_type']) {
-				case 'boolean':
+			// check if there is a range check constraint on this field, then the type will be T_ENUM:
+			$check_cons_query = <<<SQL
+			SELECT consrc
+				FROM information_schema.table_constraints tc, pg_constraint chk, information_schema.constraint_column_usage ccu
+				WHERE tc.constraint_type = 'CHECK'
+				and chk.contype = 'c'
+				AND tc.constraint_name = chk.conname
+				AND ccu.table_name = tc.table_name
+				AND ccu.table_schema = tc.table_schema
+				AND ccu.constraint_name = chk.conname
+				AND tc.table_name = ?
+				AND tc.table_schema = ?
+				AND ccu.column_name = ?
+SQL;
+			$check_query = db_exec($check_cons_query, array($table_name, $db_schema, $col['column_name']));
+			$num_checks = 0;
+			$consrc = '';
+			while($check_cons = $check_query->fetch(PDO::FETCH_NUM)) {
+				$num_checks ++;
+				$consrc = $check_cons[0];
+			}
+			
+			if($num_checks == 1) { // only if 1 single check constraint on this column
+				$enum_vals = array();
+				// see whether we have a range check
+				if(1 == preg_match('/=\\sANY\\s\\(+ARRAY\\[(?P<val>.+)\\]\\)+/', $consrc, $extract)					
+				  && preg_match_all('/(?P<val>[^(\')]+)(\'|\\))::[^,\\]]+/', $extract['val'], $matches) > 0) 
+				{
+					foreach($matches['val'] as $enum_val)
+						$enum_vals[$enum_val] = $enum_val;
+
 					$field['type'] = T_ENUM;
-					$field['values'] = array(1 => 'Yes', 0 => 'No');
-					if($col['column_default'] !== null)
-						$field['default'] = $col['column_default'] === true ? 1 : 0;
-					$field['width_columns'] = 2;
-					break;
-					
-				case 'integer': case 'smallint': case 'bigint':
-					$field['type'] = T_NUMBER;
-					break;
-					
-				case 'numeric':
-					if($col['numeric_scale'] == 0)
+					$field['values'] = $enum_vals;					
+				}
+			}
+			
+			if($field['type'] != T_ENUM) { // only if we have no check range constraint here
+				if($col['character_maximum_length'] !== null)
+					$field['len'] = $col['character_maximum_length'];
+
+				// determine field type
+				// select * from information_schema.columns where table_schema = 'public'
+				switch($col['data_type']) {
+					case 'boolean':
+						$field['type'] = T_ENUM;
+						$field['values'] = array(1 => 'Yes', 0 => 'No');
+						if($col['column_default'] !== null)
+							$field['default'] = $col['column_default'] === true ? 1 : 0;
+						$field['width_columns'] = 2;
+						break;
+
+					case 'integer': case 'smallint': case 'bigint':
 						$field['type'] = T_NUMBER;
-					else
-						$field['type'] = T_TEXT_LINE;
-					break;
-					
-				case 'bit':
-					$field['type'] = T_ENUM;
-					$field['values'] = array('0' => '0', '1' => '1');
-					$field['width_columns'] = 2;
-					break;
-				
-				case 'bit varying': case 'character varying': case 'character': case 'text':
-					if($col['character_maximum_length'] !== null) {
-						$field['type'] = T_TEXT_LINE;
-						$field['len'] = $col['character_maximum_length'];
-						
-						if($field['len'] > 50)
-							$field['resizeable'] = true;
-					}
-					else
-						$field['type'] = T_TEXT_AREA;
-					break;
-					
-				default:
-					$field['type'] = T_TEXT_LINE;
-					break;
+						break;
+
+					case 'numeric':
+						if($col['numeric_scale'] === null && $col['numeric_precision'] === null) {
+							// declared as NUMERIC without arguments -> can be any dec number
+							$field['type'] = T_NUMBER;
+							$field['step'] = 'any';
+						}
+						else if($col['numeric_precision'] !== null) {
+							$field['type'] = T_NUMBER;
+							if($col['numeric_scale'] > 0)
+								$field['step'] = number_format(1. / pow(10, $col['numeric_scale']), $col['numeric_scale']);
+							else
+								$field['step'] = 1;
+						}					
+						break;
+
+					case 'bit':
+						$field['type'] = T_ENUM;
+						$field['values'] = array('0' => '0', '1' => '1');
+						$field['width_columns'] = 2;
+						break;
+
+					case 'bit varying': case 'character varying': case 'character': case 'text':
+						if($col['character_maximum_length'] !== null) {
+							$field['type'] = T_TEXT_LINE;
+							$field['len'] = $col['character_maximum_length'];
+
+							if($field['len'] > 50)
+								$field['resizeable'] = true;
+						}
+						else
+							$field['type'] = T_TEXT_AREA;
+						break;
+
+					case 'USER-DEFINED':
+						// if type is enum, make T_ENUM
+						$enum_query = db_exec(
+							'SELECT e.enumlabel FROM pg_enum e, pg_type t WHERE e.enumtypid = t.oid AND t.typname = ? ORDER BY 1', 
+							array($col['udt_name'])
+						);
+						$enum_vals = array();
+						while($enum_val = $enum_query->fetch(PDO::FETCH_NUM))
+							$enum_vals[$enum_val[0]] = $enum_val[0];
+
+						if(count($enum_vals) > 0) {
+							$field['type'] = T_ENUM;
+							$field['values'] = $enum_vals;
+						}					
+						break;
+
+					default:					
+						break;
+				}
 			}
 			
 			$TABLES[$table_name]['fields'][$col['column_name']] = $field;
@@ -315,47 +390,59 @@ SQL;
 	// ================================================
 	// APP
 	// ================================================	
-	$APP = array(
-		'title' => $db_name . ' Database',
-		'view_display_null_fields' => false,
-		'page_size'	=> 10,
-		'max_text_len' => 250,
-		'pages_prevnext' => 2,
-		'mainmenu_tables_autosort' => true,
-		'search_lookup_resolve' => true,
-		'search_string_transformation' => 'lower((%s)::text)'
-	);
-	echo '<?php', PHP_EOL, '$APP = ';	
-	var_export($APP);
-	echo ';', PHP_EOL, PHP_EOL;
+	
+	if(!isset($_GET['only']) || $_GET['only'] == 'APP') {
+		$APP = array(
+			'title' => $db_name . ' Database',
+			'view_display_null_fields' => false,
+			'page_size'	=> 10,
+			'max_text_len' => 250,
+			'pages_prevnext' => 2,
+			'mainmenu_tables_autosort' => true,
+			'search_lookup_resolve' => true,
+			'search_string_transformation' => 'lower((%s)::text)'
+		);
+		echo '<?php', PHP_EOL, '$APP = ';	
+		var_export($APP);
+		echo ';', PHP_EOL, PHP_EOL;
+	}
 
 	// ================================================
-	// APP
+	// DB
 	// ================================================
-	$DB = array(
-		'type' => DB_POSTGRESQL,
-		'host' => $db_host,
-		'port' => intval($db_port),
-		'user' => $db_user,
-		'pass' => $db_pass,
-		'db'   => $db_name
-	);
-	echo '$DB = ';	
-	var_export($DB);
-	echo ';', PHP_EOL, PHP_EOL;
+	if(!isset($_GET['only']) || $_GET['only'] == 'DB') {
+		$DB = array(
+			'type' => DB_POSTGRESQL,
+			'host' => $db_host,
+			'port' => intval($db_port),
+			'user' => $db_user,
+			'pass' => $db_pass,
+			'db'   => $db_name
+		);
+		echo '$DB = ';	
+		var_export($DB);
+		echo ';', PHP_EOL, PHP_EOL;
+	}
 
 	// ================================================
 	// LOGIN
 	// ================================================
-	$LOGIN = array();
-	echo '$LOGIN = ';	
-	var_export($LOGIN);
-	echo ';', PHP_EOL, PHP_EOL;
+	if(!isset($_GET['only']) || $_GET['only'] == 'LOGIN') {
+		$LOGIN = array();
+		echo '$LOGIN = ';	
+		var_export($LOGIN);
+		echo ';', PHP_EOL, PHP_EOL;
+	}
 
 	// ================================================
 	// TABLES
 	// ================================================
-	echo '$TABLES = ';
-	var_export($TABLES);
-	echo ';', PHP_EOL, '?>';
+	if(!isset($_GET['only']) || $_GET['only'] == 'TABLES') {
+		echo '$TABLES = ';
+		var_export($TABLES);
+		echo ';', PHP_EOL;
+	}
+
+	if(!isset($_GET['only']))
+		echo PHP_EOL, '?>';
 ?>
