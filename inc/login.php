@@ -67,7 +67,7 @@ END;
 		$error_msg = "Invalid {$LOGIN['form']['username']} and/or {$LOGIN['form']['password']}.";
 		
 		if(($user = $stmt->fetch(PDO::FETCH_ASSOC)) === false)
-			return proc_error('FUCK'.$error_msg);
+			return proc_error($error_msg);
 		
 		if(!verify_password($_POST['password'], $user[$LOGIN['password_field']]))
 			return proc_error($error_msg);
