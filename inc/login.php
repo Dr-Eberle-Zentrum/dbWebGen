@@ -29,6 +29,19 @@ END;
 	}
 	
 	//------------------------------------------------------------------------------------------
+	function verify_password($plain, $hash) {
+	//------------------------------------------------------------------------------------------
+		global $LOGIN;
+		if(isset($LOGIN['password_verify_func']))
+			return $LOGIN['password_verify_func']($plain, $hash);
+		
+		// default: simply compare
+		if(!isset($LOGIN['password_hash_func']))
+			return $hash == $plain;		
+		return $hash == $LOGIN['password_hash_func']($plain);
+	}
+
+	//------------------------------------------------------------------------------------------
 	function process_login() {
 	//------------------------------------------------------------------------------------------
 		global $LOGIN;
@@ -36,10 +49,9 @@ END;
 		if(!isset($_POST['username']) || !isset($_POST['password']))
 			return proc_error('Please provide username and password.');
 		
-		$sql = sprintf('SELECT * FROM %s WHERE %s = ? AND %s = ?',
-			$LOGIN['users_table'], 
-			$LOGIN['username_field'], 
-			$LOGIN['password_field']);
+		$sql = sprintf('SELECT * FROM %s WHERE %s = ?',
+			db_esc($LOGIN['users_table']), 
+			db_esc($LOGIN['username_field']));
 		
 		$db = db_connect();
 		if($db === false)
@@ -49,11 +61,16 @@ END;
 		if($stmt === false)
 			return proc_error("Invalid login parameters.", $db);
 		
-		if($stmt->execute(array($_POST['username'], $LOGIN['password_hash_func']($_POST['password']))) === false)
+		if($stmt->execute(array($_POST['username'])) === false)
 			return proc_error("Invalid login parameters.", $db);
-				
+		
+		$error_msg = "Invalid {$LOGIN['form']['username']} and/or {$LOGIN['form']['password']}.";
+		
 		if(($user = $stmt->fetch(PDO::FETCH_ASSOC)) === false)
-			return proc_error("Invalid {$LOGIN['form']['username']} and/or {$LOGIN['form']['password']}.");
+			return proc_error('FUCK'.$error_msg);
+		
+		if(!verify_password($_POST['password'], $user[$LOGIN['password_field']]))
+			return proc_error($error_msg);
 		
 		session_login($user);				
 		return true;

@@ -113,6 +113,11 @@
 		- password_hash_func: string (optional)
 			Name of the function to be used for password hashing, e.g. 'md5', 'sha1', etc.
 			Works only with functions that take a single mandatory argument (the password)
+		- password_verify_func: string (optional)
+			Name of the function that compares the hash value with the plain text password. 
+			If not set, this will simply compare for equality of hash values.
+			If a function is provided here, it needs to return true (password correct) or false (password incorrect). Signature:
+				bool password_verify_func($plain, $hash);
 		- form: array
 			Field labels to display to the user in the login form
 			- username: string

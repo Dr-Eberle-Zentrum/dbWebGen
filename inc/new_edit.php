@@ -271,7 +271,7 @@ EOT;
 		if(!is_allowed($table, $_GET['mode']) && is_own_user_record(true))
 			$disabled = ($field_name != $LOGIN['password_field'] ? ' readonly disabled ' : '');
 		else
-			$disabled = $prefilled? ' readonly disabled ' : '';
+			$disabled = ($prefilled ? ' readonly disabled ' : '');
 		
 		switch($field['type']) {
 			case T_UPLOAD:
@@ -346,7 +346,7 @@ EOT;
 				
 			case T_LOOKUP:
 				$create_new_button = '';				
-				if(is_allowed_create_new($field)) {
+				if(is_allowed_create_new($field) && $disabled === '') {
 					$popup_url = "?popup={$_GET['table']}&amp;lookup_field={$field_name}&amp;table={$field['lookup']['table']}&amp;mode=".MODE_NEW;
 					$popup_title = html('New ' . $field['label']);
 					
