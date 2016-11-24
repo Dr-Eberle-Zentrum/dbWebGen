@@ -89,6 +89,9 @@ SQL;
 	
 	// target var
 	$TABLES = array();
+
+	// store the multiple cardinality fields and append them after all tables are through. we don't want those fields to show up on top of the form.
+	$cardinal_mult = array();
 	
 	// loop through all tables and generate table info stub
 	foreach($tables as $table_name) {
@@ -100,6 +103,8 @@ SQL;
 			'actions' => array(MODE_EDIT, MODE_NEW, MODE_VIEW, MODE_LIST, MODE_DELETE, MODE_LINK),			
 			'fields' => array()
 		);
+		
+		$cardinal_mult[$table_name]	= array();
 	}
 	
 	// loop again and fill the stubs
@@ -160,15 +165,41 @@ SQL;
 			if($num_checks == 1) { // only if 1 single check constraint on this column
 				$enum_vals = array();
 				// see whether we have a range check
-				if(1 == preg_match('/=\\sANY\\s\\(+ARRAY\\[(?P<val>.+)\\]\\)+/', $consrc, $extract)					
-				  && preg_match_all('/(?P<val>[^(\')]+)(\'|\\))::[^,\\]]+/', $extract['val'], $matches) > 0) 
+				if(1 == preg_match('/=\\sANY\\s\\(+ARRAY\\[(?P<val>.+)\\]\\)+/', $consrc, $extract))				  
+				{
+					// here we have something like:
+					//    1::numeric, 1.3, 1.7, 2::numeric
+					//	or					
+					//    (4)::integer, (65)::integer
+					//  or
+					//    'blah'::character varying, 'nada'::character varying
+					$vals = explode(',', $extract['val']);
+					
+					foreach($vals as $val) {
+						$val = trim($val);
+						$pos = strrpos($val, '::');
+						if($pos !== false)
+							$val = substr($val, 0, $pos);
+						if(strlen($val) >= 2 && $val[0] == '(' && substr($val, -1) == ')')
+							$val = substr($val, 1, -1);
+						if(strlen($val) >= 2 && $val[0] == "'" && substr($val, -1) == "'")
+							$val = substr($val, 1, -1);
+						
+						$enum_vals[(string) $val] = $val;
+					}					
+
+					$field['type'] = T_ENUM;
+					$field['values'] = $enum_vals;					
+				}
+				/*if(1 == preg_match('/=\\sANY\\s\\(+ARRAY\\[(?P<val>.+)\\]\\)+/', $consrc, $extract)					
+				  && preg_match_all('/(?P<val>[^(\')]+)(\'|\\))::[^,\\]]+/', $extract['val'], $matches) > 0)				   
 				{
 					foreach($matches['val'] as $enum_val)
 						$enum_vals[$enum_val] = $enum_val;
 
 					$field['type'] = T_ENUM;
 					$field['values'] = $enum_vals;					
-				}
+				}*/
 			}
 			
 			if($field['type'] != T_ENUM) { // only if we have no check range constraint here
@@ -280,7 +311,8 @@ SQL;
 				tc.constraint_type,				
 				kcu.column_name,
 				ccu.table_name references_table,
-				ccu.column_name references_field
+				ccu.column_name references_field,
+				(select column_name from information_schema.columns where table_name=ccu.table_name and table_schema=tc.table_schema and data_type in ('character varying', 'text') ORDER BY ordinal_position limit 1) display_field
 				FROM information_schema.table_constraints tc				
 				LEFT outer JOIN information_schema.key_column_usage kcu
 				ON tc.constraint_catalog = kcu.constraint_catalog
@@ -304,7 +336,7 @@ SQL;
 				'cardinality' => CARDINALITY_SINGLE,
 				'table'  => $cons['references_table'],
 				'field'  => $cons['references_field'],
-				'display' => $cons['references_field'] 
+				'display' => ($cons['display_field'] !== null ? $cons['display_field'] : $cons['references_field'])
 			);
 			
 			// remember the foreign keys in a hash for later
@@ -347,7 +379,10 @@ SQL;
 				
 				if($field0['lookup']['table'] != $field1['lookup']['table']) {
 					// here we go, add cardinality multiple lookup to both involved tables
-					$TABLES[$field0['lookup']['table']]['fields'][$table_name . '_fk'] = array(
+					
+					//$TABLES[$field0['lookup']['table']]['fields'][$table_name . '_fk'] =
+					$cardinal_mult[$field0['lookup']['table']][$table_name . '_fk'] =
+					array(					
 						'label' => $table_name . ' list',
 						'required' => false,
 						'editable' => true,
@@ -365,7 +400,9 @@ SQL;
 						)
 					);
 					
-					$TABLES[$field1['lookup']['table']]['fields'][$table_name . '_fk'] = array(
+					//$TABLES[$field1['lookup']['table']]['fields'][$table_name . '_fk'] = 
+					$cardinal_mult[$field1['lookup']['table']][$table_name . '_fk'] = 
+					array(
 						'label' => $table_name . ' list',
 						'required' => false,
 						'editable' => true,
@@ -385,6 +422,11 @@ SQL;
 				}
 			}
 		}
+	}
+
+	// append n:m lookup fields to end of field list for each table
+	foreach($cardinal_mult as $table_name => $fields) {
+		$TABLES[$table_name]['fields'] += $fields;
 	}
 
 	// ================================================
