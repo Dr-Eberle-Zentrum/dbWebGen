@@ -70,7 +70,7 @@
 ?>
 <!DOCTYPE html>
 <head>
-  <title><?= $APP['title'] ?></title>
+  <title><?= isset($APP['page_title']) ? $APP['page_title'] : $APP['title'] ?></title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">  
   <link rel="stylesheet" href="<?= bootstrap_css() ?>">  

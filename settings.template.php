@@ -3,7 +3,9 @@
 		$APP defines application specific settings:
 		
 		- title: string
-			Displayed one main pageadd			
+			App title as displayed in header menu. If page_title is not set, this is also used as HTML <title> for the page
+		- page_title: string (optional)
+			What to put in the HTML title element. If not provided, the 'title' setting is used.
 		- bootstrap_css: string (optional) (default: https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css) 
 			Specify a bootstrap CSS theme, if you do not want to use the default theme.
 		- page_icon: string (optional)
