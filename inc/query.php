@@ -225,9 +225,20 @@ SQL;
 			$sql_html = html($this->sql);
 			$sql_field = QUERYPAGE_FIELD_SQL;
 			
+			$sql_help = <<<HELPTEXT
+				<p>Enter here the SQL query to execute. Only <code>SELECT</code> queries are possible.</p>
+				<p>
+					<b>Parameterized Queries</b>: 
+					It is possible to use named placeholders with default values instead of literal values in the where clause.
+					A parameter looks like <code>#{my_param|default_val}</code>, where <code>my_param</code> is the name of the paramenter, and <code>default_val</code> is the default value. The default value can be empty. The separator <code>|</code> is mandatory even for an empty default value.
+				</p>
+				<p><b>Example</b>: <code>select * from users where lastname = #{n|Norris}</code></p>
+HELPTEXT;
+			$sql_help = get_help_popup('SQL Query Help', $sql_help);
+			
 			$this->query_ui = <<<QUI
 				<div class="form-group">
-					<label class="control-label" for="{$sql_field}">SQL Query</label>
+					<label class="control-label" for="{$sql_field}">SQL Query {$sql_help}</label>
 					<textarea class="form-control vresize" id="{$sql_field}" name="{$sql_field}" rows="10">{$sql_html}</textarea>
 				</div>
 				<div class="form-group">
@@ -357,6 +368,9 @@ HTML;
 		//--------------------------------------------------------------------------------------
 			$this->viz_ui = '';
 			
+			// see whether we have a parameterized query
+			$param_query = $this->parse_param_query();
+			
 			if($this->view === QUERY_VIEW_RESULT) {
 				$size = 12;
 				$css_class = 'result-full fill-height';
@@ -375,6 +389,33 @@ JS;*/
 					$this->viz_ui .= "<h3 style='$css'>" . html($this->stored_title) . "</h3>\n";
 				if($this->stored_description != '')
 					$this->viz_ui .= '<p>' . html($this->stored_description) . "</p>\n";
+				if(count($param_query['params']) > 0) {
+					$param_fields = '';
+					foreach($param_query['params'] as $param_name => $param_value) {
+						$param_name = substr($param_name, 1);
+						$param_value = unquote($param_value);
+						
+						$param_fields .= <<<HTML
+							<div class="form-group">
+								<label for='$param_name'>$param_name:</label>
+								<input id='$param_name' type='text' class='input-sm form-control' name='p:$param_name' value='$param_value' />&nbsp;&nbsp;
+							</div>							 
+HTML;
+					}
+					
+					foreach($_GET as $p => $v) {
+						if(substr($p, 0, 2) == 'p:')
+							continue;
+						$param_fields .= "<input type='hidden' name='$p' value='" . unquote($v) . "' />\n";
+					}
+					
+					// render form for parameters:
+					$this->viz_ui .= <<<HTML
+					<p><form class='form-inline' method='get'>
+						{$param_fields} <button class='btn btn-default input-sm' type='submit'>Refresh!</button>
+					</form></p>
+HTML;
+				}
 			}
 			else {
 				$size = 7;
@@ -391,23 +432,56 @@ JS;*/
 				return;
 			
 			$js = false;
-			if($this->is_stored_query())
+			
+			// caching only when it's not a parameterized query
+			if($this->is_stored_query() && count($param_query['params']) == 0)
 				$js = $this->chart->cache_get_js();
 			
 			if($js === false) {
-				$stmt = $this->db->prepare($this->sql);
+				$stmt = $this->db->prepare($param_query['sql']);
 				if($stmt === false)
-					return proc_error('Failed to prepare statement', $this->db);			
-				if($stmt->execute() === false)
+					return proc_error('Failed to prepare statement', $this->db);
+				
+				if($stmt->execute($param_query['params']) === false)
 					return proc_error('Failed to execute statement', $this->db);
 				
 				$js = $this->chart->get_js($stmt);
 				
-				if($this->is_stored_query())
+				if($this->is_stored_query() && count($param_query['params']) == 0)
 					$this->chart->cache_put_js($js);
 			}
 			
 			$this->viz_ui .= "<script>\n{$js}\n</script>\n";
+		}
+		
+		//--------------------------------------------------------------------------------------
+		protected function parse_param_query() {
+		//--------------------------------------------------------------------------------------
+			$retval = array(
+				'sql' => $this->sql,
+				'params' => array()
+			);
+			
+			// extract parameters
+			if(preg_match_all('/#{(?P<params>\\w+)\\|(?P<defvals>[^}]*)}/', $this->sql, $matches) > 0) {
+				//debug_log($matches);
+				for($i = 0; $i < count($matches['params']); $i++) {
+					// prefer to take value from GET parameters e.g ...&p:xxx=blah
+					$val = isset($_GET['p:' . $matches['params'][$i]]) ? $_GET['p:' . $matches['params'][$i]] : $matches['defvals'][$i];
+					
+					// replace this stuff in the sql statement
+					$retval['sql'] = preg_replace(
+						'/#{' . $matches['params'][$i] . '\\|[^}]*}/', 
+						':' . $matches['params'][$i],
+						$retval['sql']);
+					
+					// set param for query
+					$retval['params'][':' . $matches['params'][$i]] = $val;
+				}
+			}
+			
+			//debug_log($retval);
+			return $retval;
 		}
 		
 		//--------------------------------------------------------------------------------------
