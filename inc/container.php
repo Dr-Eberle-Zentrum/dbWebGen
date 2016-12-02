@@ -168,7 +168,8 @@
 						
 					case MODE_QUERY:
 						require_once ENGINE_PATH . 'inc/query.php';						
-						(new QueryPage)->render();
+						$p = new QueryPage;
+						$p->render();
 						break;
 						
 					case MODE_PLUGIN:
