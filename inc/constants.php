@@ -37,6 +37,7 @@
 	define('LINKED_ITEM_HTML', 'get_linked_item_html');
 	define('GET_SHAREABLE_QUERY_LINK', 'get_shareable_query_link');
 	define('VISJS_NETWORK_CACHE_POSITIONS', 'visjs_network_cache_positions');
+	define('LOOKUP_ASYNC', 'lookup_async');
 	
 	// search options
 	define('SEARCH_ANY', 'any');

@@ -11,6 +11,10 @@
 			return proc_error('Invalid function call');
 		
 		switch($_GET['target']) {
+			case LOOKUP_ASYNC:
+				invoke_lookup_async();
+				return;
+			
 			case LINKED_ITEM_HTML:
 				process_linked_item_html();
 				return;
@@ -34,6 +38,13 @@
 		$_GET['target']();
 	}
 	
+	//------------------------------------------------------------------------------------------
+	function invoke_lookup_async() {
+	//------------------------------------------------------------------------------------------
+		require_once 'lookup_async.php';
+		process_lookup_async();
+	}
+
 	//------------------------------------------------------------------------------------------
 	function process_linked_item_html() {
 	//------------------------------------------------------------------------------------------

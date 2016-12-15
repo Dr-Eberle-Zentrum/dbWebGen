@@ -259,9 +259,11 @@ EOT;
 	//------------------------------------------------------------------------------------------
 	function render_control($form_id, $field_name, $field, $focus, $prefilled) {
 	//------------------------------------------------------------------------------------------	
+		global $APP;
 		global $TABLES;
 		global $LOGIN;
-		$table = $TABLES[$_GET['table']];
+		$table_name = $_GET['table'];
+		$table = $TABLES[$table_name];
 		
 		$is_required = isset($field['required']) && $field['required'] === true;
 		$required_attr = ''; ($is_required ? " required='true' " : '');		
@@ -347,38 +349,52 @@ EOT;
 			case T_LOOKUP:
 				$create_new_button = '';				
 				if(is_allowed_create_new($field) && $disabled === '') {
-					$popup_url = "?popup={$_GET['table']}&amp;lookup_field={$field_name}&amp;table={$field['lookup']['table']}&amp;mode=".MODE_NEW;
+					$popup_url = "?popup={$table_name}&amp;lookup_field={$field_name}&amp;table={$field['lookup']['table']}&amp;mode=".MODE_NEW;
 					$popup_title = html('New ' . $field['label']);
 					
 					$create_new_button = "<div class='col-sm-2'><button type='button' class='btn btn-default multiple-select-add' data-create-title='{$popup_title}' data-create-url='{$popup_url}' id='{$field_name}_add' formnovalidate><span title='Remove this association' class='glyphicon glyphicon-plus'></span> Create New</button></div>\n";					
 				}
 				
 				$lookup_table_attr = unquote($field['lookup']['table']);
+				
+				$lookup_async = isset($field['lookup']['async']) ? 'lookup-async' : '';
+				$async_language = $lookup_async != '' ? ("data-language='". get_app_lang() . "'") : '';
+				$async_minlen = $lookup_async != '' ? "data-minimum-input-length='{$field['lookup']['async']['min_input_len']}'" : '';
+				$async_delay = $lookup_async != '' && isset($field['lookup']['async']['delay']) ? "data-asyncdelay='{$field['lookup']['async']['delay']}'" : '';
+				$allow_clear = $is_required ? '' : "data-allow-clear=true";
 					
 				if($field['lookup']['cardinality'] == CARDINALITY_SINGLE) {
-					echo "<div class='col-sm-$width'><select $disabled $required_attr class='form-control' id='{$field_name}_dropdown' name='{$field_name}' data-table='$lookup_table_attr' data-placeholder='Click to select' $autofocus>\n";					
+					echo "<div class='col-sm-$width'><select $disabled $required_attr class='form-control $lookup_async' id='{$field_name}_dropdown' name='{$field_name}' data-table='$lookup_table_attr' data-fieldname='$field_name' data-placeholder='Click to select' data-thistable='{$table_name}' $async_language $async_minlen $async_delay data-lookuptype='single' $allow_clear $autofocus>\n";					
+					
 					$db = db_connect();
 					if($db === false)
 						return proc_error('Cannot connect to DB.');
+
+					$where_clause = '';
+					if($lookup_async != '')
+						$where_clause = sprintf('where %s = ?', db_esc($field['lookup']['field']));
 					
-					$sql = sprintf("select %s val, %s txt from %s order by txt", 
-						db_esc($field['lookup']['field']), resolve_display_expression($field['lookup']['display']), $field['lookup']['table']);
+					$sql = sprintf('select %s val, %s txt from %s %s order by txt', 
+						db_esc($field['lookup']['field']), resolve_display_expression($field['lookup']['display']), $field['lookup']['table'], $where_clause);
+
+					$stmt = $db->prepare($sql);
+					if(false === $stmt)
+						return proc_error('Could not prepare query', $db);
 					
-					$res = $db->query($sql);
-					if($res === false)
+					if(false === $stmt->execute($lookup_async != '' && isset($_POST[$field_name]) ? array($_POST[$field_name]) : array()))
 						return proc_error("Could not retrieve data.", $db);
-					
+
 					if(!$is_required)
 						echo "<option value='". NULL_OPTION ."'>&nbsp;</option>\n";
 					else if($_GET['mode'] == MODE_NEW)
 						echo "<option value=''></option>\n";
-					
+
 					$selection_done = '';
-					
-					while($obj = $res->fetchObject()) {
+
+					while($obj = $stmt->fetch(PDO::FETCH_OBJ)) {
 						if($selection_done != 'done') {
 							$sel = (isset($_POST[$field_name]) && $_POST[$field_name] == $obj->val ? ' selected="selected" ' : '');
-							
+
 							if($sel != '') {
 								$selection_done = 'done';
 							}							
@@ -390,9 +406,9 @@ EOT;
 						else {
 							$sel = '';
 						}
-						
+
 						echo "<option value='{$obj->val}' $sel>" . format_lookup_item_label($obj->txt, $field['lookup']['table'], $field['lookup']['field'], $obj->val) . "</option>\n";
-					}
+					}					
 					echo "</select></div>\n";
 
 					echo $create_new_button;					
@@ -401,36 +417,64 @@ EOT;
 					$id_list = trim(post_val($field_name));
 					echo "<input class='multiple-select-hidden' id='{$field_name}' name='{$field_name}' type='hidden' value='$id_list' />\n";
 					
-					$db = db_connect();
-					if($db === false)
-						return proc_error('Could not connect to database.');
+					echo "<div class='col-sm-$width'><select $disabled $required_attr class='form-control multiple-select-dropdown $lookup_async' id='{$field_name}_dropdown' data-table='$lookup_table_attr' data-thistable='{$table_name}' data-fieldname='$field_name' data-placeholder='Click to select' $async_language $async_minlen $async_delay data-lookuptype='multiple' data-allow-clear='true' $autofocus>\n";
 					
-					$q = "SELECT {$field['lookup']['field']} val, ".resolve_display_expression($field['lookup']['display'])." txt ".
-						"FROM {$field['lookup']['table']} ";
-						
-					$order_by = "ORDER BY txt";					
-					$res = $db->query($q . $order_by);
-					
-					// first we look which ones are already conncted
+					// we look which ones are already connected
 					$linked_items = get_linked_items($field_name);
-					$items_div = '';					
-										
-					// the rest goes into the dropdown box
-					echo "<div class='col-sm-$width'><select $disabled $required_attr class='form-control multiple-select-dropdown' id='{$field_name}_dropdown' data-table='$lookup_table_attr' data-placeholder='Click to select' $autofocus>\n";
+					$items_div = '';
 
 					// check whether additional fields can be set in the linkage table
 					$has_additional_editable_fields = has_additional_editable_fields($field['linkage']);
 					
-					// fill dropdown and linked fields list
-					while($obj = $res->fetchObject()) {						
-						if(in_array("{$obj->val}", $linked_items)) {
-							$items_div .= get_linked_item_html($form_id, $table, $_GET['table'], $field_name, $has_additional_editable_fields,
-								$obj->val, $obj->txt, get_the_primary_key_value_from_url($table, ''));
+					$db = db_connect();
+					if($db === false)
+						return proc_error('Could not connect to database.');					
+					
+					if($lookup_async != '') {
+						// just prepare the list of already existing linked items
+						$existing_linkage = array();
+						$sql = sprintf('select %s val, %s txt from %s where %s = ?',
+							db_esc($field['lookup']['field']),
+							resolve_display_expression($field['lookup']['display']),
+							db_esc($field['lookup']['table']),
+							db_esc($field['lookup']['field']));
+						
+						$stmt = $db->prepare($sql);						
+						if($stmt === false)
+							return proc_error('Could not prepare statement', $db);
+						
+						foreach($linked_items as $linked_item_val) {							
+							if(false === $stmt->execute(array($linked_item_val)))
+								continue; // maybe deleted already somewhere else?
+							
+							if($res = $stmt->fetch(PDO::FETCH_OBJ))								
+								$existing_linkage[$res->val] = $res->txt;
 						}
-						else {							
-							echo '<option value="'. $obj->val .'" data-label="'. unquote($obj->txt) .'">'. format_lookup_item_label($obj->txt, $field['lookup']['table'], $field['lookup']['field'], $obj->val) . "</option>\n";
+						asort($existing_linkage);
+						foreach($existing_linkage as $val => $txt) {
+							$items_div .= get_linked_item_html($form_id, $table, $table_name, $field_name, $has_additional_editable_fields,
+									$val, $txt, get_the_primary_key_value_from_url($table, ''));
 						}
-					}					
+					}
+					else {
+						$q = sprintf('select %s val, %s txt from %s order by txt',
+							db_esc($field['lookup']['field']),
+							resolve_display_expression($field['lookup']['display']),
+							db_esc($field['lookup']['table']));
+
+						$res = $db->query($q);
+
+						// fill dropdown and linked fields list
+						while($obj = $res->fetchObject()) {						
+							if(in_array("{$obj->val}", $linked_items)) {
+								$items_div .= get_linked_item_html($form_id, $table, $table_name, $field_name, $has_additional_editable_fields,
+									$obj->val, $obj->txt, get_the_primary_key_value_from_url($table, ''));
+							}
+							else {							
+								echo '<option value="'. $obj->val .'" data-label="'. unquote($obj->txt) .'">'. format_lookup_item_label($obj->txt, $field['lookup']['table'], $field['lookup']['field'], $obj->val) . "</option>\n";
+							}
+						}
+					}
 					echo "</select></div>\n";		
 					
 					echo $create_new_button;

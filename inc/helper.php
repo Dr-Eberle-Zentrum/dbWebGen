@@ -68,6 +68,13 @@
 		
 		return $field['conditional_form_label']['mapping'][$conrolling_field_value];
 	}
+
+	//------------------------------------------------------------------------------------------
+	function get_app_lang() {
+	//------------------------------------------------------------------------------------------
+		global $APP;
+		return isset($APP['lang']) ? $APP['lang'] : 'en';
+	}
 	
 	//------------------------------------------------------------------------------------------
 	function is_popup() {
@@ -386,7 +393,7 @@
 			$lookup_id_field = $TABLES[$lookup_table]['fields'][$lookup_id_field]['label'];
 		}		
 		
-		return sprintf('%s&nbsp;&nbsp;(%s = %s)', html($raw_label), $lookup_id_field, html($id_value));
+		return sprintf('%s (%s = %s)', html($raw_label), $lookup_id_field, html($id_value));
 	}
 	
 	//------------------------------------------------------------------------------------------
@@ -472,6 +479,10 @@
 		
 		$text = strval($text);
 		$len = mb_strlen($text);
+		
+		// PHP lower than v5.4 do not have ENT_HTML401
+		if(!defined('ENT_HTML401'))
+			define('ENT_HTML401', 0);
 		
 		if($max_chars > 0 && $len > $max_chars) {
 			$ret = htmlspecialchars(mb_substr($text, 0, $max_chars), ENT_COMPAT | ENT_HTML401);
@@ -1221,17 +1232,17 @@
 	// this function by Scott on http://stackoverflow.com/a/13733588/5529515
 	function crypto_rand_secure($min, $max) {
 	//------------------------------------------------------------------------------------------	
-		$range = $max - $min;
-		if ($range < 1) return $min; // not so random...
-		$log = ceil(log($range, 2));
-		$bytes = (int) ($log / 8) + 1; // length in bytes
-		$bits = (int) $log + 1; // length in bits
-		$filter = (int) (1 << $bits) - 1; // set all lower bits to 1
-		do {
-			$rnd = hexdec(bin2hex(openssl_random_pseudo_bytes($bytes)));
-			$rnd = $rnd & $filter; // discard irrelevant bits
-		} while ($rnd >= $range);
-		return $min + $rnd;
+		$token = '';
+		$codeAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$codeAlphabet.= 'abcdefghijklmnopqrstuvwxyz';
+		$codeAlphabet.= '0123456789';
+		$max = strlen($codeAlphabet) - 1;
+		$rand_func = 'openssl_random_pseudo_bytes';		
+		if(!function_exists($rand_func))
+			$rand_func = 'mt_rand';		
+		for ($i=0; $i < $length; $i++)
+			$token .= $codeAlphabet[$rand_func(0, $max)];
+		return $token;
 	}
 
 	//------------------------------------------------------------------------------------------

@@ -37,11 +37,36 @@ $(window).load(function() {
 	$('select').each(function() {
 		var box = $(this);
 		
-		// display search box in dropdown if more than 5 options available
-		if(box.children('option').length > 5)	
-			box.select2({ theme: 'bootstrap', width: '100%' });
-		else
-			box.select2({ theme: 'bootstrap', width: '100%', minimumResultsForSearch: Infinity });
+		if(box.hasClass('lookup-async')) {			
+			box.select2({
+				// general select2 options are defined in the data-* attributes of the <select> element				
+				theme: 'bootstrap', 
+				width: '100%',
+				ajax: {
+					url: '?mode=func&target=lookup_async',
+					type: 'POST',
+					data: function (params) {				
+						return { 
+							q: params.term,
+							table: box.data('thistable'),
+							field: box.data('fieldname'),
+							val: box.data('lookuptype') == 'multiple' ? $('#' + box.data('fieldname')).val() : ''
+						};
+					},
+					processResults: function (data) {							
+						return { results: data };
+					},
+					delay: box.data('asyncdelay')
+				}
+			});
+		}
+		else {		
+			// display search box in dropdown if more than 5 options available
+			if(box.children('option').length > 5)	
+				box.select2({ theme: 'bootstrap', width: '100%' });
+			else
+				box.select2({ theme: 'bootstrap', width: '100%', minimumResultsForSearch: Infinity });
+		}
 		
 		if(box.val() != '')
 			box.change();
@@ -122,6 +147,12 @@ $(window).load(function() {
 			if(selected_value === null || selected_value === '')
 				return;
 			
+			// need to extract the plain option text (without the key value in parentheses)
+			// in "normal" lookup boxes this is in the option's "data-label" attribute
+			// in "async" lookup boxes this is in the "label" attribute of the option's data object
+			var sel_option = $(dropdown_id + ' option:selected');						
+			var label = typeof sel_option.data('data').label === 'undefined' ? sel_option.data('label') : sel_option.data('data').label;
+			
 			// append selected item to bullet list
 			$.get('', { 
 				mode: 'func', 
@@ -131,7 +162,7 @@ $(window).load(function() {
 				parent_form: $('#__form_id__').val(),
 				field: field,
 				other_id: selected_value,
-				label: $(dropdown_id + ' option:selected').data('label')
+				label: label
 			}, function(data) {				
 				// add selected item to hidden input				
 				var list = parse_multiple_val($(hidden_input).val());				

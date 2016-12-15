@@ -6,6 +6,8 @@
 			App title as displayed in header menu. If page_title is not set, this is also used as HTML <title> for the page
 		- page_title: string (optional)
 			What to put in the HTML title element. If not provided, the 'title' setting is used.
+		- lang: string (optional) (default: 'en')
+			Localization (where applicable)
 		- bootstrap_css: string (optional) (default: https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css) 
 			Specify a bootstrap CSS theme, if you do not want to use the default theme.
 		- page_icon: string (optional)
@@ -212,6 +214,12 @@
 				- related_label: string (optional)
 					Text to display in the "List Related" dropdown in MODE_VIEW of any record of the table referenced by this field (e.g. "Cars Sold By This Agent")
 					If missing, the label will be constructed automatically from the table's display name and the field's label. (e.g. "Cars Sales (As Agent)")
+				- async: array (optional)
+					Hash array that, when provided, specifies how to dynamically fetch records into the dropdown box based on keyboard input. This is handy if the linked table holds too many records. Keys:
+					- min_input_len: integer
+						Minimum number of characters the user has to type before matching records are fetched
+					- delay: integer (optional)
+						If set, this specifies the number of milliseconds to wait before sending an Ajax request after a user keystroke
 			- linkage: array
 				If cardinality=CARDINALITY_MULTIPLE, we need to define here the m:n relationship table that links records from this table (via fk_self) with records of the other table (via fk_other)
 				- table: string
