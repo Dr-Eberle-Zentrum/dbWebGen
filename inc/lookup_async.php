@@ -2,6 +2,7 @@
 	//------------------------------------------------------------------------------------------
 	function process_lookup_async() {
 	//------------------------------------------------------------------------------------------
+		$debug = false;
 		global $TABLES;
 		global $APP;
 		header('Content-Type: application/json');
@@ -23,39 +24,44 @@
 			   || mb_strlen($q = $_REQUEST['q']) < $field['lookup']['async']['min_input_len']
 			  ) 
 			{
+				if($debug) die('parameters error');
 				break;
 			}
 			
-			$q = mb_strtolower($q);
-			if($q[0] != '%') $q = "%$q";
-			if(mb_substr($q, -1) != '%') $q .= '%';			
-			
 			$db = db_connect();
 			if($db === false) {
-				die('cannot connect to db');
+				if($debug) die('cannot connect to db');
 				break;
 			}
 			
 			$string_trafo = '%s';
 			if(isset($APP['search_string_transformation']) && $APP['search_string_transformation'] != '') {			
 				$string_trafo = $APP['search_string_transformation'];
-				if(strstr($string_trafo, '%s') === false)
-					$string_trafo = '%s'; // $APP[search_string_transformation] does not include a placeholder for the value, i.e. %s
+				if(substr_count($string_trafo, '%s') !== 1) // $APP[search_string_transformation] does not include a placeholder for the value, i.e. %s
+					$string_trafo = '%s'; 
 			}
 			
 			$display_expr = resolve_display_expression($field['lookup']['display']);
 			
-			$sql = sprintf("select %s id, %s \"label\" from %s where lower(%s) like ? order by 2", 
-				db_esc($field['lookup']['field']), $display_expr, $field['lookup']['table'], $display_expr);
+			if($field['lookup']['field'] == $field['lookup']['display']) {
+				// look only in display field
+				$sql = sprintf("select %s id, %s \"label\" from %s where ($string_trafo) like '%%' || ($string_trafo) || '%%' order by 2", 
+					db_esc($field['lookup']['field']), $display_expr, $field['lookup']['table'], $display_expr, '?');
+			}			
+			else {
+				// look in display field and primary key field
+				$sql = sprintf("select %s id, %s \"label\" from %s where ($string_trafo) || ($string_trafo) like '%%' || ($string_trafo) || '%%' order by 2", 
+					db_esc($field['lookup']['field']), $display_expr, $field['lookup']['table'], $display_expr, db_esc($field['lookup']['field']), '?');
+			}
 
 			$stmt = $db->prepare($sql);
 			if($stmt === false) {
-				die('cannot prepare stmt');
+				if($debug) die('cannot prepare stmt');
 				break;
 			}
 			
 			if($stmt->execute(array($q)) === false) {
-				die('cannot execute stmt');
+				if($debug) die('cannot execute stmt');
 				break;
 			}
 			

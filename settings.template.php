@@ -219,7 +219,7 @@
 					- min_input_len: integer
 						Minimum number of characters the user has to type before matching records are fetched
 					- delay: integer (optional)
-						If set, this specifies the number of milliseconds to wait before sending an Ajax request after a user keystroke
+						If set, this specifies the number of milliseconds to wait before sending an Ajax request after a user keystroke					
 			- linkage: array
 				If cardinality=CARDINALITY_MULTIPLE, we need to define here the m:n relationship table that links records from this table (via fk_self) with records of the other table (via fk_other)
 				- table: string

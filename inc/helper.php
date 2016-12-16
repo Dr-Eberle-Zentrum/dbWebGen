@@ -211,7 +211,7 @@
 		$string_trafo = '%s';
 		if(isset($APP['search_string_transformation']) && $APP['search_string_transformation'] != '') {			
 			$string_trafo = $APP['search_string_transformation'];
-			if(strstr($string_trafo, '%s') === false)
+			if(substr_count($string_trafo, '%s') !== 1)
 				proc_error('$APP[search_string_transformation] does not include a placeholder for the value, i.e. %s');
 		}
 		
@@ -1229,34 +1229,13 @@
 	}
 	
 	//------------------------------------------------------------------------------------------
-	// this function by Scott on http://stackoverflow.com/a/13733588/5529515
-	function crypto_rand_secure($min, $max) {
-	//------------------------------------------------------------------------------------------	
-		$token = '';
-		$codeAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-		$codeAlphabet.= 'abcdefghijklmnopqrstuvwxyz';
-		$codeAlphabet.= '0123456789';
-		$max = strlen($codeAlphabet) - 1;
-		$rand_func = 'openssl_random_pseudo_bytes';		
-		if(!function_exists($rand_func))
-			$rand_func = 'mt_rand';		
-		for ($i=0; $i < $length; $i++)
-			$token .= $codeAlphabet[$rand_func(0, $max)];
-		return $token;
-	}
-
-	//------------------------------------------------------------------------------------------
-	// this function by Scott on http://stackoverflow.com/a/13733588/5529515
 	function get_random_token($length) {
 	//------------------------------------------------------------------------------------------	
+		$alphabet = 'ABCDEFGHIJKLMNPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789';		
+		$max = strlen($alphabet) - 1;
 		$token = '';
-		$codeAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-		$codeAlphabet.= 'abcdefghijklmnopqrstuvwxyz';
-		$codeAlphabet.= '0123456789';
-		$max = strlen($codeAlphabet) - 1;
-		for ($i=0; $i < $length; $i++) {
-			$token .= $codeAlphabet[crypto_rand_secure(0, $max)];
-		}
+		for($i = 0; $i < $length; $i++)
+			$token .= $alphabet[mt_rand(0, $max)];
 		return $token;
 	}	
 	

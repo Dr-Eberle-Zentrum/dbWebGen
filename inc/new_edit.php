@@ -371,7 +371,7 @@ EOT;
 						return proc_error('Cannot connect to DB.');
 
 					$where_clause = '';
-					if($lookup_async != '')
+					if($lookup_async != '' && isset($_POST[$field_name]) && $_POST[$field_name] != NULL_OPTION)
 						$where_clause = sprintf('where %s = ?', db_esc($field['lookup']['field']));
 					
 					$sql = sprintf('select %s val, %s txt from %s %s order by txt', 
@@ -381,7 +381,7 @@ EOT;
 					if(false === $stmt)
 						return proc_error('Could not prepare query', $db);
 					
-					if(false === $stmt->execute($lookup_async != '' && isset($_POST[$field_name]) ? array($_POST[$field_name]) : array()))
+					if(false === $stmt->execute($where_clause != '' ? array($_POST[$field_name]) : array()))
 						return proc_error("Could not retrieve data.", $db);
 
 					if(!$is_required)
