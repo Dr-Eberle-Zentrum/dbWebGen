@@ -32,6 +32,9 @@
 	
 	// temporary form identifier
 	define('TEMP_FORM_ID', '__temp-id__');	
+
+	// default column width for fields
+	define('DEFAULT_FIELD_WIDTH', 7);
 	
 	// special function names called via MODE_FUNC
 	define('LINKED_ITEM_HTML', 'get_linked_item_html');

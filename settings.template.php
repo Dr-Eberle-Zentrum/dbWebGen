@@ -179,7 +179,7 @@
 				If type=T_LOOKUP: this is a pseudo type that reflects foreign keys from either 1:n (CARDINALITY_SINGLE) or m:n relationships (CARDINALITY_MULTIPLE). Settings for 'lookup' must be provided if this type is assigned (see below).
 				If type=T_ENUM, 'values' must be set (see below)
 			- len: int
-				Maximal number of characters that the input control can hold. Relevant only for T_TEXT_LINE.
+				Maximal number of characters that the input control can hold. Relevant only for T_TEXT_LINE, T_PASSWORD.
 			- required: bool (default: false)
 				Whether or not a value is required for this field (= NOT NULL)
 			- editable: bool (default: true)

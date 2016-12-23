@@ -221,33 +221,6 @@ EOT;
 	}
 	
 	//------------------------------------------------------------------------------------------
-	function render_setnull($field_name, $field) {
-	//------------------------------------------------------------------------------------------			
-		global $APP;
-		
-		$is_checked = !isset($_POST["{$field_name}__null__"]) || $_POST["{$field_name}__null__"] == 'true';
-		$checked_attr = $is_checked? "checked='checked'" : '';
-		$visibility = (isset($field['show_setnull']) && $field['show_setnull'] === true ? '' : 'invisible');
-		$null_label = isset($APP['null_label']) ? $APP['null_label'] : 'NULL';
-		
-		echo 
-			"<div class='checkbox col-sm-1 $visibility'><label><input type='hidden' name='{$field_name}__null__' value='false' />".
-			"<input name='{$field_name}__null__' type='checkbox' value='true' $checked_attr />$null_label</label></div>";
-	}
-	
-	//------------------------------------------------------------------------------------------
-	function get_input_size_class($field, $max) {
-	//------------------------------------------------------------------------------------------
-		if(!isset($field['len']) || $field['len'] > 56)	return min($max, 7);
-		if($field['len'] > 46) return min($max, 6);
-		if($field['len'] > 35) return min($max, 5);
-		if($field['len'] > 25) return min($max, 4);
-		if($field['len'] > 14) return min($max, 3);
-		if($field['len'] > 4) return min($max, 2);
-		return min($max, 1);
-	}
-	
-	//------------------------------------------------------------------------------------------
 	function render_help($field) {
 	//------------------------------------------------------------------------------------------
 		if(!isset($field['help']) || $field['help'] == '')
@@ -259,230 +232,45 @@ EOT;
 	//------------------------------------------------------------------------------------------
 	function render_control($form_id, $field_name, $field, $focus, $prefilled) {
 	//------------------------------------------------------------------------------------------	
-		global $APP;
 		global $TABLES;
 		global $LOGIN;
 		$table_name = $_GET['table'];
 		$table = $TABLES[$table_name];
 		
-		$is_required = isset($field['required']) && $field['required'] === true;
-		$required_attr = ''; ($is_required ? " required='true' " : '');		
-		$width = isset($field['width_columns']) ? $field['width_columns'] : 7;		
-		$autofocus = $focus? ' autofocus ' : '';	
-		
 		if(!is_allowed($table, $_GET['mode']) && is_own_user_record(true))
-			$disabled = ($field_name != $LOGIN['password_field'] ? ' readonly disabled ' : '');
+			$disabled = ($field_name != $LOGIN['password_field']);
 		else
-			$disabled = ($prefilled ? ' readonly disabled ' : '');
+			$disabled = $prefilled;
 		
-		switch($field['type']) {
-			case T_UPLOAD:
-				echo "<div class='col-sm-$width'><span class='btn btn-default btn-file file-input'>Browse<input $disabled $required_attr data-text='{$field_name}_text' type='file' id='{$field_name}' name='{$field_name}' /></span><span class='filename' id='{$field_name}_text'></span></div>\n";				
-				break;
-				
-			case T_PASSWORD:
-				if(!isset($field['width_columns'])) 
-					$width = get_input_size_class($field, $width);
-				
-				echo "<div class='col-sm-$width'><input $disabled $required_attr type='password' class='form-control' id='{$field_name}' name='{$field_name}' maxlength='{$field['len']}' value='' $autofocus /></div>\n";
-				if(!$is_required) render_setnull($field_name, $field);
+		$field_obj = FieldFactory::create($table_name, $field_name, $field);
+		$render_settings = array(
+			'disabled' => $disabled,
+			'focus' => $focus
+		);		
+		
+		switch($field_obj->get_type()) {
+			case T_LOOKUP:
+				$render_settings['form_id'] = $form_id;
+				$html = sprintf(
+					"<div class='col-sm-%s'>%s</div>\n",
+					$field_obj->get_width(), 
+					$field_obj->render_control($render_settings)
+				);
+				$field_obj->render_create_new_button_html($html);				
+				if($field_obj->get_cardinality() == CARDINALITY_MULTIPLE)
+					$field_obj->render_linked_items($html);				
+				echo $html;
 				break;
 			
-			case T_TEXT_LINE:
-				if(!isset($field['width_columns'])) 
-					$width = get_input_size_class($field, $width);
-				
-				$maxlen = isset($field['len']) ? "maxlength='{$field['len']}'" : '';
-				echo "<div class='col-sm-$width'><input $disabled $required_attr type='text' class='form-control' id='{$field_name}' name='{$field_name}' $maxlen value=\"".html_val($field_name)."\" $autofocus /></div>\n";
-				if(!$is_required) render_setnull($field_name, $field);
-				break;
-				
-			case T_NUMBER:
-				$attr_min = isset($field['min']) ? "min='{$field['min']}'" : '';
-				$attr_max = isset($field['max']) ? "max='{$field['max']}'" : '';
-				$attr_step = isset($field['step']) ? "step='{$field['step']}'" : '';
-				
-				echo "<div class='col-sm-3'><input $disabled $required_attr $attr_min $attr_max $attr_step type='number' class='form-control' id='{$field_name}' name='{$field_name}' value=\"".html_val($field_name)."\" $autofocus /></div>\n";
-				if(!$is_required) render_setnull($field_name, $field);
-				break;
-				
-			case T_TEXT_AREA:
-				$rows = isset($field['height_rows']) ? $field['height_rows'] : 5;
-				$resize = !isset($field['resizeable']) || $field['resizeable'] === true ? 'vresize' : 'noresize';
-				echo "<div class='col-sm-$width'><textarea $disabled $required_attr class='form-control $resize' id='{$field_name}' name='{$field_name}' rows='{$rows}' $autofocus>".html_val($field_name)."</textarea></div>\n";
-				if(!$is_required) render_setnull($field_name, $field);
-				break;
-				
-			case T_ENUM:
-				echo "<div class='col-sm-$width'><select $disabled $required_attr class='form-control' id='{$field_name}' name='{$field_name}' $autofocus>\n";
-				if(!$is_required)
-					echo "<option value='". NULL_OPTION ."'>&nbsp;</option>\n";
-				
-				$selection_done = '';
-				
-				foreach($field['values'] as $val => $text) {
-					if($selection_done != 'done') {
-						$sel = (isset($_POST[$field_name]) && $_POST[$field_name] == $val ? ' selected="selected" ' : '');	
-						
-						if($sel != '') {
-							$selection_done = 'done';
-						}						
-						else if($sel == '' && $is_required && isset($field['default']) && get_default($field['default']) == $val) {
-							$sel = ' selected="selected" ';
-							$selection_done = 'default';
-						}
-					}
-					else {
-						$sel = '';
-					}
-					
-					echo "<option value='$val' $sel>" . html($text) . "</option>\n";
-				}
-				echo "</select></div>\n";
-				break;
-				
-			case T_POSTGIS_GEOM:
-				echo "<div class='col-sm-$width'><input $disabled $required_attr type='text' class='form-control' id='{$field_name}' name='{$field_name}' value=\"".html_val($field_name)."\" $autofocus /></div>\n";
-				if(!$is_required) render_setnull($field_name, $field);
-				break;
-				
-			case T_LOOKUP:
-				$create_new_button = '';				
-				if(is_allowed_create_new($field) && $disabled === '') {
-					$popup_url = "?popup={$table_name}&amp;lookup_field={$field_name}&amp;table={$field['lookup']['table']}&amp;mode=".MODE_NEW;
-					$popup_title = html('New ' . $field['label']);
-					
-					$create_new_button = "<div class='col-sm-2'><button type='button' class='btn btn-default multiple-select-add' data-create-title='{$popup_title}' data-create-url='{$popup_url}' id='{$field_name}_add' formnovalidate><span title='Remove this association' class='glyphicon glyphicon-plus'></span> Create New</button></div>\n";					
-				}
-				
-				$lookup_table_attr = unquote($field['lookup']['table']);
-				
-				$lookup_async = isset($field['lookup']['async']) ? 'lookup-async' : '';
-				$async_language = $lookup_async != '' ? ("data-language='". get_app_lang() . "'") : '';
-				$async_minlen = $lookup_async != '' ? "data-minimum-input-length='{$field['lookup']['async']['min_input_len']}'" : '';
-				$async_delay = $lookup_async != '' && isset($field['lookup']['async']['delay']) ? "data-asyncdelay='{$field['lookup']['async']['delay']}'" : '';
-				$allow_clear = $is_required ? '' : "data-allow-clear=true";
-					
-				if($field['lookup']['cardinality'] == CARDINALITY_SINGLE) {
-					echo "<div class='col-sm-$width'><select $disabled $required_attr class='form-control $lookup_async' id='{$field_name}_dropdown' name='{$field_name}' data-table='$lookup_table_attr' data-fieldname='$field_name' data-placeholder='Click to select' data-thistable='{$table_name}' $async_language $async_minlen $async_delay data-lookuptype='single' $allow_clear $autofocus>\n";					
-					
-					$db = db_connect();
-					if($db === false)
-						return proc_error('Cannot connect to DB.');
-
-					$where_clause = '';
-					if($lookup_async != '' && isset($_POST[$field_name]) && $_POST[$field_name] != NULL_OPTION)
-						$where_clause = sprintf('where %s = ?', db_esc($field['lookup']['field']));
-					
-					$sql = sprintf('select %s val, %s txt from %s %s order by txt', 
-						db_esc($field['lookup']['field']), resolve_display_expression($field['lookup']['display']), $field['lookup']['table'], $where_clause);
-
-					$stmt = $db->prepare($sql);
-					if(false === $stmt)
-						return proc_error('Could not prepare query', $db);
-					
-					if(false === $stmt->execute($where_clause != '' ? array($_POST[$field_name]) : array()))
-						return proc_error("Could not retrieve data.", $db);
-
-					if(!$is_required)
-						echo "<option value='". NULL_OPTION ."'>&nbsp;</option>\n";
-					else if($_GET['mode'] == MODE_NEW)
-						echo "<option value=''></option>\n";
-
-					$selection_done = '';
-
-					while($obj = $stmt->fetch(PDO::FETCH_OBJ)) {
-						if($selection_done != 'done') {
-							$sel = (isset($_POST[$field_name]) && $_POST[$field_name] == $obj->val ? ' selected="selected" ' : '');
-
-							if($sel != '') {
-								$selection_done = 'done';
-							}							
-							else if($sel == '' && $is_required && isset($field['lookup']['default']) && get_default($field['lookup']['default']) == $obj->val) {
-								$sel = ' selected="selected" ';
-								$selection_done = 'default';
-							}
-						}
-						else {
-							$sel = '';
-						}
-
-						echo "<option value='{$obj->val}' $sel>" . format_lookup_item_label($obj->txt, $field['lookup']['table'], $field['lookup']['field'], $obj->val) . "</option>\n";
-					}					
-					echo "</select></div>\n";
-
-					echo $create_new_button;					
-				}
-				else if($field['lookup']['cardinality'] == CARDINALITY_MULTIPLE) {
-					$id_list = trim(post_val($field_name));
-					echo "<input class='multiple-select-hidden' id='{$field_name}' name='{$field_name}' type='hidden' value='$id_list' />\n";
-					
-					echo "<div class='col-sm-$width'><select $disabled $required_attr class='form-control multiple-select-dropdown $lookup_async' id='{$field_name}_dropdown' data-table='$lookup_table_attr' data-thistable='{$table_name}' data-fieldname='$field_name' data-placeholder='Click to select' $async_language $async_minlen $async_delay data-lookuptype='multiple' data-allow-clear='true' $autofocus>\n";
-					
-					// we look which ones are already connected
-					$linked_items = get_linked_items($field_name);
-					$items_div = '';
-
-					// check whether additional fields can be set in the linkage table
-					$has_additional_editable_fields = has_additional_editable_fields($field['linkage']);
-					
-					$db = db_connect();
-					if($db === false)
-						return proc_error('Could not connect to database.');					
-					
-					if($lookup_async != '') {
-						// just prepare the list of already existing linked items
-						$existing_linkage = array();
-						$sql = sprintf('select %s val, %s txt from %s where %s = ?',
-							db_esc($field['lookup']['field']),
-							resolve_display_expression($field['lookup']['display']),
-							db_esc($field['lookup']['table']),
-							db_esc($field['lookup']['field']));
-						
-						$stmt = $db->prepare($sql);						
-						if($stmt === false)
-							return proc_error('Could not prepare statement', $db);
-						
-						foreach($linked_items as $linked_item_val) {							
-							if(false === $stmt->execute(array($linked_item_val)))
-								continue; // maybe deleted already somewhere else?
-							
-							if($res = $stmt->fetch(PDO::FETCH_OBJ))								
-								$existing_linkage[$res->val] = $res->txt;
-						}
-						asort($existing_linkage);
-						foreach($existing_linkage as $val => $txt) {
-							$items_div .= get_linked_item_html($form_id, $table, $table_name, $field_name, $has_additional_editable_fields,
-									$val, $txt, get_the_primary_key_value_from_url($table, ''));
-						}
-					}
-					else {
-						$q = sprintf('select %s val, %s txt from %s order by txt',
-							db_esc($field['lookup']['field']),
-							resolve_display_expression($field['lookup']['display']),
-							db_esc($field['lookup']['table']));
-
-						$res = $db->query($q);
-
-						// fill dropdown and linked fields list
-						while($obj = $res->fetchObject()) {						
-							if(in_array("{$obj->val}", $linked_items)) {
-								$items_div .= get_linked_item_html($form_id, $table, $table_name, $field_name, $has_additional_editable_fields,
-									$obj->val, $obj->txt, get_the_primary_key_value_from_url($table, ''));
-							}
-							else {							
-								echo '<option value="'. $obj->val .'" data-label="'. unquote($obj->txt) .'">'. format_lookup_item_label($obj->txt, $field['lookup']['table'], $field['lookup']['field'], $obj->val) . "</option>\n";
-							}
-						}
-					}
-					echo "</select></div>\n";		
-					
-					echo $create_new_button;
-					
-					echo "<div class='col-sm-offset-3 col-sm-9 multiple-select-ul' id='{$field_name}_list'>$items_div</div>";
-				}
+			default:
+				echo sprintf(
+					"<div class='col-sm-%s'>%s</div>\n",
+					$field_obj->get_width(), $field_obj->render_control($render_settings)
+				);
 				break;
 		}
+		
+		echo $field_obj->render_setnull_box();
 	}
 	
 	//------------------------------------------------------------------------------------------

@@ -364,6 +364,53 @@ HTML;
 		}
 		
 		//--------------------------------------------------------------------------------------
+		protected function render_lookup_field($table_name, $field_name, $param_name, $param_value) {
+		//--------------------------------------------------------------------------------------
+			global $TABLES;
+			if(!isset($TABLES[$table_name]) || !isset($TABLES[$table_name]['fields'][$field_name])) {
+				proc_error('Invalid table or field in parameterized query');
+				return '';
+			}
+			
+			$field = $TABLES[$table_name]['fields'][$field_name];
+			$f = FieldFactory::create($table_name, $field_name);
+			
+			switch($field['type']) {
+				case T_ENUM:
+					// offer all enum values
+					return sprintf(
+						'<span style="width:400px">%s</span>', 
+						$f->render_control(array(
+							'form_method' => 'GET',
+							'name_attr' => "p:$param_name",
+							'id_attr' => $param_name,
+							'null_option_allowed' => false
+						))
+					);
+					break;
+				
+				case T_LOOKUP:
+					// offer all linked elements
+					return sprintf(
+						'<span style="width:400px">%s</span>', 
+						$f->render_control(array(
+							'form_method' => 'GET',
+							'name_attr' => "p:$param_name",
+							'id_attr' => $param_name,
+							'null_option_allowed' => false						
+						))
+					);
+					break;
+					
+				default:
+					// offer all distinct values from table
+					return "TODO";
+			}
+			
+			return '';
+		}
+		
+		//--------------------------------------------------------------------------------------
 		protected function build_visualization_part() {
 		//--------------------------------------------------------------------------------------
 			$this->viz_ui = '';
@@ -391,15 +438,24 @@ JS;*/
 					$this->viz_ui .= '<p>' . html($this->stored_description) . "</p>\n";
 				if(count($param_query['params']) > 0) {
 					$param_fields = '';
-					foreach($param_query['params'] as $param_name => $param_value) {
-						$param_name = substr($param_name, 1);
-						$param_value = unquote($param_value);
-						
+					foreach($param_query['params'] as $param_name => $param_value) {						
+						$control_html = '';						
+						if(isset($param_query['lookups'][$param_name])) {
+							$lookup_expr = $param_query['lookups'][$param_name];
+							if(preg_match('/^table:(?P<table>[^,]+),field:(?P<field>.+)$/', $lookup_expr, $matches)) {
+								$control_html = $this->render_lookup_field($matches['table'], $matches['field'], substr($param_name, 1), $param_value);
+							}
+						}
+						$param_name = substr($param_name, 1);	
+						if($control_html == '') {
+							$param_value = unquote($param_value);
+							$control_html = "<input id='$param_name' type='text' class='input-sm form-control' name='p:$param_name' value='$param_value' />";
+						}
 						$param_fields .= <<<HTML
 							<div class="form-group">
 								<label for='$param_name'>$param_name:</label>
-								<input id='$param_name' type='text' class='input-sm form-control' name='p:$param_name' value='$param_value' />&nbsp;&nbsp;
-							</div>							 
+								$control_html &nbsp;&nbsp;
+							</div>
 HTML;
 					}
 					
@@ -412,7 +468,7 @@ HTML;
 					// render form for parameters:
 					$this->viz_ui .= <<<HTML
 					<p><form class='form-inline' method='get'>
-						{$param_fields} <button class='btn btn-default input-sm' type='submit'>Refresh!</button>
+						{$param_fields} <button class='btn btn-default' type='submit'>Refresh!</button>
 					</form></p>
 HTML;
 				}
@@ -459,12 +515,14 @@ HTML;
 		//--------------------------------------------------------------------------------------
 			$retval = array(
 				'sql' => $this->sql,
-				'params' => array()
+				'params' => array(),
+				'lookups' => array()
 			);
 			
 			// extract parameters
-			if(preg_match_all('/#{(?P<params>\\w+)\\|(?P<defvals>[^}]*)}/', $this->sql, $matches) > 0) {
+			if(preg_match_all('/#{(?P<params>\\w+)\\|(?P<defvals>[^}|]*)(\\|(?P<lookups>[^}]*))?}/', $this->sql, $matches) > 0) {
 				//debug_log($matches);
+				
 				for($i = 0; $i < count($matches['params']); $i++) {
 					// prefer to take value from GET parameters e.g ...&p:xxx=blah
 					$val = isset($_GET['p:' . $matches['params'][$i]]) ? $_GET['p:' . $matches['params'][$i]] : $matches['defvals'][$i];
@@ -477,6 +535,10 @@ HTML;
 					
 					// set param for query
 					$retval['params'][':' . $matches['params'][$i]] = $val;
+					
+					// set lookup info
+					if(mb_strlen($lookup = trim($matches['lookups'][$i])) > 0)
+						$retval['lookups'][':' . $matches['params'][$i]] = $lookup;
 				}
 			}
 			
