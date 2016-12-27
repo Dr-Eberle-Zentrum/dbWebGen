@@ -14,7 +14,7 @@
 	background-color: #f8f8f8;
 }
 
-div.multiple-select-ul {	
+div.multiple-select-ul {
 	margin-top: .5em;
 	padding-left: 1.5em;
 }
@@ -55,8 +55,8 @@ a.clipped_text {
 	font-size: 1.5em;
 }
 
-.column-value {	
-	padding-top: .5em;	
+.column-value {
+	padding-top: .5em;
 }
 
 .space-left {
@@ -134,7 +134,7 @@ form.bg-gray .form-group:last-child {
 }
 
 .bg-gray {
-	padding: 1em;	
+	padding: 1em;
 	background-color: rgb(248,248,248);
 }
 
@@ -159,7 +159,7 @@ form.bg-gray .form-group:last-child {
 body,html{height:100%}
 
 .fill-height {
-	width: 100%;	
+	width: 100%;
 }
 
 #network-loading-progress {
@@ -167,7 +167,7 @@ body,html{height:100%}
 	position: absolute;
 	z-index: 555;
 	width: 100%;
-	text-align: center;	
+	text-align: center;
 }
 
 textarea.monospace, textarea#sql {
@@ -192,7 +192,7 @@ textarea.monospace, textarea#sql {
 
 #chart_div.result-full {
 	/*background-color: rgb(248,248,248);*/
-	padding: 0;	
+	padding: 0;
 	margin: 0;
 	overflow: auto;
 	min-height: 100px;
@@ -206,7 +206,7 @@ ul.columns {
 }
 
 ol.columns {
-	margin-top: -10px;	
+	margin-top: -10px;
 	padding-left: 1.5em;
 }
 
@@ -220,7 +220,7 @@ ol.columns {
 }
 
 .leaflet-popup-content > table th, .leaflet-popup-content > table td {
-	padding: 2px .25em;	
+	padding: 2px .25em;
 }
 
 .leaflet-popup-content > table th {
@@ -245,18 +245,19 @@ div.null_field {
 }
 
 .noresize {
-  resize: none; 
+  resize: none;
 }
 
 .vresize {
-  resize: vertical; 
+  resize: vertical;
 }
-  
+
 .hresize {
-  resize: horizontal;  
-}  
+  resize: horizontal;
+}
 
 /* to prevent select2 inserting line break in form-inline */
 form.form-inline span.select2.select2-container {
+    min-width: 275px !important;
     width: auto !important;
 }
