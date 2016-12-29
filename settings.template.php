@@ -154,6 +154,8 @@
 
 		- actions: array
 			List of MODE_* actions that are allowed for the table (see config/constants.php)
+		- hide_from_menu: array (optional)
+			If set, the array shall include the MODE_* that identify the menu from which this table shall be hidden even if the action is allowed. Currently only menus for MODE_NEW and MODE_LIST are generated automatically, so these may be in the array.
 		- display_name: string
 			Text label for the table
 		- description: string
@@ -198,6 +200,8 @@
 				Default value to set. All occurrences of REPLACE_DYNAMIC_* strings (see config/constants.php) are replaced with the current values.
 			- values: array (required only if type=T_ENUM)
 				Array of values for a T_ENUM type. An associative array with key reflecting the actual DB value, and value representing the label to display to the user, e.g. array(1 => 'January', 2 => 'February', ...)
+			- allow_create: boolean (default: true)
+				If set to false, suppresses the "Create New" button that is displayed next to T_LOOKUP boxes. Note: this setting might conflict with lookup/hide_dropdown setting
 			- lookup: array	(required only if type=T_LOOKUP)
 				Details of the foreign key relationship with another table
 				- cardinality: {CARDINALITY_SINGLE, CARDINALITY_MULTIPLE}
@@ -218,10 +222,14 @@
 					Hash array that, when provided, specifies how to dynamically fetch records into the dropdown box based on keyboard input. This is handy if the linked table holds too many records. Keys:
 					- min_input_len: integer
 						Minimum number of characters the user has to type before matching records are fetched
-					- delay: integer (optional)
+					- delay: integer (optional) (default: 0)
 						If set, this specifies the number of milliseconds to wait before sending an Ajax request after a user keystroke
-				- label_display_expr_only: boolean (default: false)
+				- label_display_expr_only: boolean (optional) (default: false)
 					By default the label for lookup values is composed of the display expression and in parentheses the respective primary key name and value. If you wish to suppress the parentheses, set label_display_expr_only = true
+				- hide_dropdown: boolean (optional) (default: false)
+					In some cases it might be useful to allow only the creation of new associations using "Create New" button, and not through the dropdown box. If hide_dropdown is set to true, the dropdown box will not be shown. If the field is CARDINALITY_SINGLE and disabled for some reason, the dropdown will be shown regardless of the hide_dropdown setting. Note: this setting might conflict with the allow_create setting of the field. If hide_dropdown is set to true, allow_create must be set to true as well, otherwise nothing will be shown.
+				- create_new_label: string (optional) (default: "Create New")
+					Label for the button next to the dropdown box, which allows users to add new records to the linked table
 			- linkage: array
 				If cardinality=CARDINALITY_MULTIPLE, we need to define here the m:n relationship table that links records from this table (via fk_self) with records of the other table (via fk_other)
 				- table: string
@@ -311,6 +319,14 @@
 			Example: 'render_links' => array(
 					array('icon' => 'eye-open', 'href_format' => 'uploads_images/%s', 'field' => 'filename', title => 'Show the damn file')
 				)
+		- form_tabs: array (optional)
+			If a tabbed MODE_NEW / MODE_EDIT form is desired, fill this array with an ordered set of arrays, where each array reflects a tab with the following settings:
+				- label: string
+					Label to display on the tab
+				- starts_with: string
+					Name of the field, which will be the first field in this tab. This can be omitted or empty for the first tab
+
+
 	======================================================================================================== */
 	$TABLES = array(
 	);

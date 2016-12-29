@@ -49,15 +49,25 @@
 		//--------------------------------------------------------------------------------------
 		public function is_allowed_create_new() { // default: true
 		//--------------------------------------------------------------------------------------
-			if(!isset($this->field['allow-create']))
+			if(!isset($this->field['allow_create']))
 				return true;
 
-			return $this->field['allow-create'] === true;
+			return $this->field['allow_create'] === true;
 		}
 		//--------------------------------------------------------------------------------------
 		public function is_lookup_async() { // default: false
 		//--------------------------------------------------------------------------------------
 			return isset($this->field['lookup']['async']);
+		}
+		//--------------------------------------------------------------------------------------
+		public function is_dropdown_hidden() { // default: false
+		//--------------------------------------------------------------------------------------
+			return isset($this->field['lookup']['hide_dropdown']) && $this->field['lookup']['hide_dropdown'] === true;
+		}
+		//--------------------------------------------------------------------------------------
+		public function get_create_new_label() { // default: Create New
+		//--------------------------------------------------------------------------------------
+			return isset($this->field['lookup']['create_new_label']) ? $this->field['lookup']['create_new_label'] : 'Create New';
 		}
 		//--------------------------------------------------------------------------------------
 		public function get_async_min_input_len() {
@@ -127,7 +137,7 @@
 
 			$popup_title = html('New ' . $this->get_label());
 
-			$html .= sprintf("<div class='col-sm-2'><button type='button' class='btn btn-default multiple-select-add' data-create-title='%s' data-create-url='%s' id='%s_add' formnovalidate><span title='Remove this association' class='glyphicon glyphicon-plus'></span> Create New</button></div>\n", $popup_title, $popup_url, $this->field_name);
+			$html .= sprintf("<div class='col-sm-2'><button type='button' class='btn btn-default multiple-select-add' data-create-title='%s' data-create-url='%s' id='%s_add' formnovalidate><span title='Remove this association' class='glyphicon glyphicon-plus'></span> %s</button></div>\n", $popup_title, $popup_url, $this->field_name, $this->get_create_new_label());
 		}
 
 		//--------------------------------------------------------------------------------------

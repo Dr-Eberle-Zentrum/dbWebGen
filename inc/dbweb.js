@@ -260,8 +260,9 @@ function write_multiple_val(arr) { return JSON.stringify(arr); }
 //
 function insert_option_sorted(dropdown_id, value, label, text, selected) {
 	// insert removed element sorted into the dropdown
-	var insert_before = -1;
-	var $dropdown = $('#' +  dropdown_id);
+    // we also need to do this in case of lookup-async, since the "create new" result is "ingested" here
+    var $dropdown = $('#' +  dropdown_id);
+    var insert_before = -1;
 	$dropdown.children('option').each(function () {
 		if(text.localeCompare($(this).text()) <= 0) {
 			insert_before = $(this).val();

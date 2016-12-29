@@ -77,6 +77,13 @@
 	}
 
 	//------------------------------------------------------------------------------------------
+	function is_table_hidden_from_menu(&$table, $menu_mode) {
+	//------------------------------------------------------------------------------------------
+		return isset($table['hide_from_menu']) && is_array($table['hide_from_menu'])
+			&& in_array($menu_mode, $table['hide_from_menu']);
+	}
+
+	//------------------------------------------------------------------------------------------
 	function is_popup() {
 	//------------------------------------------------------------------------------------------
 		return isset($_GET['popup']);
@@ -901,7 +908,10 @@
 	function is_allowed_create_new(&$field) {
 	// default is true
 	//------------------------------------------------------------------------------------------
-		if(isset($field['allow-create']) && $field['allow-create'] === false)
+		if(isset($field['allow_create']) && $field['allow_create'] === false)
+			return false;
+
+		if(isset($field['allow-create']) && $field['allow-create'] === false) // legacy
 			return false;
 
 		return true;
@@ -1292,5 +1302,56 @@
 			});
 			</script>
 END;
+	}
+
+	//------------------------------------------------------------------------------------------
+	class FormTabs {
+	//------------------------------------------------------------------------------------------
+		private $form_tabs;
+		private $tab_index;
+
+		public function __construct(&$table) {
+			$this->form_tabs = isset($table['form_tabs']) && is_array($table['form_tabs']) && count($table['form_tabs']) > 0 ? $table['form_tabs'] : false;
+			$this->tab_index = -1;
+		}
+
+		public function begin() {
+			if($this->form_tabs === false)
+				return '';
+			$html = '';
+			$html .= "<ul class='nav nav-tabs'>";
+			$active_done = false;
+			foreach($this->form_tabs as &$tab) {
+				$tab['anchor'] = '__tab__' . unquote(strtolower(preg_replace('/\s+/', '', $tab['label'])));
+				$html .= sprintf("<li class='%s'><a data-toggle='tab' href='#%s'>%s</a></li>\n",
+					$active_done? '' : 'active', $tab['anchor'], $tab['label']);
+				$active_done = true;
+			}
+			$html .= "</ul>\n<div class='tab-content'>\n";
+			return $html;
+		}
+
+		public function new_tab_if_needed($field_name) {
+			if($this->form_tabs === false)
+				return '';
+			$html = '';
+			if($this->tab_index == -1) {
+				// first tab
+				$this->tab_index++;
+				$html .= sprintf("<div id='%s' class='tab-pane fade in active'>\n", $this->form_tabs[$this->tab_index]['anchor']);
+			}
+			else if(count($this->form_tabs) > $this->tab_index + 1 && $this->form_tabs[$this->tab_index + 1]['starts_with'] == $field_name) {
+				// start new tab
+				$this->tab_index++;
+				$html .= sprintf("</div>\n<div id='%s' class='tab-pane fade'>\n", $this->form_tabs[$this->tab_index]['anchor']);
+			}
+			return $html;
+		}
+
+		public function close() {
+			if($this->form_tabs === false)
+				return '';
+			return "</div>\n</div>\n";
+		}
 	}
 ?>

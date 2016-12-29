@@ -120,7 +120,7 @@ span.required-indicator {
 }
 
 .invisible {
-	display:none;
+	display: none;
 }
 
 .smsp {
@@ -260,4 +260,13 @@ div.null_field {
 form.form-inline span.select2.select2-container {
     min-width: 275px !important;
     width: auto !important;
+}
+
+.tab-content {
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+ul.nav.nav-tabs a {
+    font-size: larger;
 }
