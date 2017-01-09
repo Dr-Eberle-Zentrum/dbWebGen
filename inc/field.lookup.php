@@ -169,8 +169,8 @@
 			if($this->is_lookup_async() && $this->has_submitted_value() && $this->get_submitted_value() != NULL_OPTION)
 				$where_clause = sprintf('where %s = ?', db_esc($this->get_lookup_field_name()));
 
-			$sql = sprintf('select %s val, %s txt from %s %s order by txt',
-				db_esc($this->get_lookup_field_name()), resolve_display_expression($this->get_lookup_display()), $this->get_lookup_table_name(), $where_clause);
+			$sql = sprintf('select %s val, %s txt from %s t %s order by txt',
+				db_esc($this->get_lookup_field_name()), resolve_display_expression($this->get_lookup_display(), 't'), $this->get_lookup_table_name(), $where_clause);
 
 			$stmt = $db->prepare($sql);
 			if(false === $stmt)
@@ -249,9 +249,9 @@
 			if($this->is_lookup_async()) {
 				// just prepare the list of already existing linked items
 				$existing_linkage = array();
-				$sql = sprintf('select %s val, %s txt from %s where %s = ?',
+				$sql = sprintf('select %s val, %s txt from %s t where %s = ?',
 					db_esc($this->get_lookup_field_name()),
-					resolve_display_expression($this->get_lookup_display()),
+					resolve_display_expression($this->get_lookup_display(), 't'),
 					db_esc($this->get_lookup_table_name()),
 					db_esc($this->get_lookup_field_name()));
 
@@ -273,9 +273,9 @@
 				}
 			}
 			else {
-				$q = sprintf('select %s val, %s txt from %s order by txt',
+				$q = sprintf('select %s val, %s txt from %s t order by txt',
 					db_esc($this->get_lookup_field_name()),
-					resolve_display_expression($this->get_lookup_display()),
+					resolve_display_expression($this->get_lookup_display(), 't'),
 					db_esc($this->get_lookup_table_name()));
 
 				$res = $db->query($q);

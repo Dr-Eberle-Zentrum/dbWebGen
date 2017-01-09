@@ -238,7 +238,7 @@
 
 			$term['sql'] = sprintf("$field_trafo %s $query_trafo or (select $field_trafo from %s other where other.%s = %s.%s) %s $query_trafo",
 				db_esc($search_field), $op,
-				resolve_display_expression($lookup['display']),
+				resolve_display_expression($lookup['display'], 'other'),
 				db_esc($lookup['table']), db_esc($lookup['field']), db_esc($table_alias), db_esc($search_field), $op);
 
 			$term['params'][]= $term['params'][count($term['params'])-1];
@@ -606,6 +606,9 @@
 				for($i=0; $i<count($temp_arr[0]); $i++)
 					$id_display_map[$temp_arr[0][$i]] = $temp_arr[1][$i];
 				//<< postgre 9.2
+
+				if(!isset($field['lookup']['sort']) || $field['lookup']['sort'] == true)
+					asort($id_display_map);
 
 				$linked_records = array();
 				foreach($id_display_map as $id_val => $display_val) {
@@ -1084,10 +1087,12 @@
     }
 
 	//------------------------------------------------------------------------------------------
-	function resolve_display_expression($display, $table_qualifier = '') {
+	function resolve_display_expression($display, $table_qualifier) {
 	//------------------------------------------------------------------------------------------
 		if($table_qualifier != '')
 			$table_qualifier = db_esc($table_qualifier) . '.';
+		else
+			proc_error('Query without table qualifier'); // some cases absolutely require table qualifiers
 
 		if(!is_array($display)) // simple field name string
 			return $table_qualifier . db_esc($display);
@@ -1136,8 +1141,8 @@
 			// lookup single field
 			if($field['type'] == T_LOOKUP && $field['lookup']['cardinality'] == CARDINALITY_SINGLE) {
 				if($mode == MODE_LIST || $mode == MODE_VIEW) {
-					$cols .= sprintf('(SELECT %s FROM %s WHERE %s = t.%s) %s, t.%s %s',
-						resolve_display_expression($field['lookup']['display']),
+					$cols .= sprintf('(SELECT %s FROM %s k WHERE %s = t.%s) %s, t.%s %s',
+						resolve_display_expression($field['lookup']['display'], 'k'),
 						db_esc($field['lookup']['table']), db_esc($field['lookup']['field']),
 						db_esc($field_name), db_esc($field_name), db_esc($field_name),
 						db_postfix_fieldname($field_name, FK_FIELD_POSTFIX, true));

@@ -41,11 +41,11 @@
 					$string_trafo = '%s';
 			}
 
-			$display_expr = resolve_display_expression($field['lookup']['display']);
+			$display_expr = resolve_display_expression($field['lookup']['display'], 't');
 
 			if($field['lookup']['field'] == $field['lookup']['display']) {
 				// look only in display field
-				$sql = sprintf("select %s id, %s \"label\" from %s where ($string_trafo) like '%%' || ($string_trafo) || '%%' order by 2",
+				$sql = sprintf("select %s id, %s \"label\" from %s t where ($string_trafo) like '%%' || ($string_trafo) || '%%' order by 2",
 					db_esc($field['lookup']['field']), $display_expr, $field['lookup']['table'], $display_expr, '?');
 			}
 			else {
@@ -72,7 +72,7 @@
 				if(in_array($row->id, $cur_vals))
 					continue;
 
-				$row->text = format_lookup_item_label($row->label, $field['lookup'], $row->id);				
+				$row->text = format_lookup_item_label($row->label, $field['lookup'], $row->id);
 				$result[] = $row;
 			}
 

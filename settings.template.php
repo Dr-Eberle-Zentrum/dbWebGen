@@ -213,6 +213,8 @@
 				- display: string
 					Since the foreign key is typically a numeric key, this setting can be used to define what to display to the user. Can be either a string literal representing a field name in the referenced table, e.g.: 'display' => 'lastname'
 					Or it can be a hash array with 'columns' => array of columns, which is used in 'expression' => expression referring to indexes in 'columns' as %1, %2, etc., e.g.: 'display' => array('columns' => array('firstname', 'lastname'), 'expression' => "concat_ws(' ', %1 %2)" )
+				- sort: boolean (optional) (default: true)
+					In case of multiple lookup values, this setting determines whether the linked records are sorted using the display expression. Only relevant for CARDINALITY_MULTIPLE.
 				- default: any type (optional)
 					Default option for this foreign key reference to select in MODE_NEW. The type should be automatically convertible to string
 				- related_label: string (optional)
