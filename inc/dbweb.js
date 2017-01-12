@@ -1,4 +1,4 @@
-/*
+/* ==========================================================================================================
  * jQuery resize event - v1.1 - 3/14/2010
  * http://benalman.com/projects/jquery-resize-plugin/
  *
@@ -20,21 +20,71 @@ $.fn.extend({
         return this;
     }
 });
+/* end jQuery resize event */
 
+//------------------------------------------------------------------------------------------
 $(window).load(function() {
-	//
-	// logout button
-	//
-	$('#logout').on('click', function() {
+//------------------------------------------------------------------------------------------
+    set_logout_button_handler();
+    init_file_selection_handler();
+    make_dropdowns_select2();
+	set_install_clipped_text_handler();
+	init_popovers();
+    init_search_popup();
+    set_popover_close_handler();
+    init_null_value_handler();
+	init_multilookup_dropdowns();
+    set_create_new_handler();
+    init_height_adjustment();
+	highlight_diffs_in_mode_list();
+	ensure_hidden_input_submission();
+    handle_tabs();
+});
+
+//------------------------------------------------------------------------------------------
+function adjust_tabs_aware_hrefs() {
+//------------------------------------------------------------------------------------------
+    // adapt edit button href based on tab
+    $('a.tabs-aware').each(function() {
+        var a = $(this);
+        var href = a.attr('href');
+        var i = href.lastIndexOf('#');
+        a.attr('href', (i < 0 ? href : href.substr(0, i)) + window.location.hash);
+    });
+}
+
+//------------------------------------------------------------------------------------------
+function handle_tabs() {
+//------------------------------------------------------------------------------------------
+    // this solution based on solution http://stackoverflow.com/a/12138756/5529515
+    // by tomaszbak (http://stackoverflow.com/users/478584/tomaszbak)
+    var hash = window.location.hash;
+    hash && $('ul.nav-tabs a[href="' + hash + '"]').tab('show');
+    adjust_tabs_aware_hrefs();
+
+    $('.nav-tabs a').click(function (e) {
+        $(this).tab('show');
+        var scrollmem = $('body').scrollTop() || $('html').scrollTop();
+        window.location.hash = this.hash;
+        adjust_tabs_aware_hrefs();
+        $('html,body').scrollTop(scrollmem);
+    });
+}
+
+//------------------------------------------------------------------------------------------
+function set_logout_button_handler() {
+//------------------------------------------------------------------------------------------
+    $('#logout').on('click', function() {
 		$.get('?mode=logout', function(data) {
 			location.reload();
 		});
 	});
+}
 
-	//
-	// make all dropdowns a select2
-	//
-	$('select').each(function() {
+//------------------------------------------------------------------------------------------
+function make_dropdowns_select2() {
+//------------------------------------------------------------------------------------------
+    $('select').each(function() {
 		var box = $(this);
         var width = '100%';
 
@@ -72,159 +122,177 @@ $(window).load(function() {
         if(box.val() != '')
 			box.change();
 	});
+}
 
-	//
-	// clipped text handler
-	//
-	$('a.clipped_text').on('click', function() {
-		$(this).toggle().next('span.clipped_text').toggle();
-	});
+//------------------------------------------------------------------------------------------
+function set_install_clipped_text_handler() {
+//------------------------------------------------------------------------------------------
+    $('a.clipped_text').on('click', function() {
+        $(this).toggle().next('span.clipped_text').toggle();
+    });
+}
 
-	//
-	// Help popovers
-	//
-	$('[data-toggle=popover][data-purpose=help]').popover({
-		html: true
-	});
+//------------------------------------------------------------------------------------------
+function init_popovers() {
+//------------------------------------------------------------------------------------------
+    $('[data-toggle=popover][data-purpose=help]').popover({
+        html: true
+    });
+}
 
-	//
-	// Search popovers
-	//
-	$('[data-toggle=popover][data-purpose=search]').each(function() {
-		// copy any pre-set value for the search field
-		$(this).on('shown.bs.popover', function(){
-			$('#searchoption').val($(this).data('option'));
-			$('#searchtext').val($(this).data('value')).focus();
-		});
+//------------------------------------------------------------------------------------------
+function init_search_popup() {
+//------------------------------------------------------------------------------------------
+    $('[data-toggle=popover][data-purpose=search]').each(function() {
+        // copy any pre-set value for the search field
+        $(this).on('shown.bs.popover', function(){
+            $('#searchoption').val($(this).data('option'));
+            $('#searchtext').val($(this).data('value')).focus();
+        });
 
-		// set the form content specific to the field
-		$(this).data('content', search_popover_template.replace('%FIELDNAME%', $(this).data('field'))).popover({
-			html: true,
-			container: '#search-popover' // needed for CSS styling
-		});
-	});
+        // set the form content specific to the field
+        $(this).data('content', search_popover_template.replace('%FIELDNAME%', $(this).data('field'))).popover({
+            html: true,
+            container: '#search-popover' // needed for CSS styling
+        });
+    });
+}
 
-	//
-	// Popover close if clicked outside
-	//
-	$('body').on('click', function (e) {
-		$('[data-toggle="popover"]').each(function () {
-			if (!$(this).is(e.target) && $(this).has(e.target).length == 0 && $('.popover').has(e.target).length == 0)
-				$(this).popover('hide');
-		});
-	});
+//------------------------------------------------------------------------------------------
+function set_popover_close_handler() {
+//------------------------------------------------------------------------------------------
+    $('body').on('click', function (e) {
+        $('[data-toggle="popover"]').each(function () {
+            if (!$(this).is(e.target) && $(this).has(e.target).length == 0 && $('.popover').has(e.target).length == 0)
+                $(this).popover('hide');
+        });
+    });
+}
 
-	//
-	// handle NULL checkbox updates for fields that are not required
-	//
-	$('input[type="text"]:not([required]), input[type="number"]:not([required]), textarea:not([required])').each(function() {
-		var control = $(this);
-		$('input[name="' + control.attr('name') + '__null__"]').each(function() {
-			var checkbox = $(this);
-			control.on('input', function() {
-				if(control.val() != '' && checkbox.prop('checked'))
-					checkbox.prop('checked', false);
-				else if(control.val() == '' && !checkbox.prop('checked'))
-					checkbox.prop('checked', true);
-			});
-		});
-	});
+//------------------------------------------------------------------------------------------
+function init_null_value_handler() {
+//------------------------------------------------------------------------------------------
+    // handle NULL checkbox updates for fields that are not required
+    $('input[type="text"]:not([required]), input[type="number"]:not([required]), textarea:not([required])').each(function() {
+        var control = $(this);
+        $('input[name="' + control.attr('name') + '__null__"]').each(function() {
+            var checkbox = $(this);
+            control.on('input', function() {
+                if(control.val() != '' && checkbox.prop('checked'))
+                    checkbox.prop('checked', false);
+                else if(control.val() == '' && !checkbox.prop('checked'))
+                    checkbox.prop('checked', true);
+            });
+        });
+    });
+}
 
-	//
-	// T_LOOKUP fields with CARDINALITY_MULTIPLE
-	//
-	$('.multiple-select-hidden').each(function() {
-		var field = $(this).attr('name');
-		var dropdown_id = '#' + field + '_dropdown';
-		var list_id = '#' + field + '_list';
-		var button_id = '#' + field + '_add';
- 		var hidden_input = this;
+//------------------------------------------------------------------------------------------
+function init_multilookup_dropdowns() {
+//------------------------------------------------------------------------------------------
+    // adjust hidden value list after selection changes
+    // and add selected items to the list below the dropdown
+    $('.multiple-select-hidden').each(function() {
+        var field = $(this).attr('name');
+        var dropdown_id = '#' + field + '_dropdown';
+        var list_id = '#' + field + '_list';
+        var button_id = '#' + field + '_add';
+        var hidden_input = this;
 
-		$(dropdown_id).val('').change();
+        $(dropdown_id).val('').change();
 
-		// automatic add
-		$(dropdown_id).on('change', function() {
-			var selected_value = $(dropdown_id).val();
-			if(selected_value === null || selected_value === '')
-				return;
+        // automatic add
+        $(dropdown_id).on('change', function() {
+            var selected_value = $(dropdown_id).val();
+            if(selected_value === null || selected_value === '')
+                return;
 
-			// need to extract the plain option text (without the key value in parentheses)
-			// in "normal" lookup boxes this is in the option's "data-label" attribute
-			// in "async" lookup boxes this is in the "label" attribute of the option's data object
-			var sel_option = $(dropdown_id + ' option:selected');
-			var label = typeof sel_option.data('data').label === 'undefined' ? sel_option.data('label') : sel_option.data('data').label;
+            // need to extract the plain option text (without the key value in parentheses)
+            // in "normal" lookup boxes this is in the option's "data-label" attribute
+            // in "async" lookup boxes this is in the "label" attribute of the option's data object
+            var sel_option = $(dropdown_id + ' option:selected');
+            var label = typeof sel_option.data('data').label === 'undefined' ? sel_option.data('label') : sel_option.data('data').label;
 
-			// append selected item to bullet list
-			$.get('', {
-				mode: 'func',
-				target: 'get_linked_item_html',
-				table: $('#__table_name__').val(),
-				self_id: $('#__item_id__').val(),
-				parent_form: $('#__form_id__').val(),
-				field: field,
-				other_id: selected_value,
-				label: label
-			}, function(data) {
-				// add selected item to hidden input
-				var list = parse_multiple_val($(hidden_input).val());
-				list.push(selected_value);
-				$(hidden_input).val(write_multiple_val(list));
+            // append selected item to bullet list
+            $.get('', {
+                mode: 'func',
+                target: 'get_linked_item_html',
+                table: $('#__table_name__').val(),
+                self_id: $('#__item_id__').val(),
+                parent_form: $('#__form_id__').val(),
+                field: field,
+                other_id: selected_value,
+                label: label
+            }, function(data) {
+                // add selected item to hidden input
+                var list = parse_multiple_val($(hidden_input).val());
+                list.push(selected_value);
+                $(hidden_input).val(write_multiple_val(list));
 
-				// add item line to list of selected items
-				$(list_id).append(data);
+                // add item line to list of selected items
+                $(list_id).append(data);
 
-				// remove added item from dropdown
-				$(dropdown_id + " option[value='" + selected_value + "']").each(function() {
-					$(this).remove();
-				});
+                // remove added item from dropdown
+                $(dropdown_id + " option[value='" + selected_value + "']").each(function() {
+                    $(this).remove();
+                });
 
-				// reset dropdown selection
-				$(dropdown_id).val('').change();
-			});
-		});
-	});
+                // reset dropdown selection
+                $(dropdown_id).val('').change();
+            });
+        });
+    });
+}
 
-	//
-	// "Create New" button event handler for T_LOOKUP
-	//
-	$('button[data-create-url]').click(function() {
-		window.open($(this).data('create-url'), $(this).data('create-title'),
-			'scrollbars=1,location=0,menubar=0,resizable=1,width=400,height=600');
-	});
+//------------------------------------------------------------------------------------------
+function set_create_new_handler() {
+//------------------------------------------------------------------------------------------
+    $('button[data-create-url]').click(function() {
+        window.open($(this).data('create-url'), $(this).data('create-title'),
+            'scrollbars=1,location=0,menubar=0,resizable=1,width=400,height=600');
+    });
+}
 
-	//
-	// adjust fill height div
-	$(window).resize(adjust_div_full_height);
-	adjust_div_full_height();
+//------------------------------------------------------------------------------------------
+function init_height_adjustment() {
+//------------------------------------------------------------------------------------------
+    $(window).resize(adjust_div_full_height);
+    adjust_div_full_height();
+}
 
-	//
-	// mark changes in a table table
-	// TODO: this is not used yet, but works and makes sense only when the
-	// table view ordered descending chronologically by change
-	//
-	$('table[data-highlightchanges]').each(function() {
-		var table = $(this), tr_prev = [], row = 0;
-		table.find('tbody tr').each(function () {
-			var tr = $(this), col = 0;
-			tr.children('td').each(function() {
-				var td = $(this);
-				if(tr_prev[col] != undefined && tr_prev[col].html() != td.html())
-					tr_prev[col].addClass('bg-danger');
-				tr_prev[col++] = td;
-			});
-		});
-	});
+//------------------------------------------------------------------------------------------
+function highlight_diffs_in_mode_list() {
+//------------------------------------------------------------------------------------------
+    // mark changes in a table table
+    // TODO: this is not used yet, but works and makes sense only when the
+    // table view ordered descending chronologically by change
+    $('table[data-highlightchanges]').each(function() {
+        var table = $(this), tr_prev = [], row = 0;
+        table.find('tbody tr').each(function () {
+            var tr = $(this), col = 0;
+            tr.children('td').each(function() {
+                var td = $(this);
+                if(tr_prev[col] != undefined && tr_prev[col].html() != td.html())
+                    tr_prev[col].addClass('bg-danger');
+                tr_prev[col++] = td;
+            });
+        });
+    });
+}
 
-	// make sure disabled controls are also sent when a form is submitted
-	$('form').bind('submit', function () {
-		$(this).find(':input').prop('disabled', false);
-	});
-});
+//------------------------------------------------------------------------------------------
+function ensure_hidden_input_submission() {
+//------------------------------------------------------------------------------------------
+    // make sure disabled controls are also sent when a form is submitted
+    $('form').bind('submit', function () {
+        $(this).find(':input').prop('disabled', false);
+    });
+}
 
-//
-// adjust fill-height div to maximum height
-//
+//------------------------------------------------------------------------------------------
+//  adjust fill-height div to maximum height
 function adjust_div_full_height() {
+//------------------------------------------------------------------------------------------
 	var div = $('div.fill-height');
 	if(div.length === 0)
 		return;
@@ -241,24 +309,33 @@ function adjust_div_full_height() {
 	div.css('height', (height - div.offset().top) + "px");
 }
 
-//
+//------------------------------------------------------------------------------------------
 // "Edit Details" event handler for T_LOOKUP / MULTIPLE
-//
 function linkage_details_click(a) {
+//------------------------------------------------------------------------------------------
 	window.open($(a).data('details-url'), $(a).data('details-title'),
 		'scrollbars=1,location=0,menubar=0,resizable=1,width=400,height=600');
 }
 
-//
-// parse and write select2 multiple value
-//
-function parse_multiple_val(str) { return JSON.parse(!str || str == '' ? '[]' : str); }
-function write_multiple_val(arr) { return JSON.stringify(arr); }
+//------------------------------------------------------------------------------------------
+// parse select2 multiple value
+function parse_multiple_val(str) {
+//------------------------------------------------------------------------------------------
+    return JSON.parse(!str || str == '' ? '[]' : str);
+}
 
-//
+//------------------------------------------------------------------------------------------
+// write select2 multiple value
+function write_multiple_val(arr) {
+//------------------------------------------------------------------------------------------
+    return JSON.stringify(arr);
+}
+
+
+//------------------------------------------------------------------------------------------
 // Insert item into select2
-//
 function insert_option_sorted(dropdown_id, value, label, text, selected) {
+//------------------------------------------------------------------------------------------
 	// insert removed element sorted into the dropdown
     // we also need to do this in case of lookup-async, since the "create new" result is "ingested" here
     var $dropdown = $('#' +  dropdown_id);
@@ -279,10 +356,10 @@ function insert_option_sorted(dropdown_id, value, label, text, selected) {
 	$dropdown.val(selected ? value : '').change();
 }
 
-//
+//------------------------------------------------------------------------------------------
 // Removal of linked item in T_LOOKUP fields with CARDINALITY_MULTIPLE
-//
 function remove_linked_item(e) {
+//------------------------------------------------------------------------------------------
 	var $e = $(e);
 	var removed_id = $e.data('id');
 	var field = $e.data('field');
@@ -306,10 +383,10 @@ function remove_linked_item(e) {
 	insert_option_sorted(dropdown_id, removed_id, label, removed_text, false);
 }
 
-//
+//------------------------------------------------------------------------------------------
 // Function to call for popup window that creates new record for T_LOOKUP
-//
 function handle_create_new_result(result) {
+//------------------------------------------------------------------------------------------
 	// insert the new record in all dropdown boxes of the same table type
 	var dropdown_id = result.lookup_field + '_dropdown';
 	var table = $('#' + dropdown_id).data('table');
@@ -323,18 +400,19 @@ function handle_create_new_result(result) {
 	});
 }
 
-//
-// For T_UPLOAD
-//
-$(document).on('change', '.btn-file :file', function() {
-  var input = $(this);
-  var numFiles = input.get(0).files ? input.get(0).files.length : 1;
-  var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
-  input.trigger('fileselect', [numFiles, label]);
-});
-$(document).ready(function() {
+//------------------------------------------------------------------------------------------
+// For T_UPLOAD, show the selected file name next to the "Browse" button
+function init_file_selection_handler() {
+//------------------------------------------------------------------------------------------
     $('.btn-file :file').on('fileselect', function(event, numFiles, label) {
         var log = numFiles > 1 ? numFiles + ' files selected' : label;
         $('span.filename#' + $(this).data('text')).text(log);
     });
-});
+
+    $(document).on('change', '.btn-file :file', function() {
+      var input = $(this);
+      var numFiles = input.get(0).files ? input.get(0).files.length : 1;
+      var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
+      input.trigger('fileselect', [numFiles, label]);
+    });
+}

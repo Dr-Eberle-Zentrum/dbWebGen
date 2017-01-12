@@ -1327,7 +1327,7 @@ END;
 			$html .= "<ul class='nav nav-tabs'>";
 			$active_done = false;
 			foreach($this->form_tabs as &$tab) {
-				$tab['anchor'] = '__tab__' . unquote(strtolower(preg_replace('/\s+/', '', $tab['label'])));
+				$tab['anchor'] = 'tab_' . unquote(strtolower(preg_replace('/\s+/', '', $tab['label'])));
 				$html .= sprintf("<li class='%s'><a data-toggle='tab' href='#%s'>%s</a></li>\n",
 					$active_done? '' : 'active', $tab['anchor'], $tab['label']);
 				$active_done = true;

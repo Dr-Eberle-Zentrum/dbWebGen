@@ -62,7 +62,7 @@
 		}
 
 		if(is_allowed($table, MODE_EDIT) || is_own_user_record(true))
-			$addl_data .= "<a title='".html("Edit This {$table['item_name']}")."' href='". build_get_params(array('mode' => MODE_EDIT)) ."' class='btn btn-default '><span class='glyphicon glyphicon-edit'></span> Edit</a>";
+			$addl_data .= "<a title='".html("Edit This {$table['item_name']}")."' href='". build_get_params(array('mode' => MODE_EDIT)) ."' class='btn btn-default tabs-aware'><span class='glyphicon glyphicon-edit'></span> Edit</a>";
 
 		if(is_allowed($table, MODE_DELETE))
 			$addl_data .= "<a title='".html("Delete This {$table['item_name']}")."' class='btn btn-default ' role='button' data-href='". build_get_params(array('mode' => MODE_DELETE)) ."' data-toggle='modal' data-target='#confirm-delete'><span class='glyphicon glyphicon-trash'></span> Delete</a>";
