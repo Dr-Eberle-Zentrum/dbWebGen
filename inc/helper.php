@@ -459,16 +459,21 @@
 	}
 
 	//------------------------------------------------------------------------------------------
-	function html_linked_records(&$linked_records, $max_chars = 0) {
+	function html_linked_records(&$field, &$linked_records, $max_chars = 0) {
 	//------------------------------------------------------------------------------------------
 		$html = '';
 		$cunt = count($linked_records);
+		if($cunt == 0)
+			return $html;
+
 		$raw_len = 0;
 		$clip_opened = false;
+		$render_func = $_GET['mode'] == MODE_VIEW && isset($field['linkage']['render_func']) ? $field['linkage']['render_func'] : null;
+		$params = array();
 
 		for($i = 0; $i < $cunt; $i++) {
 			$rec = $linked_records[$i];
-			$raw_len += mb_strlen(strval($rec['raw_val'])) + mb_strlen(MULTIPLE_RECORDS_SEPARATOR);
+			$raw_len += mb_strlen(strval($rec['raw_val'])) + (!$render_func ? mb_strlen(MULTIPLE_RECORDS_SEPARATOR) : 0);
 
 			if(!$clip_opened // clipping hasn't started yet
 				&& $max_chars > 0 // there must be a restriction
@@ -481,9 +486,12 @@
 				$clip_opened = true;
 			}
 
-			$html .= get_lookup_display_html($rec['class'], $rec['title'], $rec['href'], $rec['html_val']);
+			$item_html = get_lookup_display_html($rec['class'], $rec['title'], $rec['href'], $rec['html_val']);
+			if($render_func)
+				$item_html = $render_func($field, $item_html, $i, $cunt, $params);
+			$html .= $item_html;
 
-			if($i < $cunt - 1)
+			if(!$render_func && $i < $cunt - 1)
 				$html .= MULTIPLE_RECORDS_SEPARATOR;
 		}
 
@@ -646,7 +654,7 @@
 
 					$linked_records[] = $linked_rec;
 				}
-				$val = html_linked_records($linked_records, $_GET['mode'] == MODE_LIST ? $APP['max_text_len'] : 0);
+				$val = html_linked_records($field, $linked_records, $_GET['mode'] == MODE_LIST ? $APP['max_text_len'] : 0);
 			}
 			else
 				$val = '';

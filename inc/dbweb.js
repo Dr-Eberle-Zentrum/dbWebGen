@@ -39,7 +39,22 @@ $(window).load(function() {
 	highlight_diffs_in_mode_list();
 	ensure_hidden_input_submission();
     handle_tabs();
+    set_dblclick_handler();
 });
+
+//------------------------------------------------------------------------------------------
+function set_dblclick_handler() {
+//------------------------------------------------------------------------------------------
+    // when row double clicked in MODE_LIST, go to MODE_VIEW of the dbl
+    $('table.table').dblclick(function(e) {
+        if(!e.target) return;
+        var row = $(e.target).parents('tr');
+        if(row.length == 0) return;
+        var link = row.find('td a[data-purpose="view"]');
+        if(link.length == 0) return;
+        window.location = link.first().attr('href');
+    });
+}
 
 //------------------------------------------------------------------------------------------
 function adjust_tabs_aware_hrefs() {

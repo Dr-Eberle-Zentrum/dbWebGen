@@ -242,6 +242,15 @@
 					Foreign key field referencing the other table
 				- defaults: array (optional)
 					Array of field defaults for non-key fields in the form FIELD_NAME => VALUE. For each field, occurrences of REPLACE_DYNAMIC_* strings (see config/constants.php) in VALUE are replaced with the current values.
+				- render_func: string (optional)
+					By default, multiple records are simple separated by MULTIPLE_RECORDS_SEPARATOR. By providing a custom function name here, you can change the default behavior for rendering the linkage to be applied in MODE_VIEW (in MODE_LIST this does not work because of potential clipping via $APP/max_text_len setting). The function signature:
+						function render_func(&$field, $item_html, $index, $total_num_items, &$params)
+						* &$field is the field settings array
+						* $item_html is the HTML code for the linked item
+						* $index is the item's index in the list
+						* $total_num_items is the total number of items in the list
+						* &$params is reserved for future use; currently the engine will pass a reference to an empty array
+						The function must return the HTML to be rendered for the current item.
 			- SRID: int (required only for type=T_POSTGIS_GEOM)
 				Spatial Reference ID of the Postgis geometry
 			- min_len: int (optional)
