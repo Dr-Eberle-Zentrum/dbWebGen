@@ -66,14 +66,18 @@
 			echo '</ul>';
 
 			if(isset($LOGIN['users_table'])) {
-				$user_details_href = '?' . http_build_query(array(
-					'table' => $LOGIN['users_table'],
-					'mode' => MODE_VIEW,
-					$LOGIN['primary_key'] =>  $_SESSION['user_id']
-				));
+				$user_details_href = null;
+				if(is_string($LOGIN['users_table'])) {
+					$user_details_href = '?' . http_build_query(array(
+						'table' => $LOGIN['users_table'],
+						'mode' => MODE_VIEW,
+						$LOGIN['primary_key'] =>  $_SESSION['user_id']
+					));
+				}
 
-				echo '<ul class="nav navbar-nav navbar-right">'.
-				'<li><a name="" href="'. $user_details_href .'"><span class="glyphicon glyphicon-user"></span> '.
+				echo '<ul class="nav navbar-nav navbar-right"><li>'.
+				($user_details_href? '<a name="" href="'. $user_details_href .'">' : '<a>').
+				'<span class="glyphicon glyphicon-user"></span> '.
 				(isset($LOGIN['name_field']) ? $_SESSION['user_data'][$LOGIN['name_field']] : '') .
 				'</a></li>'.
 				'<li><a href="#" id="logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li></ul>';
@@ -97,7 +101,7 @@
 		foreach($TABLES as $table_name => $info)
 			if(in_array(MODE_NEW, $info['actions']) && !is_table_hidden_from_menu($info, MODE_NEW))
 				$menu[0]['items'][] = array('label' => $info['item_name'], 'href' => "?table={$table_name}&mode=" . MODE_NEW);
-		
+
 		$menu[1] = array('name' => 'Browse & Edit', 'items' => array());
 		if($APP['mainmenu_tables_autosort'])
 			uasort($TABLES, 'sort_tables_list');

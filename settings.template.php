@@ -98,18 +98,19 @@
 	/* ========================================================================================================
 		$LOGIN defines how authentication is done.
 
-		If this array is empty, everyone can do everything
+		If this array is empty, everyone can do everything.
 
-		Login works currently only with user records found in a database table (users_table).
-		Minimum required are fields for primary_key, username_field, password_field, name_field
+		Login works with user records found in a database table or with any provided associative array.
+		In any case, fields are required for primary_key, username_field, password_field, name_field
 		and 'form' settings.
 
-		- users_table: string
-			Name of the table in the DB that contains user records
+		- users_table: string | array
+			If a string is provided, it must reflect the name of the table in the DB that contains the user records.
+			If an array is provided, it must contain a list of associative arrays representing the user records.
 		- primary_key: string
-			Name of field in users_table that has the primary key
+			Name of field in users_table that has the primary key, which identifies the record
 		- username_field: string
-			Name of the username field in users_table
+			Name of the username field in users_table. Usernames must be unique.
 		- password_field: string
 			Name of the password field in users_table
 		- name_field: string
@@ -133,7 +134,7 @@
 			Name of a function called at the very beginnging of processing. The function is called only when there is a logged in user.
 			No arguments. NOTE: in some cases this function is NOT allowed to write anything to the output buffer!
 		- allow_change_password: bool (optional) (default: true)
-			Whether or not to allow each user to change their password
+			Whether or not to allow each user to change their password. This is only applicable if the users are stored in the database, otherwise this setting is ignored.
 	======================================================================================================== */
 	$LOGIN = array(
 		'users_table' => 'users',

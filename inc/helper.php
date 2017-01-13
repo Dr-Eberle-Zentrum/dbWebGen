@@ -93,6 +93,8 @@
 	function is_password_change_allowed() { // default: true
 	//------------------------------------------------------------------------------------------
 		global $LOGIN;
+		if(isset($LOGIN['users_table']) && is_array($LOGIN['users_table']))
+			return false;
 		return !isset($LOGIN['allow_change_password']) || $LOGIN['allow_change_password'] === true;
 	}
 
@@ -769,6 +771,9 @@
 	function is_own_user_record(/* bool */ $check_if_password_change_allowed = true) {
 	//------------------------------------------------------------------------------------------
 		global $LOGIN;
+
+		if(isset($LOGIN['users_table']) && is_array($LOGIN['users_table']))
+			return false; // only for DB-based auth
 
 		return is_logged_in()
 			&& (!$check_if_password_change_allowed || ($check_if_password_change_allowed && is_password_change_allowed()))
