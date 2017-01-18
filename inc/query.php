@@ -378,12 +378,14 @@ HTML;
 			switch($field['type']) {
 				case T_ENUM:
 				case T_LOOKUP:
+					if(!isset($_GET["p:$param_name"]))
+						$_GET["p:$param_name"] = $param_value;
 					$render_options = array(
 						'form_method' => 'GET',
 						'name_attr' => "p:$param_name",
 						'id_attr' => $param_name,
 						'null_option_allowed' => false,
-						'force_cardinality_single' => true
+						'force_cardinality_single' => true,
 					);
 					return $f->render_control($render_options);
 					break;

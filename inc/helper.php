@@ -1116,15 +1116,10 @@
 			proc_error('Invalid display expression');
 
 		$expr = $display['expression'];
-		for($i = 1; /* loop until nothin is replaced any more */; $i++) {
-			// keep replacing as long as there is something to replace
-			if(strpos($expr, "%{$i}") === FALSE)
-				return $expr;
-
-			$expr = str_replace("%{$i}", $table_qualifier . db_esc($display['columns'][$i - 1]), $expr);
-		}
-
-		return proc_error('Something is totally wrong here. Contact your therapist.');
+		$num_cols = count($display['columns']);
+		for($i = $num_cols; $i >= 1; $i--) // need to start from highest number, because %1 would also replace %10			
+			$expr = str_replace("%$i", $table_qualifier . db_esc($display['columns'][$i - 1]), $expr);
+		return $expr;
 	}
 
 	//------------------------------------------------------------------------------------------
