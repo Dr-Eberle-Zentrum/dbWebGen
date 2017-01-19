@@ -263,12 +263,34 @@ function init_multilookup_dropdowns() {
 function set_create_new_handler() {
 //------------------------------------------------------------------------------------------
     $('button[data-create-url]').click(function() {
-        var pos = {
-            left: 25 + (window.screenLeft ? window.screenLeft : window.screenX),
-            top: 25 + (window.screenTop ? window.screenTop : window.screenY)
+        // first we calc the desired pos of the popup on the screen (should be centered on the clicked button)
+        var wnd_offset = {
+            x: window.screenLeft ? window.screenLeft : window.screenX,
+            y: window.screenTop ? window.screenTop : window.screenY
         };
-        window.open($(this).data('create-url'), /*$(this).data('create-title')*/ '_blank',
-            'location=0,menubar=0,resizable=1,scrollbars=1,toolbar=0,left='+pos.left+',top='+pos.top+',width=400,height=600'
+        var btn = $(this);
+        var btn_center = {
+            x: wnd_offset.x + btn.offset().left + btn.outerWidth() - window.pageXOffset,
+            y: wnd_offset.y + btn.offset().top + btn.outerHeight() - window.pageYOffset
+        }
+        var popup = {
+            width: 500,
+            height: 700
+        };
+        popup.x = btn_center.x - popup.width / 2;
+        popup.y = btn_center.y - popup.height / 2;
+        var oversizeX = popup.x + popup.width - screen.width;
+        if(oversizeX > 0)
+            popup.x -= oversizeX;
+        var oversizeY = popup.y + popup.heigh - screen.height;
+        if(oversizeY > 0)
+            popup.y -= oversizeY;
+
+        // then we open the popup
+        window.open(
+            $(this).data('create-url'),
+            /*$(this).data('create-title')*/ '_blank',
+            'location=0,menubar=0,resizable=1,scrollbars=1,toolbar=0,left='+popup.x+',top='+popup.y+',width='+popup.width+',height='+popup.height
         );
     });
 }
