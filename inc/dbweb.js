@@ -263,8 +263,13 @@ function init_multilookup_dropdowns() {
 function set_create_new_handler() {
 //------------------------------------------------------------------------------------------
     $('button[data-create-url]').click(function() {
-        window.open($(this).data('create-url'), $(this).data('create-title'),
-            'scrollbars=1,location=0,menubar=0,resizable=1,width=400,height=600');
+        var pos = {
+            left: 25 + (window.screenLeft ? window.screenLeft : window.screenX),
+            top: 25 + (window.screenTop ? window.screenTop : window.screenY)
+        };
+        window.open($(this).data('create-url'), /*$(this).data('create-title')*/ '_blank',
+            'location=0,menubar=0,resizable=1,scrollbars=1,toolbar=0,left='+pos.left+',top='+pos.top+',width=400,height=600'
+        );
     });
 }
 
