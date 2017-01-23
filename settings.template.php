@@ -290,6 +290,8 @@
 				If an integer is provided, this will be the maximum number of digits (e.g. 'max_decimals' => 5 will limit to 5 decimal digits)
 				If an array is provided, the array keys map the MODE_* to the maximum number of digits to show in this view (e.g. 'max_decimals' => array(MODE_VIEW => 5) will limit the display to 5 decimal digits only in MODE_VIEW)
 				If this setting is not provided, any T_NUMBER value will be rendered after it has been cast to float
+			- tab: string (optional)
+				If the form_tabs setting was provided for this table, refer the identifier of the tab to which this field belongs. In a tabbed form, if the field's tab identifier is missing, it is assumed that the field belongs to the first tab.
 		- sort: array (optional)
 			Used for default sorting of tables in MODE_LIST. Associative array with key := fieldname (or SQL expression) and value := {'asc', 'desc'}
 			e.g. [ 'lastname' => 'asc, 'firstname' => 'asc' ]
@@ -332,11 +334,15 @@
 					array('icon' => 'eye-open', 'href_format' => 'uploads_images/%s', 'field' => 'filename', title => 'Show the damn file')
 				)
 		- form_tabs: array (optional)
-			If a tabbed MODE_NEW / MODE_EDIT form is desired, fill this array with an ordered set of arrays, where each array reflects a tab with the following settings:
-				- label: string
-					Label to display on the tab
-				- starts_with: string
-					Name of the field, which will be the first field in this tab. This can be omitted or empty for the first tab
+			If a tabbed MODE_NEW / MODE_EDIT / MODE_VIEW form is desired, fill this array with the following settings:
+				- tabs: array
+					An ordered set of arrays, where each array reflects a tab. Settings:
+					- id: string
+						Identifier of the tab, to be used in the 'tab' setting of the table's fields.
+					- label: string
+						Label to display on the tab
+				- restrict_modes: array (optional)
+					If tabs are only desired in subset of {MODE_NEW, MODE_EDIT, MODE_VIEW}, specify this subset as an array here.
 
 
 	======================================================================================================== */

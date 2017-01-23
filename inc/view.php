@@ -16,8 +16,6 @@
 		if(!is_allowed($table, $_GET['mode']) && !is_own_user_record(true))
 			return proc_error('You are not allowed to perform this action.');
 
-		$fields = $table['fields'];
-
 		$pk_vals = get_primary_key_values_from_url($table);
 		if($pk_vals === FALSE)
 			return false;
@@ -135,13 +133,16 @@
 		$table_html .= $form_tabs->begin();
 
 		$empty_count = 0;
-		foreach($record as $col => $val) {
-			if(!isset($fields[$col]))
+		/*foreach($record as $col => $val) {
+			if(!isset($table['fields'][$col]))
+				continue;*/
+		foreach(array_keys($table['fields']) as $col) {
+			if(!isset($record[$col]))
 				continue;
-
+			$val = $record[$col];
 			$table_html .= $form_tabs->new_tab_if_needed($col);
 
-			$field_label = get_field_label($fields[$col], $record);
+			$field_label = get_field_label($table['fields'][$col], $record);
 
 			# display null values?
 			$css_null = '';
@@ -152,7 +153,7 @@
 
 			$table_html .= "<div class='form-group $css_null'><label class='col-sm-3 control-label'>{$field_label}</label>\n";
 
-			$val = prepare_field_display_val($table, $record, $fields[$col], $col, $val);
+			$val = prepare_field_display_val($table, $record, $table['fields'][$col], $col, $val);
 
 			$table_html .= "<div class='col-sm-9 column-value'>{$val}</div></div>\n";
 		}

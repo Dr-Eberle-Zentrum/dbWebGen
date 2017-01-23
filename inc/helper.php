@@ -1117,7 +1117,7 @@
 
 		$expr = $display['expression'];
 		$num_cols = count($display['columns']);
-		for($i = $num_cols; $i >= 1; $i--) // need to start from highest number, because %1 would also replace %10			
+		for($i = $num_cols; $i >= 1; $i--) // need to start from highest number, because %1 would also replace %10
 			$expr = str_replace("%$i", $table_qualifier . db_esc($display['columns'][$i - 1]), $expr);
 		return $expr;
 	}
@@ -1322,9 +1322,31 @@ END;
 	//------------------------------------------------------------------------------------------
 		private $form_tabs;
 		private $tab_index;
+		private $last_tab;
+		private $sorted_fields;
 
 		public function __construct(&$table) {
-			$this->form_tabs = isset($table['form_tabs']) && is_array($table['form_tabs']) && count($table['form_tabs']) > 0 ? $table['form_tabs'] : false;
+			$this->form_tabs = isset($table['form_tabs'])
+				&& is_array($table['form_tabs'])
+				&& count($table['form_tabs']['tabs']) > 0
+				&& (!isset($table['form_tabs']['restrict_to']) || in_array($_GET['mode'], $table['form_tabs']['restrict_to']))
+				? $table['form_tabs']['tabs'] : false;
+
+			if($this->form_tabs !== false) {
+				// sort fields accordingly
+				$this->sorted_fields = array();
+				for($t = 0; $t < count($this->form_tabs); $t++) {
+					foreach($table['fields'] as $f_name => &$f_settings) {
+						if($t == 0 && !isset($f_settings['tab'])) // first tab is default if missing setting in field
+							$f_settings['tab'] = $this->form_tabs[0]['id'];
+
+						if($f_settings['tab'] == $this->form_tabs[$t]['id'])
+							$this->sorted_fields[$f_name] = $f_settings;
+					}
+				}
+				$table['fields'] = $this->sorted_fields;
+				$this->last_tab = $this->form_tabs[0]['id'];
+			}
 			$this->tab_index = -1;
 		}
 
@@ -1335,7 +1357,7 @@ END;
 			$html .= "<ul class='nav nav-tabs'>";
 			$active_done = false;
 			foreach($this->form_tabs as &$tab) {
-				$tab['anchor'] = 'tab_' . unquote(strtolower(preg_replace('/\s+/', '', $tab['label'])));
+				$tab['anchor'] = 'tab_' . unquote(strtolower(preg_replace('/\s+/', '', $tab['id'])));
 				$html .= sprintf("<li class='%s'><a data-toggle='tab' href='#%s'>%s</a></li>\n",
 					$active_done? '' : 'active', $tab['anchor'], $tab['label']);
 				$active_done = true;
@@ -1353,9 +1375,10 @@ END;
 				$this->tab_index++;
 				$html .= sprintf("<div id='%s' class='tab-pane fade in active'>\n", $this->form_tabs[$this->tab_index]['anchor']);
 			}
-			else if(count($this->form_tabs) > $this->tab_index + 1 && $this->form_tabs[$this->tab_index + 1]['starts_with'] == $field_name) {
+			else if($this->last_tab != $this->sorted_fields[$field_name]['tab']) {
 				// start new tab
 				$this->tab_index++;
+				$this->last_tab = $this->form_tabs[$this->tab_index]['id'];
 				$html .= sprintf("</div>\n<div id='%s' class='tab-pane fade'>\n", $this->form_tabs[$this->tab_index]['anchor']);
 			}
 			return $html;
