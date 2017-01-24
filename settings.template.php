@@ -292,6 +292,17 @@
 				If this setting is not provided, any T_NUMBER value will be rendered after it has been cast to float
 			- tab: string (optional)
 				If the form_tabs setting was provided for this table, refer the identifier of the tab to which this field belongs. In a tabbed form, if the field's tab identifier is missing, it is assumed that the field belongs to the first tab.
+			- map_picker: array (optional)
+				For T_POSTGIS_GEOM fields, if this array is set, the user will be able to pick a point from a map that appears in a popup window.
+				Provide the following settings:
+					- script: string (optional)
+						The path to a javascript source file. Two javascript functions will be called from this script, if these functions exist:
+						* map_picker_init_map() immediately after leaflet has occupied the map div
+						* map_picker_finish_init() immediately after the map picker initialization is completed
+						In the script, the following global variables will be available:
+						* map (L.Map) - the Leaflet map
+						* curPointLayer (L.Layer) - the Leaflet layer that contains the pre-existing point
+						* drawnItems (L.FeatureGroup) - the feature group object that Leaflet.Draw uses to capture the user-drawn layers
 		- sort: array (optional)
 			Used for default sorting of tables in MODE_LIST. Associative array with key := fieldname (or SQL expression) and value := {'asc', 'desc'}
 			e.g. [ 'lastname' => 'asc, 'firstname' => 'asc' ]

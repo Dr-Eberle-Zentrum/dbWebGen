@@ -28,6 +28,9 @@
 						&& $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_ON)
 					)
 				)
+
+				// or we are in map pickin' mode
+				|| $_GET['mode'] == MODE_MAP_PICKER
 			)
 		{
 			return;
@@ -177,6 +180,11 @@
 						require_once ENGINE_PATH . 'inc/query.php';
 						$p = new QueryPage;
 						$p->render();
+						break;
+
+					case MODE_MAP_PICKER:
+						require_once ENGINE_PATH . 'inc/map_picker.php';
+						render_map_picker();
 						break;
 
 					case MODE_PLUGIN:
