@@ -19,19 +19,20 @@
 				&& isset($_GET[PLUGIN_PARAM_NAVBAR])
 				&& $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_OFF)
 
-				// or we are visualizing a stored query
-				|| ($_GET['mode'] == MODE_QUERY
-					&& isset($_GET['id'])
-					&&
-						// not explictly turned on
-						!(isset($_GET[PLUGIN_PARAM_NAVBAR])
-						&& $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_ON)
-					)
+
+				|| // or we are visualizing a stored query
+				($_GET['mode'] == MODE_QUERY
+				&& isset($_GET['id'])
+				&&
+					// not explictly turned on
+					!(isset($_GET[PLUGIN_PARAM_NAVBAR])
+					&& $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_ON)
 				)
 
-				// or we are in map pickin' mode
-				|| $_GET['mode'] == MODE_MAP_PICKER
+				|| // or we are in map pickin' mode
+				 $_GET['mode'] == MODE_MAP_PICKER
 			)
+		)
 		{
 			return;
 		}
