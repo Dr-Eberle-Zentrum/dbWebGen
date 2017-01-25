@@ -4,10 +4,16 @@
 	//==========================================================================================
 	{
 		public function has_map_picker() { return isset($this->field['map_picker']); }
+		public function get_srid() { return intval($this->field['SRID']); }
 		public function get_script($default = null) {
 			if(!$this->has_map_picker() || !isset($this->field['map_picker']['script']))
 				return $default;
 			return $this->field['map_picker']['script'];
+		}
+		public function get_map_options($default = array()) {
+			if(!$this->has_map_picker() || !isset($this->field['map_picker']['map_options']))
+				return $default;
+			return $this->field['map_picker']['map_options'];
 		}
 
 		//--------------------------------------------------------------------------------------

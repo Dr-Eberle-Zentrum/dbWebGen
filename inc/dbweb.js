@@ -368,7 +368,10 @@ function adjust_div_full_height() {
 	} else if (body && body.clientHeight) {
 		height = body.clientHeight;
 	}
-	div.css('height', (height - div.offset().top) + "px");
+    var margin = 0;
+    if(div.data('margin-bottom'))
+        margin = parseInt(div.data('margin-bottom'));
+	div.css('height', height - div.offset().top - margin);
 }
 
 //------------------------------------------------------------------------------------------

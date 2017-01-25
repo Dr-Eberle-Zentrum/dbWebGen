@@ -1390,4 +1390,16 @@ END;
 			return "</div>\n</div>\n";
 		}
 	}
+
+	//------------------------------------------------------------------------------------------
+	function postgis_transform_wkt($geom_wkt, $source_srid, $target_srid, &$result) {
+	//------------------------------------------------------------------------------------------
+		if($source_srid == $target_srid) {
+			$result = $geom_wkt;
+			return true;
+		}			
+		$sql = "select st_astext(st_transform(st_geomfromtext(?,?),?))";
+		$params = array($geom_wkt, $source_srid, $target_srid);
+		return db_get_single_val($sql, $params, $result);
+	}
 ?>

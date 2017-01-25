@@ -295,6 +295,8 @@
 			- map_picker: array (optional)
 				For T_POSTGIS_GEOM fields, if this array is set, the user will be able to pick a point from a map that appears in a popup window.
 				Provide the following settings:
+					- map_options: array (optional)
+						An optional hash array that will be passed on as a Map_options object to the Leaflet L.Map constructor (see http://leafletjs.com/reference#map-options)
 					- script: string (optional)
 						The path to a javascript source file. Two javascript functions will be called from this script, if these functions exist:
 						* map_picker_init_map() immediately after leaflet has occupied the map div
