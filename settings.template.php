@@ -55,6 +55,11 @@
 			If this is set, users are allowed to store and share queries via the database in MODE_QUERY. This setting controls the name of the table that will be created for this purpose in the database. If this is not set, users will not be able to store/share queries.
 		- querypage_permissions_func: string (optional)
 			Name of a function that returns a boolean value indicating whether the current user is allowed to interact with the page
+		- register_custom_chart_type_func : string (optional)
+			Name of a function that is called when the app asks for custom query visualizations. Typically this function will be in a plugin. In this function the app should call the QueryPage::register_custom_chart_type() with three parameters:
+			* string $handle: used for 2 purposes: filename must be chart.$handle.php and class name must be dbWebGenChart_$handle
+			* string $label: to be displayed in the dropdown box in the query editor
+			* string $directory (optional, default = ''): location of the file relative to the app directory
 	======================================================================================================== */
 	$APP = array(
 		'plugins' => array(),
@@ -297,8 +302,8 @@
 				Provide the following settings:
 					- map_options: array (optional)
 						An optional hash array that will be passed on as a Map_options object to the Leaflet L.Map constructor (see http://leafletjs.com/reference#map-options)
-					- script: string (optional)
-						The path to a javascript source file. Two javascript functions will be called from this script, if these functions exist:
+					- script: string|array (optional)
+						Any javascript file (string) or files (array of strings) to include. Two javascript functions will be called form the map picker, if these functions exist:
 						* map_picker_init_map() immediately after leaflet has occupied the map div
 						* map_picker_finish_init() immediately after the map picker initialization is completed
 						In the script, the following global variables will be available:

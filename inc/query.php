@@ -2,8 +2,10 @@
 	if(!defined('QUERYPAGE_NO_INCLUDES')) {
 		require_once 'chart.base.php';
 		require_once 'chart.google.base.php';
+		if(isset($APP['register_custom_chart_type_func']))
+			$APP['register_custom_chart_type_func']();
 		foreach(array_keys(QueryPage::$chart_types) as $type)
-			require_once "chart.$type.php";
+			require_once (isset(QueryPage::$chart_custom_file_locations[$type]) ? QueryPage::$chart_custom_file_locations[$type] : '') . "chart.$type.php";
 	}
 
 	define('QUERYPAGE_FIELD_SQL', 'sql');
@@ -31,6 +33,10 @@
 			'timeline' => 'Timeline'
 		);
 
+		public static $chart_custom_file_locations = array(
+			// this is managed through register_custom_chart_type()
+		);
+
 		//--------------------------------------------------------------------------------------
 		public function __construct() {
 		//--------------------------------------------------------------------------------------
@@ -55,6 +61,19 @@
 				$this->sql = trim($this->get_post(QUERYPAGE_FIELD_SQL, ''));
 				$this->view = $this->get_urlparam(QUERY_PARAM_VIEW, QUERY_VIEW_FULL);
 			}
+		}
+
+		//--------------------------------------------------------------------------------------
+		public static function register_custom_chart_type(
+			$handle, // filename must be chart.$handle.php and class name must be dbWebGenChart_$handle
+			$label, // to be displayed in the dropdown box
+			$directory = '' // location of the file relative to the app directory
+		) {
+		//--------------------------------------------------------------------------------------
+			self::$chart_types[$handle] = $label;
+			if($directory != '' && mb_substr($directory, -1) == '/')
+				$directory .= '/';
+			self::$chart_custom_file_locations[$handle] = $directory;
 		}
 
 		//--------------------------------------------------------------------------------------

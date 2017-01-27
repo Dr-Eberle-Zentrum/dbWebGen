@@ -102,6 +102,8 @@ function make_dropdowns_select2() {
 //------------------------------------------------------------------------------------------
     $('select').each(function() {
 		var box = $(this);
+        if(box.data('no-select2') == '1')
+            return;
         var width = '100%';
 
 		if(box.hasClass('lookup-async')) {

@@ -35,8 +35,12 @@
             ";
         }
 
-        if($script = $field_settings->get_script())
-            add_javascript($script);
+        if($script = $field_settings->get_script()) {
+            if(!is_array($script))
+                $script = array($script);
+            foreach($script as $js)
+                add_javascript($js);
+        }
         $map_options = json_encode((object) $field_settings->get_map_options());
 
         echo <<<HTML

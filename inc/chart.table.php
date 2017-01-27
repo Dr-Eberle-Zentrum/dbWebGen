@@ -12,7 +12,7 @@
 				<div class="form-group">
 					<label class="control-label">Options</label>
 					<div class='checkbox top-margin-zero'>
-						<label>{$this->page->render_checkbox('table-allowHtml', 'ON', false)}Allow HTML inside cells</label>
+						<label>{$this->page->render_checkbox($this->ctrlname('allowHtml'), 'ON', false)}Allow HTML inside cells</label>
 					</div>
 				</div>
 HTML;
@@ -29,7 +29,7 @@ HTML;
 		protected function options() {
 		//--------------------------------------------------------------------------------------
 			return parent::options()  + array(
-				'allowHtml' => ($this->page->get_post('table-allowHtml') === 'ON')
+				'allowHtml' => ($this->page->get_post($this->ctrlname('allowHtml')) === 'ON')
 			);
 		}
 
