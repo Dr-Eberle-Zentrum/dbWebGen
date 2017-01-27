@@ -302,6 +302,8 @@
 				Provide the following settings:
 					- map_options: array (optional)
 						An optional hash array that will be passed on as a Map_options object to the Leaflet L.Map constructor (see http://leafletjs.com/reference#map-options)
+					- draw_options: array (optional)
+						An optional hash array that will be passed on as a DrawOptions object to the Leaflet.Draw L.Control.Draw constructor (see https://leaflet.github.io/Leaflet.draw/docs/leaflet-draw-latest.html#drawoptions).
 					- script: string|array (optional)
 						Any javascript file (string) or files (array of strings) to include. Two javascript functions will be called form the map picker, if these functions exist:
 						* map_picker_init_map() immediately after leaflet has occupied the map div

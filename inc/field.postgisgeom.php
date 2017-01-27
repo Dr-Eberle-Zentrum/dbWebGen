@@ -15,6 +15,11 @@
 				return $default;
 			return $this->field['map_picker']['map_options'];
 		}
+		public function get_draw_options($default = array()) {
+			if(!$this->has_map_picker() || !isset($this->field['map_picker']['draw_options']))
+				return $default;
+			return $this->field['map_picker']['draw_options'];
+		}
 
 		//--------------------------------------------------------------------------------------
 		protected function /*string*/ render_internal(&$output_buf) {
