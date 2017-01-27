@@ -290,7 +290,7 @@ SETTINGS;
 
 					// point coordinates: third column starts data
 					// wkt: second column starts data
-					var col_data_start = '{$this->page->get_post($this->ctrlname('data_format'))}' === 'point' ? 2 : 1;
+					var col_data_start = '{$this->page->get_post($this->ctrlname('data_format'))}' === 'wkt' ? 1 : 2;
 
 					for(var i = col_data_start; i < data_headers.length; i++) {
 						if(data_table[nr][i].toString() === '') continue;
