@@ -10,7 +10,17 @@
 		//--------------------------------------------------------------------------------------
 			return <<<SETTINGS
 				<p><a target="_blank" href="http://leafletjs.com/">Leaflet</a> offers mobile-friendly interactive maps.</p>
-				<p>The first two columns in the query must be the latitude (<i>y</i>) and longitude (<i>x</i>) of each record. All additional columns will be put in the marker popups as a table.</p>
+
+				<div class='form-group'>
+					<label class="control-label">Data Format</label>
+					<div class="radio"  style="margin-top:0">
+						<label class="">{$this->page->render_radio($this->ctrlname('data_format'), 'point', true)}<i>Point Coordinates</i> &mdash; the first two columns in the query result are latitude (<i>y</i>) and longitude (<i>x</i>) of each record</label>
+					</div>
+					<div class="radio"  style="margin-top:0">
+						<label class="">{$this->page->render_radio($this->ctrlname('data_format'), 'wkt')}<i>Well-Known-Text</i> &mdash; the first column in the query result is the <a target="_blank" href="https://en.wikipedia.org/wiki/Well-known_text">WKT representation</a> of each record (this allows arbitrary shapes like polygons, multilines, etc. in addition to points)</label>
+					</div>
+					<p>All additional columns will be put in the marker popups as a table. Make sure that only records with non-NULL geometries are included in the query result.</p>
+				</div>
 				<label class="control-label">Base Map Provider</label>
 				<div class='form-group'>
 					{$this->page->render_select($this->ctrlname('basemap'), 'OpenStreetMap.BlackAndWhite', array(
@@ -151,6 +161,9 @@ SETTINGS;
 			add_stylesheet('https://unpkg.com/leaflet@1.0.3/dist/leaflet.css');
 			add_javascript('https://leaflet-extras.github.io/leaflet-providers/leaflet-providers.js');
 
+			if($this->page->get_post($this->ctrlname('data_format')) === 'wkt')
+				add_javascript('https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js');
+
 			if($this->page->get_post($this->ctrlname('minimap')) === 'ON') {
 				add_javascript('https://norkart.github.io/Leaflet-MiniMap/Control.MiniMap.js');
 				add_stylesheet('https://norkart.github.io/Leaflet-MiniMap/Control.MiniMap.css');
@@ -218,10 +231,20 @@ SETTINGS;
 
 				// we store the row index of the marker in the popup. Only when opened, it will display the whole data stored in the record
 				for(var m=0; m<data_table.length; m++) {
-					data_markers[m] = L.marker([
-						data_table[m][0],
-						data_table[m][1]
-					]).bindPopup(m.toString()).addTo(map);
+					var layer;
+					if('{$this->page->get_post($this->ctrlname('data_format'))}' === 'point'
+						|| '{$this->page->get_post($this->ctrlname('data_format'))}' === '' // legacy: default
+					) {
+						layer = L.marker([
+							data_table[m][0],
+							data_table[m][1]
+						]);
+					}
+					else if('{$this->page->get_post($this->ctrlname('data_format'))}' === 'wkt') {
+						layer = omnivore.wkt.parse(data_table[m][0]).getLayers()[0];
+					}
+					data_markers[m] = layer;
+					layer.bindPopup(m.toString()).addTo(map);
 				}
 
 				if('{$this->page->get_post($this->ctrlname('scale'))}' === 'ON') {
@@ -264,7 +287,12 @@ SETTINGS;
 
 					var nr = parseInt(table);
 					table = '<!--X--><table>';
-					for(var i=2; i<data_headers.length; i++) {
+
+					// point coordinates: third column starts data
+					// wkt: second column starts data
+					var col_data_start = '{$this->page->get_post($this->ctrlname('data_format'))}' === 'point' ? 2 : 1;
+
+					for(var i = col_data_start; i < data_headers.length; i++) {
 						if(data_table[nr][i].toString() === '') continue;
 						table += '<tr><th>' + data_headers[i] + '</th><td>' + data_table[nr][i] + '</td></tr>';
 					}

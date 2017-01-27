@@ -24,7 +24,7 @@
             $cur_geom = "
                 try {
                     omnivore.wkt.parse($val_unquote).eachLayer(function(layer) {
-                        curPointLayer = layer;
+                        curLayer = layer;
                     });
                 }
                 catch(e) {
@@ -54,7 +54,7 @@
             <script>
                 // these global vars are available to the script in map_picker/script >>
                 var drawnItems;
-                var curPointLayer;
+                var curLayer;
                 var map;
                 var field_srid = {$field_settings->get_srid()};
                 // <<
@@ -88,14 +88,14 @@
                     $cur_geom
                     if(typeof map_picker_init_map === 'function')
                         map_picker_init_map(); // in custom JS!
-                    else if(curPointLayer)
-                        map.setView(curPointLayer.getLatLng(), 10);
+                    else if(curLayer)
+                        map.setView(curLayer.getLatLng(), 10);
                     else
                         map.fitWorld();
                     drawnItems = new L.FeatureGroup();
                     map.addLayer(drawnItems);
-                    if(curPointLayer)
-                        curPointLayer.addTo(drawnItems);
+                    if(curLayer)
+                        curLayer.addTo(drawnItems);
                     L.Control.DoneButton = L.Control.extend({
                         onAdd: function(map) {
                             var container = L.DomUtil.create('div', 'leaflet-bar');
