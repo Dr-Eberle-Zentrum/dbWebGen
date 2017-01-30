@@ -2,8 +2,6 @@
 	//==========================================================================================
 	class dbWebGenChart_leaflet extends dbWebGenChart {
 	//==========================================================================================
-		// select st_y(st_transform(coordinates,3857)), st_x(st_transform(coordinates,3857)), name_translit "Name (translit.)", name_arabic "Name (Arabic)", name "Country/Region", type "Type", information "Information", p.id "ID", st_astext(coordinates) "Coordinates" from places p, countries_and_regions c where c.id = p.country_region and not coordinates is null
-
 		//--------------------------------------------------------------------------------------
 		// returns html form for chart settings
 		public /*string*/ function settings_html() {
@@ -19,7 +17,7 @@
 					<div class="radio"  style="margin-top:0">
 						<label class="">{$this->page->render_radio($this->ctrlname('data_format'), 'wkt')}<i>Well-Known-Text</i> &mdash; the first column in the query result is the <a target="_blank" href="https://en.wikipedia.org/wiki/Well-known_text">WKT representation</a> of each record (this allows arbitrary shapes like polygons, multilines, etc. in addition to points)</label>
 					</div>
-					<p>All additional columns will be put in the marker popups as a table. Make sure that only records with non-NULL geometries are included in the query result.</p>
+					<p>All additional columns will be put in the marker popups as a table. Only records with non-<code>NULL</code> geometries are included in the result visualization.</p>
 				</div>
 				<label class="control-label">Base Map Provider</label>
 				<div class='form-group'>
@@ -181,6 +179,23 @@ SETTINGS;
 		}
 
 		//--------------------------------------------------------------------------------------
+		// check whether we want to ignore this record (if coordinates are null)
+		// might get overridden
+		protected function is_valid_record(&$record) {
+		//--------------------------------------------------------------------------------------
+			// if coordinates are null => invalidate
+			$num_coord_cols = $this->page->get_post($this->ctrlname('data_format')) == 'wkt' ? 1 : 2;
+			$col_index = 0;
+			foreach($record as $col_name => &$value) {
+				if($col_index < $num_coord_cols && $value === null)
+					return false;
+				if(++$col_index >= $num_coord_cols)
+					return true;
+			}
+			return true;
+		}
+
+		//--------------------------------------------------------------------------------------
 		// returns html/js to render page
 		public /*string*/ function get_js(/*PDOStatement*/ $query_result) {
 		//--------------------------------------------------------------------------------------
@@ -193,6 +208,9 @@ SETTINGS;
 					$data_headers = json_encode(array_keys($row));
 					$first = false;
 				}
+
+				if(!$this->is_valid_record($row))
+					continue;
 
 				foreach($row as $k => $v)
 					if($v === null) $row[$k] = '';
