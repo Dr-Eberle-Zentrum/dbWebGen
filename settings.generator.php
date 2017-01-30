@@ -7,7 +7,7 @@
 
 	foreach(array('host' => 'localhost', 'port' => 5432, 'name' => '', 'user' => 'postgres', 'pass' => '', 'name' => '', 'schema' => 'public') as $k => $v)
 		${'db_' . $k} = isset($_POST[$k]) ? $_POST[$k] : $v;
-	
+
 	$form = <<<FORM
 		<h1>dbWebGen Settings Generator</h1>
 		<p>This tool generates a working stub of settings.php to use for your database with dbWebGen.</p>
@@ -37,7 +37,7 @@
 				<tr>
 					<th>Schema</th>
 					<td><input type="text" name="schema" value="$db_schema" /></td>
-				</tr>					
+				</tr>
 			</table>
 			<p><input type="submit" value="Generate Settings" /></p>
 		</form>
@@ -47,16 +47,16 @@ FORM;
 		print $form;
 		exit;
 	}
-	
+
 	try {
 		$db = new PDO("pgsql:dbname={$db_name};host={$db_host};port={$db_port};options='--client_encoding=UTF8'", $db_user, $db_pass);
-	} 
+	}
 	catch(PDOException $e) {
 		echo "<h2>ERROR: Cannot connect to database</h2>";
 		echo $form;
 		exit;
 	}
-	
+
 	function db_exec($sql, $params = null) {
 		global $db;
 		$stmt = $db->prepare($sql);
@@ -64,14 +64,14 @@ FORM;
 			return false;
 		return $stmt;
 	}
-	
+
 	header('Content-Type: text/plain; charset=utf8');
 	include 'inc/constants.php';
 	include 'settings.template.php';
-	
+
 	// set schema
 	db_exec('set search path to ' . $db_schema);
-	
+
 	// fetch all tables in schema
 	$tables_query = <<<SQL
 		select table_name from information_schema.tables
@@ -86,13 +86,13 @@ SQL;
 	$tables = array();
 	while($table_name = $res->fetchColumn())
 		$tables[] = $table_name;
-	
+
 	// target var
 	$TABLES = array();
 
 	// store the multiple cardinality fields and append them after all tables are through. we don't want those fields to show up on top of the form.
 	$cardinal_mult = array();
-	
+
 	// loop through all tables and generate table info stub
 	foreach($tables as $table_name) {
 		// general table info
@@ -100,13 +100,13 @@ SQL;
 			'display_name' => $table_name,
 			'description' => '',
 			'item_name' => $table_name,
-			'actions' => array(MODE_EDIT, MODE_NEW, MODE_VIEW, MODE_LIST, MODE_DELETE, MODE_LINK),			
+			'actions' => array(MODE_EDIT, MODE_NEW, MODE_VIEW, MODE_LIST, MODE_DELETE, MODE_LINK),
 			'fields' => array()
 		);
-		
+
 		$cardinal_mult[$table_name]	= array();
 	}
-	
+
 	// loop again and fill the stubs
 	foreach($tables as $table_name) {
 		// add all fields
@@ -118,28 +118,28 @@ SQL;
 			ORDER BY ordinal_position
 SQL;
 		$res = db_exec($columns_query, array($table_name, $db_schema));
-		
+
 		$column_defaults = array();
-		
+
 		while($col = $res->fetch(PDO::FETCH_ASSOC)) {
 			// used later for primary key auto increment
 			$column_defaults[$col['column_name']] = $col['column_default'];
-			
+
 			// put default text line fields
 			$field = array(
-				'label' => $col['column_name'],				
+				'label' => $col['column_name'],
 				'required' => $col['is_nullable'] == 'YES' ? false : true,
 				'editable' => $col['is_updatable'] == 'YES' ? true : false,
-				'type' => T_TEXT_LINE // default 
+				'type' => T_TEXT_LINE // default
 			);
-			
+
 			// if nextval from a sequence is the default value, make it not editable
 			if($field['editable']
-			  && preg_match('/^nextval\\(\'(.+)\'::regclass\\)$/', $col['column_default'], $matches)) 
+			  && preg_match('/^nextval\\(\'(.+)\'::regclass\\)$/', $col['column_default'], $matches))
 			{
 				$field['editable'] = false;
 			}
-			
+
 			// check if there is a range check constraint on this field, then the type will be T_ENUM:
 			$check_cons_query = <<<SQL
 			SELECT consrc
@@ -161,20 +161,20 @@ SQL;
 				$num_checks ++;
 				$consrc = $check_cons[0];
 			}
-			
+
 			if($num_checks == 1) { // only if 1 single check constraint on this column
 				$enum_vals = array();
 				// see whether we have a range check
-				if(1 == preg_match('/=\\sANY\\s\\(+ARRAY\\[(?P<val>.+)\\]\\)+/', $consrc, $extract))				  
+				if(1 == preg_match('/=\\sANY\\s\\(+ARRAY\\[(?P<val>.+)\\]\\)+/', $consrc, $extract))
 				{
 					// here we have something like:
 					//    1::numeric, 1.3, 1.7, 2::numeric
-					//	or					
+					//	or
 					//    (4)::integer, (65)::integer
 					//  or
 					//    'blah'::character varying, 'nada'::character varying
 					$vals = explode(',', $extract['val']);
-					
+
 					foreach($vals as $val) {
 						$val = trim($val);
 						$pos = strrpos($val, '::');
@@ -184,24 +184,24 @@ SQL;
 							$val = substr($val, 1, -1);
 						if(strlen($val) >= 2 && $val[0] == "'" && substr($val, -1) == "'")
 							$val = substr($val, 1, -1);
-						
+
 						$enum_vals[(string) $val] = $val;
-					}					
+					}
 
 					$field['type'] = T_ENUM;
-					$field['values'] = $enum_vals;					
+					$field['values'] = $enum_vals;
 				}
-				/*if(1 == preg_match('/=\\sANY\\s\\(+ARRAY\\[(?P<val>.+)\\]\\)+/', $consrc, $extract)					
-				  && preg_match_all('/(?P<val>[^(\')]+)(\'|\\))::[^,\\]]+/', $extract['val'], $matches) > 0)				   
+				/*if(1 == preg_match('/=\\sANY\\s\\(+ARRAY\\[(?P<val>.+)\\]\\)+/', $consrc, $extract)
+				  && preg_match_all('/(?P<val>[^(\')]+)(\'|\\))::[^,\\]]+/', $extract['val'], $matches) > 0)
 				{
 					foreach($matches['val'] as $enum_val)
 						$enum_vals[$enum_val] = $enum_val;
 
 					$field['type'] = T_ENUM;
-					$field['values'] = $enum_vals;					
+					$field['values'] = $enum_vals;
 				}*/
 			}
-			
+
 			if($field['type'] != T_ENUM) { // only if we have no check range constraint here
 				if($col['character_maximum_length'] !== null)
 					$field['len'] = $col['character_maximum_length'];
@@ -233,7 +233,7 @@ SQL;
 								$field['step'] = number_format(1. / pow(10, $col['numeric_scale']), $col['numeric_scale']);
 							else
 								$field['step'] = 1;
-						}					
+						}
 						break;
 
 					case 'bit':
@@ -255,82 +255,105 @@ SQL;
 						break;
 
 					case 'USER-DEFINED':
-						// if type is enum, make T_ENUM
-						$enum_query = db_exec(
-							'SELECT e.enumlabel FROM pg_enum e, pg_type t WHERE e.enumtypid = t.oid AND t.typname = ? ORDER BY 1', 
-							array($col['udt_name'])
-						);
-						$enum_vals = array();
-						while($enum_val = $enum_query->fetch(PDO::FETCH_NUM))
-							$enum_vals[$enum_val[0]] = $enum_val[0];
+						// check whether we have Postgis geometry
+						if(strtolower($col['udt_name']) == 'geometry') {
+							// integer Find_SRID(varchar a_schema_name, varchar a_table_name, varchar a_geomfield_name);
+							$q_type = db_exec('SELECT type FROM geometry_columns WHERE f_table_schema = ? AND f_table_name = ? and f_geometry_column = ?',
+								array($db_schema, $table_name, $col['column_name']));
+							$geom_type = strtolower($q_type->fetchColumn());
+							$q_srid = db_exec('SELECT find_srid(?, ?, ?)',
+								array($db_schema, $table_name, $col['column_name']));
 
-						if(count($enum_vals) > 0) {
-							$field['type'] = T_ENUM;
-							$field['values'] = $enum_vals;
-						}					
+							$field['type'] = T_POSTGIS_GEOM;
+							$field['SRID'] = strval($q_srid->fetchColumn());
+							$field['map_picker'] = array(
+								'draw_options' => array(
+									'polyline' => in_array($geom_type, array('polyline', 'linestring', 'geometry')),
+									'polygon' => in_array($geom_type, array('polygon', 'geometry')),
+									'rectangle' => in_array($geom_type, array('polygon', 'geometry')),
+									'circle' => false,
+									'point' => in_array($geom_type, array('point', 'geometry'))
+								)
+							);
+						}
+						else {
+							// if type is enum, make T_ENUM
+							$enum_query = db_exec(
+								'SELECT e.enumlabel FROM pg_enum e, pg_type t WHERE e.enumtypid = t.oid AND t.typname = ? ORDER BY 1',
+								array($col['udt_name'])
+							);
+							$enum_vals = array();
+							while($enum_val = $enum_query->fetch(PDO::FETCH_NUM))
+								$enum_vals[$enum_val[0]] = $enum_val[0];
+
+							if(count($enum_vals) > 0) {
+								$field['type'] = T_ENUM;
+								$field['values'] = $enum_vals;
+							}
+						}
 						break;
 
-					default:					
+					default:
 						break;
 				}
 			}
-			
+
 			$TABLES[$table_name]['fields'][$col['column_name']] = $field;
 		}
-		
+
 		// go through PRIMARY KEY constraints
-		$primary_key = array(			
+		$primary_key = array(
 			'columns' => array()
-		);		
-		
+		);
+
 		$constraints_query = <<<SQL
 			SELECT tc.constraint_name,
-				tc.constraint_type,				
-				kcu.column_name	
-				FROM information_schema.table_constraints tc				
+				tc.constraint_type,
+				kcu.column_name
+				FROM information_schema.table_constraints tc
 				LEFT outer JOIN information_schema.key_column_usage kcu
 				ON tc.constraint_catalog = kcu.constraint_catalog
 				AND tc.constraint_schema = kcu.constraint_schema
-				AND tc.constraint_name = kcu.constraint_name				
-				WHERE tc.constraint_type = 'PRIMARY KEY' 
+				AND tc.constraint_name = kcu.constraint_name
+				WHERE tc.constraint_type = 'PRIMARY KEY'
 				AND tc.table_schema = ?
 				AND tc.table_name = ?
 SQL;
 
 		$res = db_exec($constraints_query, array($db_schema, $table_name));
-		while($cons = $res->fetch(PDO::FETCH_ASSOC)) {		
-			$primary_key['columns'][] = $cons['column_name'];			
+		while($cons = $res->fetch(PDO::FETCH_ASSOC)) {
+			$primary_key['columns'][] = $cons['column_name'];
 		}
-		
+
 		// go through FOREIGN KEY constraints
-		
+
 		$foreign_keys_info = array();
-		
+
 		$constraints_query = <<<SQL
 			SELECT tc.constraint_name,
-				tc.constraint_type,				
+				tc.constraint_type,
 				kcu.column_name,
 				ccu.table_name references_table,
 				ccu.column_name references_field,
 				(select column_name from information_schema.columns where table_name=ccu.table_name and table_schema=tc.table_schema and data_type in ('character varying', 'text') ORDER BY ordinal_position limit 1) display_field
-				FROM information_schema.table_constraints tc				
+				FROM information_schema.table_constraints tc
 				LEFT outer JOIN information_schema.key_column_usage kcu
 				ON tc.constraint_catalog = kcu.constraint_catalog
 				AND tc.constraint_schema = kcu.constraint_schema
-				AND tc.constraint_name = kcu.constraint_name			
+				AND tc.constraint_name = kcu.constraint_name
 				LEFT outer JOIN information_schema.constraint_column_usage ccu
 				ON tc.constraint_catalog = ccu.constraint_catalog
 				AND tc.constraint_schema = ccu.constraint_schema
 				AND tc.constraint_name = ccu.constraint_name
-				WHERE tc.constraint_type = 'FOREIGN KEY' 
+				WHERE tc.constraint_type = 'FOREIGN KEY'
 				AND tc.table_schema = ?
 				AND tc.table_name = ?
 SQL;
-		
+
 		$res = db_exec($constraints_query, array($db_schema, $table_name));
-		while($cons = $res->fetch(PDO::FETCH_ASSOC)) {					
+		while($cons = $res->fetch(PDO::FETCH_ASSOC)) {
 			$field = $TABLES[$table_name]['fields'][$cons['column_name']];
-			
+
 			$field['type'] = T_LOOKUP;
 			$field['lookup'] = array(
 				'cardinality' => CARDINALITY_SINGLE,
@@ -338,17 +361,17 @@ SQL;
 				'field'  => $cons['references_field'],
 				'display' => ($cons['display_field'] !== null ? $cons['display_field'] : $cons['references_field'])
 			);
-			
+
 			// remember the foreign keys in a hash for later
-			$foreign_keys_info[$cons['column_name']] = $field; 
-			
-			// overwrite default field info 
+			$foreign_keys_info[$cons['column_name']] = $field;
+
+			// overwrite default field info
 			$TABLES[$table_name]['fields'][$cons['column_name']] = $field;
 		}
-		
-		$primary_key['auto'] = false;		
-		
-		// check whether the primary key is determined by a sequence:		
+
+		$primary_key['auto'] = false;
+
+		// check whether the primary key is determined by a sequence:
 		if(count($primary_key['columns']) == 1) {
 			// and there is a default val for the columns
 			if($column_defaults[$primary_key['columns'][0]] !== null) {
@@ -360,10 +383,10 @@ SQL;
 				}
 			}
 		}
-		
+
 		// set primary key
 		$TABLES[$table_name]['primary_key'] = $primary_key;
-		
+
 		// check whether this is a N:M table (for CARDINALITY_MULTIPLE)
 		// this is the case if this table has:
 		// * exactly two primary key fields
@@ -376,13 +399,13 @@ SQL;
 			{
 				$field0 = $foreign_keys_info[$primary_key['columns'][0]];
 				$field1 = $foreign_keys_info[$primary_key['columns'][1]];
-				
+
 				if($field0['lookup']['table'] != $field1['lookup']['table']) {
 					// here we go, add cardinality multiple lookup to both involved tables
-					
+
 					//$TABLES[$field0['lookup']['table']]['fields'][$table_name . '_fk'] =
 					$cardinal_mult[$field0['lookup']['table']][$table_name . '_fk'] =
-					array(					
+					array(
 						'label' => $table_name . ' list',
 						'required' => false,
 						'editable' => true,
@@ -399,9 +422,9 @@ SQL;
 							'fk_other' => $primary_key['columns'][1]
 						)
 					);
-					
-					//$TABLES[$field1['lookup']['table']]['fields'][$table_name . '_fk'] = 
-					$cardinal_mult[$field1['lookup']['table']][$table_name . '_fk'] = 
+
+					//$TABLES[$field1['lookup']['table']]['fields'][$table_name . '_fk'] =
+					$cardinal_mult[$field1['lookup']['table']][$table_name . '_fk'] =
 					array(
 						'label' => $table_name . ' list',
 						'required' => false,
@@ -431,8 +454,8 @@ SQL;
 
 	// ================================================
 	// APP
-	// ================================================	
-	
+	// ================================================
+
 	if(!isset($_GET['only']) || $_GET['only'] == 'APP') {
 		$APP = array(
 			'title' => $db_name . ' Database',
@@ -444,7 +467,7 @@ SQL;
 			'search_lookup_resolve' => true,
 			'search_string_transformation' => 'lower((%s)::text)'
 		);
-		echo '<?php', PHP_EOL, '$APP = ';	
+		echo '<?php', PHP_EOL, '$APP = ';
 		var_export($APP);
 		echo ';', PHP_EOL, PHP_EOL;
 	}
@@ -461,7 +484,7 @@ SQL;
 			'pass' => $db_pass,
 			'db'   => $db_name
 		);
-		echo '$DB = ';	
+		echo '$DB = ';
 		var_export($DB);
 		echo ';', PHP_EOL, PHP_EOL;
 	}
@@ -471,7 +494,7 @@ SQL;
 	// ================================================
 	if(!isset($_GET['only']) || $_GET['only'] == 'LOGIN') {
 		$LOGIN = array();
-		echo '$LOGIN = ';	
+		echo '$LOGIN = ';
 		var_export($LOGIN);
 		echo ';', PHP_EOL, PHP_EOL;
 	}
