@@ -19,9 +19,10 @@
 					</div>
 					<p>All additional columns will be put in the marker popups as a table. Only records with non-<code>NULL</code> geometries are included in the result visualization.</p>
 				</div>
-				<label class="control-label">Base Map Provider</label>
+
 				<div class='form-group'>
-					{$this->page->render_select($this->ctrlname('basemap'), 'OpenStreetMap.BlackAndWhite', array(
+					<label class="control-label">Base Map Tiles Provider</label>
+					<p>{$this->page->render_select($this->ctrlname('basemap'), 'OpenStreetMap.BlackAndWhite', array(
 						'OpenStreetMap.Mapnik' => 'OpenStreetMap Mapnik',
 						'OpenStreetMap.BlackAndWhite' => 'OpenStreetMap BlackAndWhite',
 						'OpenStreetMap.DE' => 'OpenStreetMap DE',
@@ -72,28 +73,6 @@
 						'OpenWeatherMap.Wind' => 'OpenWeatherMap Wind',
 						'OpenWeatherMap.Temperature' => 'OpenWeatherMap Temperature',
 						'OpenWeatherMap.Snow' => 'OpenWeatherMap Snow',
-						/*'HERE.normalDay' => 'HERE normalDay',
-						'HERE.normalDayCustom' => 'HERE normalDayCustom',
-						'HERE.normalDayGrey' => 'HERE normalDayGrey',
-						'HERE.normalDayMobile' => 'HERE normalDayMobile',
-						'HERE.normalDayGreyMobile' => 'HERE normalDayGreyMobile',
-						'HERE.normalDayTransit' => 'HERE normalDayTransit',
-						'HERE.normalDayTransitMobile' => 'HERE normalDayTransitMobile',
-						'HERE.normalNight' => 'HERE normalNight',
-						'HERE.normalNightMobile' => 'HERE normalNightMobile',
-						'HERE.normalNightGrey' => 'HERE normalNightGrey',
-						'HERE.normalNightGreyMobile' => 'HERE normalNightGreyMobile',
-						'HERE.basicMap' => 'HERE basicMap',
-						'HERE.mapLabels' => 'HERE mapLabels',
-						'HERE.trafficFlow' => 'HERE trafficFlow',
-						'HERE.carnavDayGrey' => 'HERE carnavDayGrey',
-						'HERE.hybridDay' => 'HERE hybridDay',
-						'HERE.hybridDayMobile' => 'HERE hybridDayMobile',
-						'HERE.pedestrianDay' => 'HERE pedestrianDay',
-						'HERE.pedestrianNight' => 'HERE pedestrianNight',
-						'HERE.satelliteDay' => 'HERE satelliteDay',
-						'HERE.terrainDay' => 'HERE terrainDay',
-						'HERE.terrainDayMobile' => 'HERE terrainDayMobile',*/
 						'CartoDB.Positron' => 'CartoDB Positron',
 						'CartoDB.PositronNoLabels' => 'CartoDB PositronNoLabels',
 						'CartoDB.PositronOnlyLabels' => 'CartoDB PositronOnlyLabels',
@@ -114,7 +93,9 @@
 						'NASAGIBS.ModisTerraSnowCover' => 'NASAGIBS ModisTerraSnowCover',
 						'NASAGIBS.ModisTerraAOD' => 'NASAGIBS ModisTerraAOD',
 						'NASAGIBS.ModisTerraChlorophyll' => 'NASAGIBS ModisTerraChlorophyll'
-					))}
+					))}</p>
+					<div>Custom URL template (optional; overrides the above selection):</div>
+					<div>{$this->page->render_textbox($this->ctrlname('custom_tile_url'), '')}</div>
 				</div>
 				<div class="form-group">
 					<label class="control-label">Display Options</label>
@@ -124,6 +105,10 @@
 					<div class='checkbox'>
 						<label>{$this->page->render_checkbox($this->ctrlname('minimap'), 'ON', false)}Show Overview Map</label>
 					</div>
+					<div class='checkbox'>Maximum Zoom Level (leave empty to tile provider&apos;s default):
+						{$this->page->render_textbox($this->ctrlname('max_zoom'), '')}
+					</div>
+
 					<label class="control-label">Spatial Reference System</label>
 					<p>Select the coordinate system that Leaflet should use. The source data needs to be transformed to this projection.</p>
 					<div class='form-group'>
@@ -228,6 +213,17 @@ SETTINGS;
 			var basemap;
 			var chart_div;
 
+			function get_base_tilelayer() {
+				var custom_tile_url = '{$this->page->get_post($this->ctrlname('custom_tile_url'), '')}';
+				var tile_options = {};
+				if('{$this->page->get_post($this->ctrlname('max_zoom'), '')}' != '')
+					tile_options.maxZoom = parseInt({$this->page->get_post($this->ctrlname('max_zoom'))});
+				if(custom_tile_url != '')
+					return L.tileLayer(custom_tile_url, tile_options);
+				else
+					return L.tileLayer.provider('{$this->page->get_post($this->ctrlname('basemap'))}', tile_options);
+			}
+
 			document.addEventListener("DOMContentLoaded", function() {
 				chart_div = $('#chart_div');
 				chart_div.css('overflow', 'hidden');
@@ -239,12 +235,10 @@ SETTINGS;
 
 				map = L.map('chart_div', {
 					crs: {$this->page->get_post($this->ctrlname('crs'), 'L.CRS.EPSG3857')},
-					zoomControl: true,
-					// minZoom: 1,
-					// maxZoom: 21,
+					zoomControl: true
 				});
 
-				basemap = L.tileLayer.provider('{$this->page->get_post($this->ctrlname('basemap'))}');
+				basemap = get_base_tilelayer();
 				basemap.addTo(map);
 
 				// we store the row index of the marker in the popup. Only when opened, it will display the whole data stored in the record
@@ -281,7 +275,7 @@ SETTINGS;
 				}, 500);
 
 				if('{$this->page->get_post($this->ctrlname('minimap'))}' === 'ON') {
-					new L.Control.MiniMap(L.tileLayer.provider('{$this->page->get_post($this->ctrlname('basemap'))}'), {
+					new L.Control.MiniMap(get_base_tilelayer(), {
 						position: 'bottomright',
 						zoomAnimation: true,
 						toggleDisplay: true,
