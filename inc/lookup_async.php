@@ -2,7 +2,7 @@
 	//------------------------------------------------------------------------------------------
 	function process_lookup_async() {
 	//------------------------------------------------------------------------------------------
-		$debug = false;
+		$debug = isset($_GET['debug']);
 		global $TABLES;
 		global $APP;
 		header('Content-Type: application/json');
@@ -50,7 +50,7 @@
 			}
 			else {
 				// look in display field and primary key field
-				$sql = sprintf("select %s id, %s \"label\" from %s where ($string_trafo) || ($string_trafo) like '%%' || ($string_trafo) || '%%' order by 2",
+				$sql = sprintf("select %s id, %s \"label\" from %s t where ($string_trafo) || ($string_trafo) like '%%' || ($string_trafo) || '%%' order by 2",
 					db_esc($field['lookup']['field']), $display_expr, $field['lookup']['table'], $display_expr, db_esc($field['lookup']['field']), '?');
 			}
 
