@@ -238,6 +238,8 @@
 					In some cases it might be useful to allow only the creation of new associations using "Create New" button, and not through the dropdown box. If hide_dropdown is set to true, the dropdown box will not be shown. If the field is CARDINALITY_SINGLE and disabled for some reason, the dropdown will be shown regardless of the hide_dropdown setting. Note: this setting might conflict with the allow_create setting of the field. If hide_dropdown is set to true, allow_create must be set to true as well, otherwise nothing will be shown.
 				- create_new_label: string (optional) (default: "Create New")
 					Label for the button next to the dropdown box, which allows users to add new records to the linked table
+				- allow_edit: boolean (optional) (default: false)
+					Whether to allow the user to edit the associated record from the lookup table. Note that setting this to true will only have an effect if the lookup table is configured in $TABLES and MODE_EDIT is an allowed action there.
 			- linkage: array
 				If cardinality=CARDINALITY_MULTIPLE, we need to define here the m:n relationship table that links records from this table (via fk_self) with records of the other table (via fk_other)
 				- table: string

@@ -67,6 +67,9 @@
 	define('QUERY_VIEW_FULL', 'full'); // default
 	define('QUERY_VIEW_RESULT', 'result'); // result only
 
+	// values for GET parameter "special"
+	define('SPECIAL_EDIT_LINKED_RECORD', 'edit_linked_record');
+
 	// length of identifier for stored queries
 	define('STORED_QUERY_ID_LENGTH', 12);
 

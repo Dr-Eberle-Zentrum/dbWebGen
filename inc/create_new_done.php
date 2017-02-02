@@ -56,7 +56,7 @@
 			return proc_error('Exec failed');
 
 		$label = $stmt->fetchColumn();
-		$text = format_lookup_item_label($label, $lookup_settings, $pk_value);
+		$text = format_lookup_item_label($label, $lookup_settings, $pk_value, 'plain');
 
 		echo "<script>\n";
 		echo "  var r = " . json_encode(array('lookup_field' => $lookup_field, 'value' => $pk_value, 'label' => $label, 'text' => $text)) . ";\n";

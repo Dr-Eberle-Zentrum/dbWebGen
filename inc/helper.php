@@ -391,12 +391,19 @@
 	}
 
 	//------------------------------------------------------------------------------------------
-	function format_lookup_item_label($raw_label, &$lookup_settings, $id_value) {
+	function format_lookup_item_label(
+		$raw_label, &$lookup_settings, $id_value,
+	 	$format = 'html', // { html, unquote, plain }
+		$raw_label_span = false // only used when format = html
+	) {
 	//------------------------------------------------------------------------------------------
 		global $TABLES;
 
-		if(isset($lookup_settings['label_display_expr_only']) && $lookup_settings['label_display_expr_only'] === true)
-			return html($raw_label);
+		if(isset($lookup_settings['label_display_expr_only']) && $lookup_settings['label_display_expr_only'] === true) {
+			if($format == 'html' && $raw_label_span === true)
+				return sprintf('<span class="display-label">%s</span>', html($raw_label));
+			return $format == 'html' ? html($raw_label) : ($format == 'unquote' ? unquote($raw_label) : $raw_label);
+		}
 
 		$lookup_table = $lookup_settings['table'];
 		$lookup_id_field = $lookup_settings['field'];
@@ -408,7 +415,11 @@
 			$lookup_id_field = $TABLES[$lookup_table]['fields'][$lookup_id_field]['label'];
 		}
 
-		return sprintf('%s (%s = %s)', html($raw_label), $lookup_id_field, html($id_value));
+		if($format == 'html' && $raw_label_span)
+			return sprintf('<span class="display-label">%s</span> (%s = %s)', html($raw_label), html($lookup_id_field), html($id_value));
+
+		$label = sprintf('%s (%s = %s)', $raw_label, $lookup_id_field, $id_value);
+		return $format == 'html' ? html($label) : ($format == 'unquote' ? unquote($label) : $label);
 	}
 
 	//------------------------------------------------------------------------------------------
@@ -431,6 +442,7 @@
 			return proc_error('Invalid field');
 		$field = $table['fields'][$field_name];
 		$linkage = &$field['linkage'];
+		$lookup = &$field['lookup'];
 
 		$detail_data_span = '';
 		if($can_edit) {
@@ -443,20 +455,61 @@
 				"{$linkage['fk_other']}" => $fk_other_value,
 				"{$linkage['fk_self']}" => $fk_self_value
 			));
-			$popup_title = html($TABLES[$linkage['table']]['item_name'] . ' Details');
+			$popup_title = unquote($TABLES[$linkage['table']]['item_name'] . ' Details');
 
-			$detail_data_span = "<a role='button' onclick='linkage_details_click(this)' class='space-left multiple-select-details-edit' data-id-other='{$fk_other_value}' data-details-title='{$popup_title}' data-details-url='{$inline_url}' id='{$field_name}_details_{$fk_other_value}' title='Edit the details of this association'><span class='glyphicon glyphicon-th-list'></span></a>";
+			$detail_data_span = sprintf(
+				"<a role='button' onclick='linkage_details_click(this)' class='space-left multiple-select-details-edit' data-id-other='%s' data-details-title='%s' data-details-url='%s' id='%s_details_%s' title='Edit The Details Of This Association'><span class='glyphicon glyphicon-th-list'></span></a>",
+				$fk_other_value, $popup_title, $inline_url, $field_name, $fk_other_value
+			);
 		}
 
-		return sprintf(
-			'<div class="multiple-select-item">' .
-			'<a role="button" onclick="remove_linked_item(this)" data-label="%s" data-field="%s" data-id="%s">' .
-			'<span class="glyphicon glyphicon-trash"></span></a>%s<span class="multiple-select-text">%s</span></div>',
-			unquote($fk_other_text),
+		$lookup_table_item_name = $TABLES[$lookup['table']]['item_name'];
+
+		$edit_other_span = '';
+		if(isset($lookup['allow_edit'])
+			&& $lookup['allow_edit'] === true
+			&& isset($TABLES[$lookup['table']])
+			&& is_allowed($TABLES[$lookup['table']], MODE_EDIT)
+		) {
+			// offer to edit the linked item
+			$edit_url = '?' . http_build_query(array(
+				'table' => $lookup['table'],
+				'mode' => MODE_EDIT,
+				"{$lookup['field']}" => $fk_other_value,
+				'parent_form' => $parent_form,
+				'special' => SPECIAL_EDIT_LINKED_RECORD,
+				'source_table' => $table_name,
+				'source_field' => $field_name,
+				PLUGIN_PARAM_NAVBAR => PLUGIN_NAVBAR_OFF
+			));
+
+			$edit_other_span = sprintf(
+				"<a role='button' onclick='lookup_edit_other(this)' class='space-left multiple-select-lookup-edit' data-id-other='%s' data-edit-url='%s' id='%s_lookup_edit_%s' title='Edit The Associated %s'><span class='glyphicon glyphicon-edit'></span></a>",
+				$fk_other_value,
+				$edit_url,
+				$field_name,
+				$fk_other_value,
+				unquote($lookup_table_item_name)
+			);
+		}
+
+		$item_div_format = <<<STR
+			<div class='table multiple-select-item' data-field='%s' data-id-other='%s'>
+				<div class='tr'>
+					<div class='td nowrap'><a role='button' onclick='remove_linked_item(this)' data-field='%s' data-id='%s' data-role='remove' title='Remove The Association With This %s'><span class='glyphicon glyphicon-remove-circle'></span></a>%s%s</div>
+					<div class='td full-width multiple-select-text'>%s</div>
+				</div>
+			</div>
+STR;
+		return sprintf($item_div_format,
 			unquote($field_name),
 			unquote($fk_other_value),
+			unquote($field_name),
+			unquote($fk_other_value),
+			unquote($lookup_table_item_name),
 			$detail_data_span,
-			format_lookup_item_label($fk_other_text, $field['lookup'], $fk_other_value)
+			$edit_other_span,
+			format_lookup_item_label($fk_other_text, $field['lookup'], $fk_other_value, 'html', true)
 		);
 	}
 
@@ -1397,7 +1450,7 @@ END;
 		if($source_srid == $target_srid) {
 			$result = $geom_wkt;
 			return true;
-		}			
+		}
 		$sql = "select st_astext(st_transform(st_geomfromtext(?,?),?))";
 		$params = array($geom_wkt, $source_srid, $target_srid);
 		return db_get_single_val($sql, $params, $result);

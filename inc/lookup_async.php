@@ -72,7 +72,7 @@
 				if(in_array($row->id, $cur_vals))
 					continue;
 
-				$row->text = format_lookup_item_label($row->label, $field['lookup'], $row->id);
+				$row->text = format_lookup_item_label($row->label, $field['lookup'], $row->id, 'plain');
 				$result[] = $row;
 			}
 

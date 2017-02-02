@@ -31,6 +31,10 @@
 
 				|| // or we are in map pickin' mode
 				 $_GET['mode'] == MODE_MAP_PICKER
+
+				|| // or the navbar is just turned off goddammit
+				(isset($_GET[PLUGIN_PARAM_NAVBAR])
+				&& $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_OFF)
 			)
 		)
 		{

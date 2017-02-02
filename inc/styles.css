@@ -1,10 +1,28 @@
+div.table {
+	display: table;
+    margin-bottom: .35em
+}
+
+div.tr {
+	display: table-row;
+}
+
+div.td {
+	display: table-cell;
+}
+
+.full-width {
+    width: 100%
+}
+
+
 .form-group.required .control-label:after {
   content:"*";
   color:red;
 }
 
 .multiple-select-text {
-	margin-left: .5em;
+	padding-left: .7em;
 }
 
 .multiple-linkage {

@@ -49,7 +49,7 @@ function set_dblclick_handler() {
     // when row double clicked in MODE_LIST, go to MODE_VIEW of the dbl
     $('table.table').dblclick(function(e) {
         if(!e.target) return;
-        var row = $(e.target).parents('tr');
+        var row = $(e.target).closest('tr');
         if(row.length == 0) return;
         var link = row.find('td a[data-purpose="view"]');
         if(link.length == 0) return;
@@ -214,7 +214,6 @@ function init_multilookup_dropdowns() {
         var field = $(this).attr('name');
         var dropdown_id = '#' + field + '_dropdown';
         var list_id = '#' + field + '_list';
-        var button_id = '#' + field + '_add';
         var hidden_input = this;
 
         $(dropdown_id).val('').change();
@@ -380,8 +379,17 @@ function adjust_div_full_height() {
 // "Edit Details" event handler for T_LOOKUP / MULTIPLE
 function linkage_details_click(a) {
 //------------------------------------------------------------------------------------------
-	window.open($(a).data('details-url'), $(a).data('details-title'),
-		'scrollbars=1,location=0,menubar=0,resizable=1,width=400,height=600');
+    var popup = get_popup_position(a, 500, 700);
+    window.open($(a).data('details-url'), $(a).data('details-title'),
+		'scrollbars=1,location=0,menubar=0,resizable=1,left='+popup.x+',top='+popup.y+',width='+popup.width+',height='+popup.height);
+}
+//------------------------------------------------------------------------------------------
+// "Edit Other" event handler for T_LOOKUP / MULTIPLE
+function lookup_edit_other(a) {
+//------------------------------------------------------------------------------------------
+    var popup = get_popup_position(a, 500, 700);
+	window.open($(a).data('edit-url'), '_blank',
+		'scrollbars=1,location=0,menubar=0,resizable=1,left='+popup.x+',top='+popup.y+',width='+popup.width+',height='+popup.height);
 }
 
 //------------------------------------------------------------------------------------------
@@ -414,7 +422,7 @@ function insert_option_sorted(dropdown_id, value, label, text, selected) {
 		}
 	});
 
-	var opt = $('<option/>', { value: value }).html(text).data('label', label);
+	var opt = $('<option/>', { value: value }).text(text).data('label', label);
 	if(insert_before == -1)
 		$dropdown.append(opt);
 	else
@@ -428,11 +436,12 @@ function insert_option_sorted(dropdown_id, value, label, text, selected) {
 function remove_linked_item(e) {
 //------------------------------------------------------------------------------------------
 	var $e = $(e);
+    var item_div = $e.closest('.multiple-select-item');
 	var removed_id = $e.data('id');
 	var field = $e.data('field');
-	var label = $e.data('label');
+	var label = item_div.find('span.display-label').text();
 	var dropdown_id = field + '_dropdown';
-	var removed_text = $e.parent().find('span.multiple-select-text').text();
+	var removed_text = item_div.find('.multiple-select-text').text();
 
 	// remove the value from the hidden input
 	var list = parse_multiple_val($('input#' + field).val());
@@ -445,7 +454,7 @@ function remove_linked_item(e) {
 	$('input#' + field).val(write_multiple_val(list));
 
 	// remove the list item
-	$e.closest('div').remove();
+	item_div.remove();
 
 	insert_option_sorted(dropdown_id, removed_id, label, removed_text, false);
 }

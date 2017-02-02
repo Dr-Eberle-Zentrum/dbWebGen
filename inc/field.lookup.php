@@ -202,7 +202,7 @@
 					"<option value='%s' %s>%s</option>\n",
 					unquote($obj->val),
 					$sel,
-					format_lookup_item_label($obj->txt, $this->field['lookup'], $obj->val)
+					format_lookup_item_label($obj->txt, $this->field['lookup'], $obj->val, 'html', false)
 				);
 			}
 			$output_buf .= "</select>\n";
@@ -288,7 +288,9 @@
 					else {
 						$output_buf .= sprintf(
 							"<option value='%s' data-label='%s'>%s</option>\n",
-							$obj->val, unquote($obj->txt), format_lookup_item_label($obj->txt, $this->get_lookup_settings(), $obj->val)
+							$obj->val,
+							unquote($obj->txt),
+							format_lookup_item_label($obj->txt, $this->get_lookup_settings(), $obj->val, 'html', false)
 						);
 					}
 				}

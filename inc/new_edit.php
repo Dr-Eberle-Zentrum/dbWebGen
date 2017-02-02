@@ -834,6 +834,36 @@ EOT;
 			return true;
 		}
 
+		if(isset($_GET['special']) && $_GET['special'] == SPECIAL_EDIT_LINKED_RECORD) {
+			$pk_val = first(array_values($primary_keys)); // FIXME: works only with single primary keys.
+			$source_table = $_GET['source_table'];
+			$source_field = $_GET['source_field'];
+			$lookup_settings = &$TABLES[$source_table]['fields'][$source_field]['lookup'];
+			$raw_label_sql = sprintf('select %s from %s t where %s = ?',
+				resolve_display_expression($lookup_settings['display'], 't'),
+				db_esc($table_name),
+				db_esc(first(array_keys($primary_keys)))
+			);
+			if(!db_get_single_val($raw_label_sql, array($pk_val), $raw_label))
+				return proc_error('Something went wrong when retrieving the updated record. It may have been deleted in the meantime.');
+			$label_html = "'" . str_replace("'", "\\'", format_lookup_item_label($raw_label, $lookup_settings, $pk_val, 'html', true)) . "'";
+			echo <<<JS
+			<script>
+				do {
+					if(!window.opener)
+						break;
+					var edited_item_div = $(window.opener.document).find('.multiple-select-item[data-field="{$source_field}"][data-id-other="{$pk_val}"]');
+					if(edited_item_div.length == 0)
+						break;
+					// set display label of linked item
+					edited_item_div.find('.multiple-select-text').html($label_html);
+					window.close();
+				} while(false);
+			</script>
+JS;
+			return true;
+		}
+
 		proc_success(sprintf('Record %s in the database.',
 			$_GET['mode'] == MODE_NEW ? 'stored' : 'updated')); // success
 
