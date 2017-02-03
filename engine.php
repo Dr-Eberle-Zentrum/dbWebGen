@@ -28,7 +28,10 @@
 			foreach(array_values($APP['plugins']) as $plugin)
 				require_once $plugin; // we want to load plugins in global scope
 
+		// to prevent session issues if multiple dbWebGen instances on same domain
+		session_name(preg_replace('/[^a-zA-Z0-9]+/', '', 'dbWebGen' . dirname($_SERVER['PHP_SELF'])));
 		session_start();
+		
 		if(isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 3600)) {
 			session_unset();
 			session_destroy();
