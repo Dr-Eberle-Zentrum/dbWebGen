@@ -205,6 +205,47 @@ function init_null_value_handler() {
     });
 }
 
+$.wait = function(ms) {
+    var defer = $.Deferred();
+    setTimeout(function() { defer.resolve(); }, ms);
+    return defer;
+};
+
+//------------------------------------------------------------------------------------------
+function insert_linked_item_sorted(new_item) {
+//------------------------------------------------------------------------------------------
+    new_item.addClass('transition just-added');
+    new_label = transl(new_item.find('.display-label').first().text());
+
+    var swaps = 0;
+    var next_item = new_item;
+    do {
+        next_item = next_item.next('div.multiple-select-item');
+        if(next_item.length == 0)
+            break;
+        next_item = next_item.first();
+        next_label = transl(next_item.find('.display-label').first().text());
+        if(new_label.localeCompare(next_label) <= 0)
+            break;
+        swaps++;
+    } while(true);
+
+    setTimeout(function() {
+        if(swaps > 0) {
+            var delay = 500 / swaps;
+            for(var i = 0; i < swaps; i++) {
+                setTimeout(function() {
+                    new_item.next('div.multiple-select-item').first().detach().insertBefore(new_item);
+                }, delay * i);
+            }
+        }
+
+        setTimeout(function() {
+            new_item.removeClass('just-added');
+        }, delay * swaps);
+    }, 500);
+}
+
 //------------------------------------------------------------------------------------------
 function init_multilookup_dropdowns() {
 //------------------------------------------------------------------------------------------
@@ -247,7 +288,9 @@ function init_multilookup_dropdowns() {
                 $(hidden_input).val(write_multiple_val(list));
 
                 // add item line to list of selected items
-                $(list_id).append(data);
+                var linked_items = $(list_id);
+                linked_items.prepend(data);
+                insert_linked_item_sorted(linked_items.find('.multiple-select-item').first())
 
                 // remove added item from dropdown
                 $(dropdown_id + " option[value='" + selected_value + "']").each(function() {
@@ -406,7 +449,6 @@ function write_multiple_val(arr) {
     return JSON.stringify(arr);
 }
 
-
 //------------------------------------------------------------------------------------------
 // Insert item into select2
 function insert_option_sorted(dropdown_id, value, label, text, selected) {
@@ -436,7 +478,7 @@ function insert_option_sorted(dropdown_id, value, label, text, selected) {
 function remove_linked_item(e) {
 //------------------------------------------------------------------------------------------
 	var $e = $(e);
-    var item_div = $e.closest('.multiple-select-item');
+    var item_div = $e.closest('.multiple-select-item').first();
 	var removed_id = $e.data('id');
 	var field = $e.data('field');
 	var label = item_div.find('span.display-label').text();
@@ -454,7 +496,7 @@ function remove_linked_item(e) {
 	$('input#' + field).val(write_multiple_val(list));
 
 	// remove the list item
-	item_div.remove();
+	item_div.fadeOut(100, function() { item_div.remove() });
 
 	insert_option_sorted(dropdown_id, removed_id, label, removed_text, false);
 }

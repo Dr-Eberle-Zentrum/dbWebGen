@@ -391,6 +391,14 @@
 	}
 
 	//------------------------------------------------------------------------------------------
+	function is_lookup_allow_edit(&$lookup_settings) {
+	//------------------------------------------------------------------------------------------
+		global $APP;
+		$default = isset($APP['lookup_allow_edit_default'])	? $APP['lookup_allow_edit_default'] : false;
+		return isset($lookup_settings['allow_edit']) ? $lookup_settings['allow_edit'] : $default;
+	}
+
+	//------------------------------------------------------------------------------------------
 	function format_lookup_item_label(
 		$raw_label, &$lookup_settings, $id_value,
 	 	$format = 'html', // { html, unquote, plain }
@@ -466,8 +474,7 @@
 		$lookup_table_item_name = $TABLES[$lookup['table']]['item_name'];
 
 		$edit_other_span = '';
-		if(isset($lookup['allow_edit'])
-			&& $lookup['allow_edit'] === true
+		if(is_lookup_allow_edit($lookup_settings)
 			&& isset($TABLES[$lookup['table']])
 			&& is_allowed($TABLES[$lookup['table']], MODE_EDIT)
 		) {

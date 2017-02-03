@@ -15,6 +15,16 @@ div.td {
     width: 100%
 }
 
+.just-added {
+	background-color: yellow;
+}
+
+.transition {
+	transition: all 1s linear;
+	-moz-transition: all 1s linear;
+	-webkit-transition: all 1s linear;
+	-ms-transition: all 1s linear;
+}
 
 .form-group.required .control-label:after {
   content:"*";

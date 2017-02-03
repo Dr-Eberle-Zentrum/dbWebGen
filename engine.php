@@ -31,7 +31,7 @@
 		// to prevent session issues if multiple dbWebGen instances on same domain
 		session_name(preg_replace('/[^a-zA-Z0-9]+/', '', 'dbWebGen' . dirname($_SERVER['PHP_SELF'])));
 		session_start();
-		
+
 		if(isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 3600)) {
 			session_unset();
 			session_destroy();
@@ -85,6 +85,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.min.js"></script>
   <link href="<?= ENGINE_PATH ?>inc/styles.css" rel="stylesheet">
   <script src="<?= ENGINE_PATH ?>inc/dbweb.js"></script>
+  <script src="https://unpkg.com/transliteration/lib/browser/transliteration.min.js"></script>
   <!--META_INCLUDES_GO_HERE-->
 </head>
 <body>
