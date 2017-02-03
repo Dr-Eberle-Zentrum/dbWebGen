@@ -474,7 +474,7 @@
 		$lookup_table_item_name = $TABLES[$lookup['table']]['item_name'];
 
 		$edit_other_span = '';
-		if(is_lookup_allow_edit($lookup_settings)
+		if(is_lookup_allow_edit($lookup)
 			&& isset($TABLES[$lookup['table']])
 			&& is_allowed($TABLES[$lookup['table']], MODE_EDIT)
 		) {
