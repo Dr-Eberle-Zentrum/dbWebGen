@@ -305,3 +305,7 @@ div.leaflet-control-layers-overlays label {
     font-size: 12px;
     margin: 0;
 }
+
+.no-padding {
+	padding: 0;
+}

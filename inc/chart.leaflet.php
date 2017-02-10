@@ -108,6 +108,9 @@
 					<div class='checkbox'>Maximum Zoom Level (leave empty to tile provider&apos;s default):
 						{$this->page->render_textbox($this->ctrlname('max_zoom'), '')}
 					</div>
+					<div class='checkbox'>Attribution (HTML) to display in bottom-right corner:
+						{$this->page->render_textbox($this->ctrlname('attribution'), '')}
+					</div>
 
 					<label class="control-label">Spatial Reference System</label>
 					<p>Select the coordinate system that Leaflet should use. The source data needs to be transformed to this projection.</p>
@@ -203,6 +206,9 @@ SETTINGS;
 				$data_table .= json_encode(array_values($row), JSON_NUMERIC_CHECK) . ",\n";
 			}
 
+			$attribution_js = json_encode(trim($this->page->get_post($this->ctrlname('attribution'), '')));
+			$has_attribution_js = $attribution_js !== '' ? 'true' : 'false';
+
 			$js = <<<JS
 			var data_table = [
 				{$data_table}
@@ -218,10 +224,13 @@ SETTINGS;
 				var tile_options = {};
 				if('{$this->page->get_post($this->ctrlname('max_zoom'), '')}' != '')
 					tile_options.maxZoom = parseInt({$this->page->get_post($this->ctrlname('max_zoom'))});
+				var tile_layer;
 				if(custom_tile_url != '')
-					return L.tileLayer(custom_tile_url, tile_options);
+					tile_layer = L.tileLayer(custom_tile_url, tile_options);
 				else
-					return L.tileLayer.provider('{$this->page->get_post($this->ctrlname('basemap'))}', tile_options);
+					tile_layer = L.tileLayer.provider('{$this->page->get_post($this->ctrlname('basemap'))}', tile_options);
+				tile_layer.getAttribution = function() { return ''; };
+				return tile_layer;
 			}
 
 			document.addEventListener("DOMContentLoaded", function() {
@@ -235,8 +244,12 @@ SETTINGS;
 
 				map = L.map('chart_div', {
 					crs: {$this->page->get_post($this->ctrlname('crs'), 'L.CRS.EPSG3857')},
-					zoomControl: true
+					zoomControl: true,
+					attributionControl: false
 				});
+
+				if($has_attribution_js)
+					L.control.attribution({ prefix: '', position: 'bottomright' }).addAttribution($attribution_js).addTo(map);
 
 				basemap = get_base_tilelayer();
 				basemap.addTo(map);

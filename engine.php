@@ -28,6 +28,9 @@
 			foreach(array_values($APP['plugins']) as $plugin)
 				require_once $plugin; // we want to load plugins in global scope
 
+		if(isset($APP['preprocess_func']) && function_exists($APP['preprocess_func']))
+			$APP['preprocess_func'](); // allow the app to do some initialization
+
 		// to prevent session issues if multiple dbWebGen instances on same domain
 		session_name(preg_replace('/[^a-zA-Z0-9]+/', '', 'dbWebGen' . dirname($_SERVER['PHP_SELF'])));
 		session_start();
@@ -42,7 +45,7 @@
 		if(!isset($_SESSION['msg']))
 			$_SESSION['msg'] = array();
 
-		if(isset($LOGIN['initializer_proc']) && $LOGIN['initializer_proc'] != '')
+		if(isset($LOGIN['initializer_proc']) && function_exists($LOGIN['initializer_proc']))
 			call_user_func($LOGIN['initializer_proc']); // allow the app to do some initialization
 	}
 

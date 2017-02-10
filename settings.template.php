@@ -62,6 +62,8 @@
 			* string $directory (optional, default = ''): location of the file relative to the app directory
 		- lookup_allow_edit_default: boolean (optional) (default: false)
 			Determines the default value for the setting field/lookup/allow_edit for CARDINALITY_MULTIPLE lookup fields.
+		- preprocess_func: string (optional)
+			Name of a function that will be called brefore any processing is performed by dbWebGen. Check engine.php about available includes
 	======================================================================================================== */
 	$APP = array(
 		'plugins' => array(),

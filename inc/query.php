@@ -433,11 +433,11 @@ HTML;
 						});
 					</script>
 JS;*/
-
+				$nometa = isset($_GET['meta']) && $_GET['meta'] == 'none'; // some kind of hack to allow hiding title + description (for embedding)
 				$css = isset($_GET[PLUGIN_PARAM_NAVBAR]) && $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_ON ? 'margin-top:0' : '';
-				if($this->stored_title != '')
+				if($this->stored_title != '' && !$nometa)
 					$this->viz_ui .= "<h3 style='$css'>" . html($this->stored_title) . "</h3>\n";
-				if($this->stored_description != '')
+				if($this->stored_description != '' && !$nometa)
 					$this->viz_ui .= '<p>' . html($this->stored_description) . "</p>\n";
 				if(count($param_query['params']) > 0) {
 					$param_fields = '';
@@ -511,6 +511,16 @@ HTML;
 			}
 
 			$this->viz_ui .= "<script>\n{$js}\n</script>\n";
+
+			if(isset($_GET['padding']) && $_GET['padding'] == 'none') {
+				$this->viz_ui .= <<<JS
+					<script>
+						$(document).ready(function() {
+							$('#main-container').addClass('no-padding');
+						});
+					</script>
+JS;
+			}
 		}
 
 		//--------------------------------------------------------------------------------------
