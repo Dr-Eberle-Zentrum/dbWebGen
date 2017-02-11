@@ -45,23 +45,46 @@
 		// returns js code to fill the chart div
 		abstract public /*string*/ function get_js(/*PDOStatement*/ $query_result);
 
-		// returnes cached js for visualization, or false if no cache exists
-		public /*string | false*/ function cache_get_js() { return false; }
+		//--------------------------------------------------------------------------------------
+		// returns cached js for visualization, or false if no cache exists
+		public /*string | false*/ function cache_get_js() {
+		//-------------------------------------------------------------------------------------
+			return false;
+		}
 
+		//--------------------------------------------------------------------------------------
 		// store cached js of visualization; true on success, else false
-		public /*bool*/ function cache_put_js($js) {  }
+		public /*bool*/ function cache_put_js($js) {
+		//--------------------------------------------------------------------------------------
+			return false;
+		}
 
+		//--------------------------------------------------------------------------------------
 		// returns the chart code version. this is only used for caching.
 		// if this code is newer version than the cached version, the cache is emptied.
 		// default version = 1; override and increment to ignore any existing cache
-		public /*int*/ function cache_get_version() { return 1; }
+		public /*int*/ function cache_get_version() {
+		//-------------------------------------------------------------------------------------
+			return 1;
+		}
 
+		//--------------------------------------------------------------------------------------
 		// returns the time to live of the cache. default 1 hour. override to change.
-		public /*int*/ function cache_get_ttl() { return 3600; }
-
-		// returns the cache directory
-		public /*string*/ function cache_get_dir() {
+		public /*int*/ function cache_get_ttl() {
+		//--------------------------------------------------------------------------------------
 			global $APP;
+			if(!isset($APP['cache_ttl']))
+				return 3600;
+			return typeof $APP['cache_ttl'] === 'function' ? $APP['cache_ttl']($this->type) : $APP['cache_ttl'];
+		}
+
+		//--------------------------------------------------------------------------------------
+		// returns the cache directory
+		public /*string*/ function cache_get_dir($val_if_missing = null) {
+		//--------------------------------------------------------------------------------------
+			global $APP;
+			if(!isset($APP['cache_dir']))
+				return $val_if_missing;
 			return $APP['cache_dir'] . '/' . $this->type;
 		}
 	};
