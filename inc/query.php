@@ -265,10 +265,16 @@ QUI;
 		}
 
 		//--------------------------------------------------------------------------------------
-		protected function get_cache_settings_html() {
+		public function is_cache_enabled() {
 		//--------------------------------------------------------------------------------------
 			global $APP;
-			if(!isset($APP['cache_dir']))
+			return isset($APP['cache_dir']) && is_string($APP['cache_dir']);
+		}
+
+		//--------------------------------------------------------------------------------------
+		protected function get_cache_settings_html() {
+		//--------------------------------------------------------------------------------------
+			if(!$this->is_cache_enabled())
 				return '';
 
 			$s = <<<HTML
@@ -359,6 +365,7 @@ STR;
 			$save_label = $this->is_stored_query() ? 'Save as New' : 'Save';
 			$replace_existing = $this->is_stored_query() ? '<button type="button" id="viz-share-replace" class="btn btn-primary">Replace Existing</button>' : '';
 			$replace_id = json_encode($this->is_stored_query() ? $this->get_stored_query_id() : '');
+			$js_cache_enabled = json_encode($this->is_cache_enabled());
 
 			$share_popup = <<<SHARE
 				<form>
@@ -384,8 +391,10 @@ STR;
 							post_obj['storedquery-replace-id'] = $replace_id;
 
 						var params_json = $post_data;
-						params_json['{$this->chart->ctrlname('caching')}'] = $('#{$this->chart->ctrlname('caching')}').is(':checked') ? 'ON' : 'OFF';
-						params_json['{$this->chart->ctrlname('cache_ttl')}'] = $('#{$this->chart->ctrlname('cache_ttl')}').val();
+						if($js_cache_enabled) {
+							params_json['{$this->chart->ctrlname('caching')}'] = $('#{$this->chart->ctrlname('caching')}').is(':checked') ? 'ON' : 'OFF';
+							params_json['{$this->chart->ctrlname('cache_ttl')}'] = $('#{$this->chart->ctrlname('cache_ttl')}').val();
+						}
 						post_obj['storedquery-json'] = params_json;
 
 						$.post('{$link_url}', post_obj, function(url_query) {

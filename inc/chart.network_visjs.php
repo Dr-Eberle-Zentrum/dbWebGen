@@ -7,7 +7,7 @@
 		// for downwards compatibility
 		public function get_param($param_name, $default = null) {
 		//--------------------------------------------------------------------------------------
-			if($param_name == 'cache_ttl' && null == $this->page->get_post($this->ctrlname($param_name)))
+			if($this->page->is_cache_enabled() && $param_name == 'cache_ttl' && null == $this->page->get_post($this->ctrlname($param_name)))
 				return strval(DEFAULT_CACHE_TTL);
 			else return parent::get_param($param_name, $default);
 		}
@@ -16,7 +16,7 @@
 		// for downwards compatibility
 		public function get_param_checkbox($param_name, $default = false) {
 		//--------------------------------------------------------------------------------------
-			if($param_name == 'caching' && null == $this->page->get_post($this->ctrlname($param_name)))
+			if($this->page->is_cache_enabled() && $param_name == 'caching' && null == $this->page->get_post($this->ctrlname($param_name)))
 				return true;
 			else return parent::get_param_checkbox($param_name, $default);
 		}

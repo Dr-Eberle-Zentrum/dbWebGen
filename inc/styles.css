@@ -326,3 +326,8 @@ div.leaflet-control-layers-overlays label {
 .no-padding {
 	padding: 0;
 }
+
+/* prevent leaflet controls from overlapping the menu dropdown. */
+.dropdown-menu {
+	z-index: 999999 !important;
+}
