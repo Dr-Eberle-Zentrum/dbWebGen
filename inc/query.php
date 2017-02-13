@@ -79,14 +79,7 @@
 		//--------------------------------------------------------------------------------------
 		public static function is_stored_query() {
 		//--------------------------------------------------------------------------------------
-			return
-			 	// stored query id provided
-				isset($_GET[QUERY_PARAM_ID])
-
-				&&
-
-				// we're not in editing mode with post params
-				!isset($_POST['submit']);
+			return isset($_GET[QUERY_PARAM_ID]);
 		}
 
 		//--------------------------------------------------------------------------------------
@@ -116,7 +109,15 @@
 				return false;
 			}
 
-			$sql = "insert into {$APP['querypage_stored_queries_table']} (id, title, description, params_json) values(?, ?, ?, ?)";
+			if(isset($_POST['storedquery-replace-id']) && $_POST['storedquery-replace-id'] != '') {
+				$id = $_POST['storedquery-replace-id'];
+				$sql = sprintf('update %s set title = :title, description = :description, params_json = :params_json where id = :id', db_esc($APP['querypage_stored_queries_table']));
+			}
+			else {
+				$id = get_random_token(STORED_QUERY_ID_LENGTH);
+				$sql = sprintf('insert into %s (id, title, description, params_json) values(:id, :title, :description, :params_json)', db_esc($APP['querypage_stored_queries_table']));
+			}
+
 			$stmt = $db->prepare($sql);
 			if($stmt === false) {
 				$error_msg = 'Could not prepare query';
@@ -124,10 +125,10 @@
 			}
 
 			$params = array(
-				/*id*/ get_random_token(STORED_QUERY_ID_LENGTH),
-				/*title*/ safehash($_POST, 'storedquery-title'),
-				/*description*/ safehash($_POST, 'storedquery-description'),
-				/*params_json*/ json_encode(safehash($_POST, 'storedquery-json'))
+				':id' => $id,
+				':title' => safehash($_POST, 'storedquery-title'),
+				':description' => safehash($_POST, 'storedquery-description'),
+				':params_json' => json_encode(safehash($_POST, 'storedquery-json'))
 			);
 
 			if($stmt->execute($params) === false) {
@@ -135,26 +136,23 @@
 				return false;
 			}
 
-			return $params[0];
+			return $id;
 		}
 
 		//--------------------------------------------------------------------------------------
 		protected static function create_stored_queries_table(&$db) {
 		//--------------------------------------------------------------------------------------
 			global $APP;
-
-			$id_len = STORED_QUERY_ID_LENGTH;
-
 			$create_sql = <<<SQL
-				create table if not exists {$APP['querypage_stored_queries_table']} (
-					id char({$id_len}) primary key,
+				create table if not exists %s (
+					id char(%s) primary key,
 					title varchar(100),
 					description varchar(1000),
 					params_json text not null,
 					create_time timestamp default current_timestamp
 				)
 SQL;
-			return false !== $db->exec($create_sql);
+			return false !== $db->exec(sprintf($create_sql, db_esc($APP['querypage_stored_queries_table']), STORED_QUERY_ID_LENGTH));
 		}
 
 		//--------------------------------------------------------------------------------------
@@ -188,7 +186,7 @@ SQL;
 
 			if($this->is_stored_query() && isset($APP['querypage_stored_queries_table'])) {
 				// retrieve query details
-				$stmt = $this->db->prepare("select * from {$APP['querypage_stored_queries_table']} where id = ?");
+				$stmt = $this->db->prepare(sprintf("select * from %s where id = ?", db_esc($APP['querypage_stored_queries_table'])));
 				if($stmt === false)
 					return false;
 
@@ -267,15 +265,44 @@ QUI;
 		}
 
 		//--------------------------------------------------------------------------------------
+		protected function get_cache_settings_html() {
+		//--------------------------------------------------------------------------------------
+			global $APP;
+			if(!isset($APP['cache_dir']))
+				return '';
+
+			$s = <<<HTML
+			<div class="form-group">
+				<label class="control-label">Cache Settings</label>
+				<div class="table top-margin-zero ">
+					<div class="tr">
+						<div class='checkbox td'>
+							<label>{$this->render_checkbox($this->chart->ctrlname('caching'), 'ON', false)}Enable caching of data.<br />Cache expires after (seconds): </label>
+						</div>
+						<div class="td align-middle" style="width: 75px">
+							{$this->render_textbox($this->chart->ctrlname('cache_ttl'), strval(DEFAULT_CACHE_TTL), 'input-sm ')}
+						</div>
+					</div>
+					<script>
+						$('#{$this->chart->ctrlname('cache_ttl')}').enabledBy($('#{$this->chart->ctrlname('caching')}'));
+					</script>
+				</div>
+			</div>
+HTML;
+			return $s;
+		}
+
+		//--------------------------------------------------------------------------------------
 		protected function build_settings_part() {
 		//--------------------------------------------------------------------------------------
 			$vistype_field = QUERYPAGE_FIELD_VISTYPE;
 
 			$select = $this->render_select($vistype_field, first(array_keys(QueryPage::$chart_types)), QueryPage::$chart_types);
 			$settings = '';
-			foreach(QueryPage::$chart_types as $type => $name)
-				$settings .= "<div id='viz-option-$type'>" . dbWebGenChart::create($type, $this)->settings_html() . "</div>\n";
-
+			foreach(QueryPage::$chart_types as $type => $name) {
+				$chart = dbWebGenChart::create($type, $this);
+				$settings .= sprintf('<div id="viz-option-%s">%s</div>', $type, $chart->settings_html());
+			}
 			$this->settings_ui = <<<STR
 				<div class="panel panel-default">
 					<div class="panel-heading">
@@ -329,23 +356,37 @@ STR;
 			$post_data = json_encode((object) $post_data);
 			$title = json_encode(safehash($_POST, 'storedquery-title'));
 			$description = json_encode(safehash($_POST, 'storedquery-description'));
+			$save_label = $this->is_stored_query() ? 'Save as New' : 'Save';
+			$replace_existing = $this->is_stored_query() ? '<button type="button" id="viz-share-replace" class="btn btn-primary">Replace Existing</button>' : '';
+			$replace_id = json_encode($this->is_stored_query() ? $this->get_stored_query_id() : '');
 
 			$share_popup = <<<SHARE
 				<form>
 				<p>Please provide a title and a description for the stored query (optional):</p>
 				<p><input class="form-control" placeholder="Title" id="stored_query_title" /></p>
 				<p><textarea class="form-control vresize" placeholder="Description" id="stored_query_description"></textarea></p>
-				<p><input id="viz-share" type="submit" class="form-control btn btn-primary" value="Create Link" /></p>
+				{$this->get_cache_settings_html()}
+				<p class="nowrap">
+					<button type="button" id="viz-share" class="btn btn-primary">$save_label</button>
+					$replace_existing
+				</p>
 				</form>
 				<script>
-					$('#viz-share').click(function() {
+					function viz_save_clicked(replace) {
 						var button = $('#viz-share-popup');
 						button.prop("disabled", true);
 
 						var post_obj = {};
 						post_obj['storedquery-title'] = $('#stored_query_title').val();
 						post_obj['storedquery-description'] = $('#stored_query_description').val();
-						post_obj['storedquery-json'] = $post_data;
+
+						if(replace)
+							post_obj['storedquery-replace-id'] = $replace_id;
+
+						var params_json = $post_data;
+						params_json['{$this->chart->ctrlname('caching')}'] = $('#{$this->chart->ctrlname('caching')}').is(':checked') ? 'ON' : 'OFF';
+						params_json['{$this->chart->ctrlname('cache_ttl')}'] = $('#{$this->chart->ctrlname('cache_ttl')}').val();
+						post_obj['storedquery-json'] = params_json;
 
 						$.post('{$link_url}', post_obj, function(url_query) {
 							if(url_query && url_query.substring(0, 1) != '?') { // error
@@ -356,26 +397,33 @@ STR;
 							button.hide();
 							var link = $('<a/>', {id: 'shared', target: '_blank', href: url_query});
 							link.text(document.location.origin + document.location.pathname + url_query);
-							$('.viz-share-url').text('').show().append(link);
+							$('.viz-share-url').html('Query stored successfully. The live visualization of this query is now available at:<br />').append(link).show();
 							button.popover('hide');
 						}).fail(function() {
 							$('.viz-share-url').text('Error: Could not generate a shareable URL.').show();
 						});
-
-						return false; // do not submit form!
-					});
+						return false;
+					}
+					$('#viz-share').click(function() { viz_save_clicked(false) });
+					$('#viz-share-replace').click(function() { viz_save_clicked(true) });
 				</script>
 SHARE;
-			$share_popup = htmlentities($share_popup, ENT_QUOTES);
 
+			$share_popup = json_encode($share_popup);
+			$js_title = json_encode($this->stored_title);
+			$js_desc = json_encode($this->stored_description);
 			$this->store_ui = <<<HTML
 				&nbsp;
-				<a id='viz-share-popup' href='javascript:void(0)' data-purpose='help' data-toggle='popover' data-placement='bottom' data-content='{$share_popup}'><span title='Share this live query visualization' class='glyphicon glyphicon-link'></span> Get Shareable Link</a>
-				<div class='viz-share-url'></div>
+				<p>
+					<a class='btn btn-default' id='viz-share-popup' href='javascript:void(0)' data-purpose='help' data-toggle='popover' data-placement='bottom'><span title='Share this live query visualization' class='glyphicon glyphicon-link'></span> Save Query &amp; Get Live Visualization URL <span class='caret' /></a>
+					<div class='viz-share-url'></div>
+				</p>
 				<script>
-					$('#viz-share-popup').on('shown.bs.popover', function() {
-						$('#stored_query_title').val('');
-						$('#stored_query_description').val('');
+					$('#viz-share-popup')
+					.data('content', $share_popup)
+					.on('shown.bs.popover', function() {
+						$('#stored_query_title').val($js_title);
+						$('#stored_query_description').val($js_desc);
 						$('#viz-share-popup').prop("disabled", false);
 					});
 				</script>

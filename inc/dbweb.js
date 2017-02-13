@@ -23,6 +23,20 @@ $.fn.extend({
 /* end jQuery resize event */
 
 //------------------------------------------------------------------------------------------
+// jQuery function to link the enabled status of a control with a check/radio control
+$.fn.extend({
+//------------------------------------------------------------------------------------------
+    enabledBy: function(toggle) {
+        var self = $(this);
+        self.prop('disabled', !toggle.is(':checked'));
+        toggle.change(function() {
+            self.prop('disabled', !toggle.is(':checked'));
+        });
+        return this;
+    }
+});
+
+//------------------------------------------------------------------------------------------
 $(window).load(function() {
 //------------------------------------------------------------------------------------------
     set_logout_button_handler();
