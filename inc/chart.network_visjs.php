@@ -4,6 +4,24 @@
 	//==========================================================================================
 
 		//--------------------------------------------------------------------------------------
+		// for downwards compatibility
+		public function get_param($param_name, $default = null) {
+		//--------------------------------------------------------------------------------------
+			if($param_name == 'cache_ttl' && null == $this->page->get_post($this->ctrlname($param_name)))
+				return strval(DEFAULT_CACHE_TTL);
+			else return parent::get_param($param_name, $default);
+		}
+
+		//--------------------------------------------------------------------------------------
+		// for downwards compatibility
+		public function get_param_checkbox($param_name, $default = false) {
+		//--------------------------------------------------------------------------------------
+			if($param_name == 'caching' && null == $this->page->get_post($this->ctrlname($param_name)))
+				return true;
+			else return parent::get_param_checkbox($param_name, $default);
+		}
+
+		//--------------------------------------------------------------------------------------
 		// returns html form for chart settings
 		public /*string*/ function settings_html() {
 		//--------------------------------------------------------------------------------------
@@ -98,68 +116,23 @@ SETTINGS;
 		//--------------------------------------------------------------------------------------
 		public /*string|false*/ function cache_get_js() {
 		//--------------------------------------------------------------------------------------
-			global $APP;
-
-			if(!isset($APP['cache_dir']) || isset($_GET['nocache']))
+			$cache = parent::cache_get_js();
+			if($cache === false);
 				return false;
-
-			$network_id = $this->page->get_stored_query_id();
-			$dir = $this->cache_get_dir();
-
-			// read cache
-			$t = @filemtime($dir . '/' . $network_id . '.definition');
-
-			if($t === false) // probably does not exist yet
-				return false;
-
-			if(time() - $t > $this->cache_get_ttl()) // cache expired
-				return false;
-
-			$cache = @file_get_contents($dir . '/' . $network_id . '.definition');
-			if($cache === false)
-				return false;
-
-			// check version
-			if(preg_match('/^<!-- (?P<ver>\d+) -->\n/', $cache, $matches) !== 1)
-				return false; // can't find version info
-
-			if(!isset($matches['ver']))
-				return false;
-
-			if(intval($matches['ver']) < $this->cache_get_version())
-				return false; // this code is newer version -> don't return cache
-
-			$pos = @file_get_contents($dir . '/' . $network_id . '.node_positions');
+			$pos = @file_get_contents($this->cache_get_dir() . '/' . $this->page->get_stored_query_id() . '.node_positions');
 			if($pos !== false)
 				$cache .= $pos;
-
 			return $cache;
 		}
 
 		//--------------------------------------------------------------------------------------
 		public /*bool*/ function cache_put_js($js) {
 		//--------------------------------------------------------------------------------------
-			global $APP;
-			if(!isset($APP['cache_dir']) || isset($_GET['nocache']))
-				return false;
-
-			$network_id = $this->page->get_stored_query_id();
-			$dir = $this->cache_get_dir();
-
-			if(!@is_dir($dir)) {
-				if(!@mkdir($dir, 0777, true)) {
-					$error = error_get_last();
-					proc_error($error['message']);
-				}
-			}
+			$ret = parent::cache_put_js($js);
 
 			// remove stored node positions (if any)
-			@unlink($dir . '/' . $network_id . '.node_positions');
-
-			// make version
-			$version = "<!-- " . $this->cache_get_version() . " -->\n";
-
-			return @file_put_contents($dir . '/' . $network_id . '.definition', $version . $js);
+			@unlink($this->cache_get_dir() . '/' . $this->page->get_stored_query_id() . '.node_positions');
+			return $ret;
 		}
 
 		//--------------------------------------------------------------------------------------

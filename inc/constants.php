@@ -6,6 +6,9 @@
 	// supported databases
 	define('DB_POSTGRESQL', 'postgresql');
 
+	// default cache time-to-live (for charts)
+	define('DEFAULT_CACHE_TTL', 3600);
+
 	// input types for different DB fields:
 	define('T_TEXT_LINE', 'T_TextLine');
 	define('T_NUMBER', 'T_Number');

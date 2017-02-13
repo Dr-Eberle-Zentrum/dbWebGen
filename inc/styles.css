@@ -11,6 +11,14 @@ div.td {
 	display: table-cell;
 }
 
+.align-top {
+	vertical-align: top;
+}
+
+.align-middle {
+	vertical-align: middle;
+}
+
 .full-width {
     width: 100%
 }
@@ -202,6 +210,10 @@ textarea.monospace, textarea#sql {
 	font-family: monospace
 }
 
+.viz-options {
+	margin-bottom: 0;
+}
+
 .viz-options > div {
 	display: none;
 }
@@ -258,6 +270,11 @@ ol.columns {
 
 .top-margin-zero {
 	margin-top: 0;
+}
+
+
+.bottom-margin-zero {
+	margin-bottom: 0;
 }
 
 .viz-share-url {

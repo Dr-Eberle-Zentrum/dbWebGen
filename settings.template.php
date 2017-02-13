@@ -15,9 +15,7 @@
 		- plugins: array (optional)
 			Custom PHP files that will be included using require_once(). These plugins can contain functions that can be referenced anywhere in this file where external procedures can be provided (e.g. $LOGIN/initializer_proc). The index of the array can be any key that can be used to access the actual file name of the plugin from within the code.
 		- cache_dir: string (optional, but recommended)
-			Path to the directory where this app and its plugin can store their cache files. The path must not end with a trailing slash. The process that runs the php scripts on your machine must have read & write access to this directory. If this setting is undefined, there will be no caching.
-		- cache_ttl: int|function (optional) (default: 3600)
-			Default time to live for cached content in seconds. Default is one hour (3600 secs). If a function is specified, it must return an integer. The function receives the current context as an argument. Currently, only chart types (dbWebGenChart::type) are used as contexts.
+			Path to the directory where this app and its plugin can store their cache files. The path must not end with a trailing slash. The process that runs the php scripts on your machine must have read & write access to this directory. If this setting is undefined, there will be no caching.		
 		- page_size: int
 			Pagination setting for MODE_LIST: max. number of items per page
 		- pages_prevnext: int
