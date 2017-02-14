@@ -108,6 +108,8 @@ END;
 
 		$_SESSION['user_id'] = $user[$LOGIN['primary_key']];
 		$_SESSION['user_data'] = $user;
+		if(isset($_SESSION['pseudo_login']))
+			unset($_SESSION['pseudo_login']);
 
 		// allow the app to do some initialization
 		if(isset($LOGIN['login_success_proc']) && $LOGIN['login_success_proc'] != '') {

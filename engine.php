@@ -93,7 +93,10 @@
 </head>
 <body>
 
-<? render_navigation_bar(); ?>
+<?
+	check_pseudo_login_public_queryviz();
+	render_navigation_bar();
+?>
 
 <div id='main-container' class="container-fluid">
 <?

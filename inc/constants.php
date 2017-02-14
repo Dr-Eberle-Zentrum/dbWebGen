@@ -70,6 +70,10 @@
 	define('QUERY_VIEW_FULL', 'full'); // default
 	define('QUERY_VIEW_RESULT', 'result'); // result only
 
+	// params for query visualizations
+	define('QUERYPAGE_FIELD_SQL', 'sql');
+	define('QUERYPAGE_FIELD_VISTYPE', 'vistype');
+
 	// values for GET parameter "special"
 	define('SPECIAL_EDIT_LINKED_RECORD', 'edit_linked_record');
 

@@ -1462,4 +1462,37 @@ END;
 		$params = array($geom_wkt, $source_srid, $target_srid);
 		return db_get_single_val($sql, $params, $result);
 	}
+
+	//------------------------------------------------------------------------------------------
+	function check_pseudo_login_public_queryviz() {
+	//------------------------------------------------------------------------------------------
+		// remove login requirement for specific queries
+		global $LOGIN;
+		if(isset($LOGIN)
+			&& isset($LOGIN['users_table'])
+			&& !is_logged_in()
+			&& isset($_GET['mode'])
+			&& $_GET['mode'] == MODE_QUERY
+			/*&& isset($_GET[PLUGIN_PARAM_NAVBAR])
+			&& $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_OFF*/
+			&& isset($_GET['id'])
+			&& strlen(trim($_GET['id'])) > 0)
+		{
+			global $APP;
+			if(!db_get_single_val(
+				sprintf('select params_json from %s where id = ?', db_esc($APP['querypage_stored_queries_table'])),
+				array($_GET['id']),
+				$params_json)
+			)
+				return;
+			$params = json_decode($params_json, true);
+			if(!$params)
+				return;
+			$vistype = $params[QUERYPAGE_FIELD_VISTYPE];
+			if(isset($params["$vistype-public_access"]) && $params["$vistype-public_access"] == 'ON') {
+				$LOGIN = array();
+				$_SESSION['pseudo_login'] = true;
+			}
+		}
+	}
 ?>

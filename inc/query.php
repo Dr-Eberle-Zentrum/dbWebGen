@@ -8,9 +8,6 @@
 			require_once (isset(QueryPage::$chart_custom_file_locations[$type]) ? QueryPage::$chart_custom_file_locations[$type] : '') . "chart.$type.php";
 	}
 
-	define('QUERYPAGE_FIELD_SQL', 'sql');
-	define('QUERYPAGE_FIELD_VISTYPE', 'vistype');
-
 	//==========================================================================================
 	class QueryPage extends dbWebGenPage {
 	//==========================================================================================
@@ -21,6 +18,7 @@
 		protected $db;
 		protected $stored_title, $stored_description; // set only from stored query
 
+		//--------------------------------------------------------------------------------------
 		public static $chart_types = array(
 			'table' => 'Table',
 			'annotated_timeline' => 'Annotated Timeline',
@@ -33,6 +31,7 @@
 			'timeline' => 'Timeline'
 		);
 
+		//--------------------------------------------------------------------------------------
 		public static $chart_custom_file_locations = array(
 			// this is managed through register_custom_chart_type()
 		);
@@ -279,8 +278,11 @@ QUI;
 
 			$s = <<<HTML
 			<div class="form-group">
-				<label class="control-label">Cache Settings</label>
-				<div class="table top-margin-zero ">
+				<label class="control-label">Settings</label>
+				<div class="checkbox top-margin-zero">
+					<label>{$this->render_checkbox($this->chart->ctrlname('public_access'), 'ON', false)}This visualization is publicly accessible (use with caution).</label>
+				</div>
+				<div class="table">
 					<div class="tr">
 						<div class='checkbox td'>
 							<label>{$this->render_checkbox($this->chart->ctrlname('caching'), 'ON', false)}Enable caching of data.<br />Cache expires after (seconds): </label>
@@ -363,7 +365,7 @@ STR;
 			$title = json_encode(safehash($_POST, 'storedquery-title'));
 			$description = json_encode(safehash($_POST, 'storedquery-description'));
 			$save_label = $this->is_stored_query() ? 'Save as New' : 'Save';
-			$replace_existing = $this->is_stored_query() ? '<button type="button" id="viz-share-replace" class="btn btn-primary">Replace Existing</button>' : '';
+			$replace_existing = $this->is_stored_query() ? '<button type="button" id="viz-share-replace" class="btn btn-primary">Update Existing</button>' : '';
 			$replace_id = json_encode($this->is_stored_query() ? $this->get_stored_query_id() : '');
 			$js_cache_enabled = json_encode($this->is_cache_enabled());
 
@@ -392,6 +394,7 @@ STR;
 
 						var params_json = $post_data;
 						if($js_cache_enabled) {
+							params_json['{$this->chart->ctrlname('public_access')}'] = $('#{$this->chart->ctrlname('public_access')}').is(':checked') ? 'ON' : 'OFF';
 							params_json['{$this->chart->ctrlname('caching')}'] = $('#{$this->chart->ctrlname('caching')}').is(':checked') ? 'ON' : 'OFF';
 							params_json['{$this->chart->ctrlname('cache_ttl')}'] = $('#{$this->chart->ctrlname('cache_ttl')}').val();
 						}

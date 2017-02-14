@@ -54,7 +54,7 @@
 
 		echo '<a class="navbar-brand" href="?">' . $APP['title'] . '</a></div>';
 
-		if(is_logged_in()) {
+		if(is_logged_in() && !isset($_SESSION['pseudo_login'])) {
 			build_main_menu($menu);
 			echo '<div class="collapse navbar-collapse" id="main-navbar">';
 			echo '<ul class="nav navbar-nav">';
@@ -131,7 +131,7 @@
 	//------------------------------------------------------------------------------------------
 		global $APP;
 
-		try {			
+		try {
 			if(!is_logged_in()) {
 				if(count($_POST) == 0 || !process_login()) {
 					render_login();
