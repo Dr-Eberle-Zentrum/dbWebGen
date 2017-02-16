@@ -95,6 +95,7 @@
 	define('MODE_LIST', 'list'); // table-level action
 	define('MODE_VIEW', 'view'); // table-level action
 	define('MODE_QUERY', 'query');
+	define('MODE_GLOBALSEARCH', 'search');
 
 	// pseudo modes
 	define('MODE_LINK', 'link'); // table-level action, providing a link for rendering the actual object, not the record

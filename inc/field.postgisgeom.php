@@ -52,5 +52,14 @@
 			);
 			return $output_buf;
 		}
+
+		//--------------------------------------------------------------------------------------
+		public function /*string*/ get_global_search_condition($param_name, $table_qualifier = null) {
+			return sprintf(
+				"st_astext(%s) like '%%' || :%s || '%%'",
+				db_esc($this->field_name, $table_qualifier),
+				$param_name
+			);
+		}
 	}
 ?>

@@ -201,6 +201,15 @@
 
 		//--------------------------------------------------------------------------------------
 		protected abstract function /*string*/ render_internal(&$output_buf);
+
+		//--------------------------------------------------------------------------------------
+		public function /*string*/ get_global_search_condition($param_name, $table_qualifier = null) {
+			return sprintf(
+				"(%s)::text like '%%' || :%s || '%%'",
+				db_esc($this->field_name, $table_qualifier),
+				$param_name
+			);
+		}
 	}
 
 	//==========================================================================================

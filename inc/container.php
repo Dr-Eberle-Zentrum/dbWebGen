@@ -71,6 +71,10 @@
 
 				echo '</ul></li>';
 			}
+
+			if(GlobalSearch::is_enabled())
+				echo '<li>' . GlobalSearch::render_searchbox() . "</li>\n";
+
 			echo '</ul>';
 
 			if(isset($LOGIN['users_table'])) {
@@ -203,6 +207,10 @@
 
 						// call the rendering function
 						$_GET[PLUGIN_PARAM_FUNC]();
+						break;
+
+					case MODE_GLOBALSEARCH:
+						echo GlobalSearch::render_result();
 						break;
 
 					default:

@@ -15,7 +15,7 @@
 		- plugins: array (optional)
 			Custom PHP files that will be included using require_once(). These plugins can contain functions that can be referenced anywhere in this file where external procedures can be provided (e.g. $LOGIN/initializer_proc). The index of the array can be any key that can be used to access the actual file name of the plugin from within the code.
 		- cache_dir: string (optional, but recommended)
-			Path to the directory where this app and its plugin can store their cache files. The path must not end with a trailing slash. The process that runs the php scripts on your machine must have read & write access to this directory. If this setting is undefined, there will be no caching.		
+			Path to the directory where this app and its plugin can store their cache files. The path must not end with a trailing slash. The process that runs the php scripts on your machine must have read & write access to this directory. If this setting is undefined, there will be no caching.
 		- page_size: int
 			Pagination setting for MODE_LIST: max. number of items per page
 		- pages_prevnext: int
@@ -64,6 +64,19 @@
 			Determines the default value for the setting field/lookup/allow_edit for CARDINALITY_MULTIPLE lookup fields.
 		- preprocess_func: string (optional)
 			Name of a function that will be called brefore any processing is performed by dbWebGen. Check engine.php about available includes
+		- global_search: array (optional)
+			If this assoc. array is provided, global full text search in all tables is enabled. Lookup fields are not resolved. See also related settings: table/global_search and table/field/global_search settings for inclusion or exclusion of individual tables or columns
+			- include_table: boolean
+				Whether or not to include each table by default in the global search.
+			- min_search_len: int (optional) (default: 3)
+				Minimum number of characters in the search string
+			- max_preview_results_per_table: int (optional) (default: 10)
+				Number of results to display in the overall preview.
+			- max_detail_results: int (optional) (default: 100)
+				Maximum number of results to display in detailed table view
+			- search_string_transformation: string (optional) (default: $APP/search_string_transformation)
+				Possibility to override the $APP/search_string_transformation setting if needed here
+
 	======================================================================================================== */
 	$APP = array(
 		'plugins' => array(),

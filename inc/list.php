@@ -192,7 +192,17 @@
 
 			echo $pag;
 
-			$table_body = "<tbody>\n";
+			// RENDERER >>
+			$relevant_fields = array();
+			foreach($fields as $field_name => &$field)
+				if(!is_field_hidden_in_list($field))
+					$relevant_fields[$field_name] = $field;
+			require_once 'record_renderer.php';
+			$rr = new RecordRenderer($table_name, $table, $relevant_fields, $res, true, true, render_search_sort);
+			echo $rr->html();
+			//<<
+
+			/*$table_body = "<tbody>\n";
 			$col_longest_content = array();
 
 			while($record = $res->fetch(PDO::FETCH_ASSOC)) {
@@ -216,7 +226,7 @@
 				}
 
 				if(is_allowed($table, MODE_VIEW)) {
-					$action_icons[] = "<a href='?table={$table_name}&amp;mode=".MODE_VIEW."{$id_str}' data-purpose='view'><span title='View this record' class='glyphicon glyphicon-zoom-in'></span></a>";					
+					$action_icons[] = "<a href='?table={$table_name}&amp;mode=".MODE_VIEW."{$id_str}' data-purpose='view'><span title='View this record' class='glyphicon glyphicon-zoom-in'></span></a>";
 				}
 
 				if(is_allowed($table, MODE_EDIT))
@@ -277,14 +287,19 @@
 				}
 				$col_no++;
 
-				$table_head .= "<th $minwidth>{$fields[$col]['label']}<br />" . render_search_sort($col /*, $fields[$col]*/) . "</th>";
+				$table_head .= "<th $minwidth>{$fields[$col]['label']}<br />" . render_search_sort($col) . "</th>";
 			}
 			$table_head .= "</tr></thead>\n";
 
-			echo "<div class='panel panel-default'><div class='table-responsive'>";
-			echo $table_head;
-			echo $table_body;
-			echo "</div></div>";
+			echo <<<TABLE
+			<div class='panel panel-default'>
+				<div class='table-responsive'>
+					$table_head;
+					$table_body;
+				</div>
+			</div>
+TABLE;
+			*/
 		}
 
 		echo $pag;
