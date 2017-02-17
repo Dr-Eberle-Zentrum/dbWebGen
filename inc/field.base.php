@@ -203,10 +203,25 @@
 		protected abstract function /*string*/ render_internal(&$output_buf);
 
 		//--------------------------------------------------------------------------------------
-		public function /*string*/ get_global_search_condition($param_name, $table_qualifier = null) {
+		// whether or not to include this type of field in global search
+		public abstract function /*bool*/ is_included_in_global_search();
+
+		//--------------------------------------------------------------------------------------
+		// expression used in sprintf(...) to fetch fields of this type. default: no transform
+		// override if needed (see e.g. T_POSTGIS_GEOM)
+		public function /*string*/ sql_select_transformation() {
+			return '%s';
+		}
+		
+		//--------------------------------------------------------------------------------------
+		public function /*string*/ get_global_search_condition(
+			$param_name,
+			$search_string_transformation,
+			$table_qualifier = null)
+		{
 			return sprintf(
-				"(%s)::text like '%%' || :%s || '%%'",
-				db_esc($this->field_name, $table_qualifier),
+				"(%s)::text like '%%'||:%s||'%%'",
+				sprintf($search_string_transformation, db_esc($this->field_name, $table_qualifier)),
 				$param_name
 			);
 		}

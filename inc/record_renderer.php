@@ -9,11 +9,21 @@
         protected $allow_delete;
         protected $num_results;
         protected $has_fk_lookups;
-        protected $render_search_sort_func;
+        protected $has_search_sort;
         protected $html;
+        protected $html_highlighter;
 
         //--------------------------------------------------------------------------------------
-        public function __construct($table_name, &$table, &$relevant_fields, &$stmt, $allow_delete_icon, $has_fk_lookups, $render_search_sort_func) {
+        public function __construct(
+            $table_name,
+            &$table,
+            &$relevant_fields,
+            &$stmt,
+            $allow_delete_icon,
+            $has_fk_lookups,
+            $has_search_sort,
+            $html_highlighter)
+        {
         //--------------------------------------------------------------------------------------
             $this->stmt = $stmt;
             $this->table_name = $table_name;
@@ -21,9 +31,9 @@
             $this->fields = $relevant_fields;
             $this->allow_delete = $allow_delete_icon;
             $this->has_fk_lookups = $has_fk_lookups;
-            $this->render_search_sort_func = $render_search_sort_func;
-
-            $this->render();
+            $this->has_search_sort = $has_search_sort;
+            $this->html_highlighter = $html_highlighter;
+            $this->build();
         }
 
         //--------------------------------------------------------------------------------------
@@ -37,14 +47,14 @@
         }
 
         //--------------------------------------------------------------------------------------
-        protected function render() {
+        protected function build() {
         //--------------------------------------------------------------------------------------
             $table_body = "<tbody>\n";
             $col_longest_content = array();
-            $this->num_records = 0;
+            $this->num_results = 0;
             while($record = $this->stmt->fetch(PDO::FETCH_ASSOC)) {
                 #debug_log($record);
-                $this->num_records++;
+                $this->num_results++;
 
                 $id_str = '';
                 foreach($this->table['primary_key']['columns'] as $pk) {
@@ -93,7 +103,7 @@
                     if(isset($_GET[SEARCH_PARAM_FIELD]) && $_GET[SEARCH_PARAM_FIELD] === $col)
                         $css = 'class="bg-success"';
 
-                    $val = prepare_field_display_val($this->table, $record, $this->fields[$col], $col, $val);
+                    $val = prepare_field_display_val($this->table, $record, $this->fields[$col], $col, $val, $this->html_highlighter);
                     $table_body .= "<td $css>$val</td>\n";
 
                     // determine max cell len
@@ -125,9 +135,12 @@
                 }
                 $col_no++;
 
-                $table_head .= "<th $minwidth>{$this->fields[$col]['label']}";
-                if($this->render_search_sort_func)
-                    "<br />" . $this->render_search_sort_func($col) . "</th>";
+                $table_head .= sprintf(
+                    '<th %s>%s%s</th>',
+                    $minwidth,
+                    $this->fields[$col]['label'],
+                    $this->has_search_sort ? '<br />' . $this->render_search_sort($col) : ''
+                );
             }
             $table_head .= "</tr></thead>\n";
 
@@ -140,5 +153,34 @@
             </div>
 TABLE;
         }
+
+        //------------------------------------------------------------------------------------------
+    	protected function render_search_sort($field_name) {
+    	//------------------------------------------------------------------------------------------
+    		$sort_field = isset($_GET['sort']) ? $_GET['sort'] : '';
+    		$sort_dir = isset($_GET['dir']) ? $_GET['dir'] : 'asc';
+
+    		$t = "<div class='sort-search'>";
+
+    		if($field_name == $sort_field && $sort_dir == 'asc')
+    			$t .= "<span class='glyphicon glyphicon-arrow-up'></span>";
+    		else
+    			$t .= "<a href='". build_get_params(array('sort'=>$field_name,'dir'=>'asc')) ."' title='Sort Ascending'><span class='glyphicon glyphicon-arrow-up'></span></a>";
+
+    		if($field_name == $sort_field && $sort_dir == 'desc')
+    			$t .= "<span class='glyphicon glyphicon-arrow-down'></span>";
+    		else
+    			$t .= "<a href='". build_get_params(array('sort'=>$field_name,'dir'=>'desc')) ."' title='Sort Descending'><span class='glyphicon glyphicon-arrow-down'></span></a>";
+
+    		$search_val = (isset($_GET[SEARCH_PARAM_QUERY]) && isset($_GET[SEARCH_PARAM_FIELD]) && $_GET[SEARCH_PARAM_FIELD] == $field_name ? unquote($_GET[SEARCH_PARAM_QUERY]) : '');
+
+    		$search_option = isset($_GET[SEARCH_PARAM_OPTION]) ? $_GET[SEARCH_PARAM_OPTION] : SEARCH_ANY;
+
+    		$t .= " <a href='javascript:void(0)' title='Search' data-value='{$search_val}' data-field='{$field_name}' data-option='{$search_option}' data-purpose='search' data-toggle='popover' data-container='body' data-placement='top'><span class='glyphicon glyphicon-search'></span></a>";
+
+    		$t .= "</div>";
+
+    		return $t;
+    	}
     }
 ?>

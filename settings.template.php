@@ -76,6 +76,8 @@
 				Maximum number of results to display in detailed table view
 			- search_string_transformation: string (optional) (default: $APP/search_string_transformation)
 				Possibility to override the $APP/search_string_transformation setting if needed here
+			- transliterator_rules: string (optional) (default: ':: Any-Latin; :: Latin-ASCII;')
+				Rules to be used for PHP's Transliterator::createFromRules factory method.
 
 	======================================================================================================== */
 	$APP = array(

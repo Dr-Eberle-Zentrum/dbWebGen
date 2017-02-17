@@ -20,7 +20,17 @@
 		}
 
 		//--------------------------------------------------------------------------------------
-		public function /*string*/ get_global_search_condition($param_name, $table_qualifier = null) {
+		public function /*bool*/ is_included_in_global_search() {
+		//--------------------------------------------------------------------------------------
+			return false;
+		}
+
+		//--------------------------------------------------------------------------------------
+		public function /*string*/ get_global_search_condition(
+			$param_name,
+			$search_string_transformation,
+			$table_qualifier = null)
+		{
 			return false;
 		}
 	}

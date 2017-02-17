@@ -25,6 +25,15 @@
         }
 
         //--------------------------------------------------------------------------------------
+        public static function transliterator_rules() {
+        //--------------------------------------------------------------------------------------
+            global $APP;
+            if(!isset($APP['global_search']) || !isset($APP['global_search']['transliterator_rules']))
+    			return ':: Any-Latin; :: Latin-ASCII;';
+    		return $APP['global_search']['transliterator_rules'];
+    	}
+
+        //--------------------------------------------------------------------------------------
         public static function /*bool*/ is_field_included($field) {
             if(isset($field['global_search']) && isset($field['global_search']['include_field']))
                 return $field['global_search']['include_field'];
@@ -34,6 +43,11 @@
         //--------------------------------------------------------------------------------------
         public static function /*bool*/ is_enabled() {
             global $APP; return isset($APP['global_search']);
+        }
+
+        //--------------------------------------------------------------------------------------
+        public static function min_search_len() {
+            return self::get_setting('min_search_len', 3);
         }
 
         //--------------------------------------------------------------------------------------
@@ -47,6 +61,11 @@
         }
 
         //--------------------------------------------------------------------------------------
+        public static function max_results_to_display() {
+            return self::is_preview() ? self::max_preview_results_per_table() : self::max_detail_results();
+        }
+
+        //--------------------------------------------------------------------------------------
         public static function search_string_transformation($field = null) {
             if($field !== null) {
                 // check for field level search_string_transformation
@@ -54,6 +73,7 @@
                     return $field['global_search']['search_string_transformation'];
             }
 
+            global $APP;
             return self::get_setting('search_string_transformation',
                 isset($APP['search_string_transformation']) ? $APP['search_string_transformation'] : '%s');
         }
@@ -67,12 +87,16 @@
         public static function /*string*/ render_searchbox() {
         //--------------------------------------------------------------------------------------
             $mode = MODE_GLOBALSEARCH;
+            if(isset($_GET['q']))
+                $_GET['q'] = trim(trim($_GET['q']), '%');
+
+            $q = isset($_GET['mode']) && $_GET['mode'] == MODE_GLOBALSEARCH && isset($_GET['q']) ? unquote($_GET['q']) : '';
 
             return <<<HTML
             <form class="navbar-form" method="GET">
+                <input type="hidden" name="mode" value="$mode" />
             	<div class="input-group">
-                    <input type="hidden" name="mode" value="$mode" />
-                    <input type="text" class="form-control" placeholder="Search" name="q" id="q" />
+                    <input id="global-search-box" type="text" class="form-control" placeholder="Search" name="q" value="$q" />
             		<div class="input-group-btn">
             			<button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span></button>
             		</div>
@@ -86,22 +110,51 @@ HTML;
         //--------------------------------------------------------------------------------------
             global $TABLES;
 
+            $head = sprintf('<h1>Search Results for <code>%s</code></h1>', html($_GET['q']));
+
+            if(mb_strlen($_GET['q']) < self::min_search_len())
+                return $head . sprintf('<p>This search term is too short, it must contain at least %s characters.</p>', self::min_search_len());
+
+            // to speed up, retrieve transformed value once from database
+            db_get_single_val('select ' . sprintf(self::search_string_transformation(), '?'), array($_GET['q']), $transformed_search_term);
+
             if(!self::is_preview()) {
                 if(!isset($TABLES[$_GET['table']]))
-                    return proc_error('Invalid table');
-                return self::render_table_results($_GET['table'], $TABLES[$_GET['table']]);
+                    return $head . proc_error('Invalid table');
+                return $head . self::render_table_results($_GET['table'], $TABLES[$_GET['table']], $transformed_search_term, $num_results);
             }
 
-            $s = '';
+            $body = '';
+            $total_results = 0;
+            $total_tables = 0;
+            $anchors = array();
             foreach($TABLES as $table_name => &$table) {
-                if(self::is_table_included($table))
-                    $s .= self::render_table_results($table_name, $table);
+                if(self::is_table_included($table)) {
+                    $body .= self::render_table_results($table_name, $table, $transformed_search_term, $num_results);
+                    $total_results += $num_results;
+                    if($num_results > 0) {
+                        $total_tables++;
+                        $anchors[] = sprintf('<a href="#%s">%s</a>', $table_name, $table['display_name']);
+                    }
+                }
             }
-            return $s;
+            if($total_results == 0)
+                $msg = 'No search results in any table.';
+            else if($total_results == 1)
+                $msg = 'One search result found.';
+            else {
+                $msg = sprintf(
+                    'Found search results in %s table%s. %s',
+                    $total_tables == 1 ? 'one' : $total_tables,
+                    $total_tables == 1 ? '' : 's',
+                    $total_tables > 3 ? 'Click to jump to table: ' . implode(' | ', $anchors) : ''
+                );
+            }
+            return $head . $msg . $body;
         }
 
         //--------------------------------------------------------------------------------------
-        public static function /*string*/ render_table_results($table_name, &$table) {
+        public static function /*string*/ render_table_results($table_name, &$table, $transformed_search_term, &$num_results) {
         //--------------------------------------------------------------------------------------
             require_once 'record_renderer.php';
             require_once 'fields.php';
@@ -114,26 +167,31 @@ HTML;
             $from_conditions = array();
             $relevant_fields = array();
             foreach($table['fields'] as $field_name => &$field) {
+                $is_pk = in_array($field_name, $table['primary_key']['columns']);
+
                 if(!self::is_field_included($field))
                     continue;
-                $field_obj = FieldFactory::create($table_name, $field_name, $field);
-                if($field_obj === null)
+
+                if(!($field_obj = FieldFactory::create($table_name, $field_name, $field)))
+                    continue;
+
+                if(!$is_pk && !$field_obj->is_included_in_global_search())
                     continue;
 
                 $relevant_fields[$field_name] = $field;
-                $select_fields[] = db_esc($field_name, 't');
-                $where_conditions[] = $field_obj->get_global_search_condition($param_name, 't');
+                $select_fields[] = sprintf($field_obj->sql_select_transformation(), db_esc($field_name, 't'));
+                if($field_obj->is_included_in_global_search())
+                    $where_conditions[] = $field_obj->get_global_search_condition($param_name, self::search_string_transformation($field), 't');
             }
 
             $sql = sprintf(
-                'select %s from %s t where %s limit %s',
+                'SELECT %s FROM %s t WHERE %s LIMIT %s',
                 implode(', ', $select_fields),
                 db_esc($table_name),
-                implode(' or ', $where_conditions),
+                implode(' OR ', $where_conditions),
                 $max_results
             );
-
-            debug_log($sql);
+            //debug_log($sql);
 
             $db = db_connect();
             if($db === false)
@@ -142,19 +200,46 @@ HTML;
             if($stmt === false)
                 return proc_error('Failed to prepare search query.', $db);
 
-            $search_term = sprintf(self::search_string_transformation(), $_GET['q']);
-            if(false === $stmt->execute(array(":$param_name" => $search_term)))
+            if(false === $stmt->execute(array($param_name => $transformed_search_term)))
     			return proc_error('Executing SQL statement failed', $db);
 
-            $rr = new RecordRenderer($table_name, $table, $relevant_fields, $stmt, false, false, null);
-            if($rr->num_results() == 0)
+            $highlighter = new SearchResultHighlighter($transformed_search_term, self::transliterator_rules());
+            $rr = new RecordRenderer($table_name, $table, $relevant_fields, $stmt, false, false, null, $highlighter);
+            $num_results = $rr->num_results();
+            if($num_results == 0)
                 return ''; // don't render anything
 
+            if($num_results < self::max_results_to_display())
+                $num_msg = self::is_preview() ? '' : "$num_results search results found.";
+            else {
+                $show_more = self::is_preview() ?
+                    sprintf('<a class="btn btn-default" href="?%s"><span class="glyphicon glyphicon-hand-right"></span> Display All Results</a>', http_build_query(array('mode' => MODE_GLOBALSEARCH, 'table' => $table_name, 'q' => $_GET['q']))) :
+                    'To narrow down search results please adapt your search term.';
+                $num_msg = sprintf('Only the first %s search results are shown here. %s', self::max_results_to_display(), $show_more);
+            }
+
+            $is_preview = self::is_preview() ? 'true' : 'false';
             return <<<HTML
-                <h2>{$table['display_name']}</h2>
+                <h2 id="$table_name">
+                    {$table['display_name']}<sup class="scroll-top"><a title="Go to Top" style="font-size:10px" href="#top"><span class="glyphicon glyphicon-arrow-up"></span></a></sup>
+                </h2>
+                <p>$num_msg</p>
                 <div class="col-sm-12">
                     {$rr->html()}
                 </div>
+                <script>
+                    if($is_preview) {
+                        var w = $(window);
+                        var sup = $('.scroll-top');
+                        w.scroll(function() {
+                            var top = w.scrollTop();
+                            if(top > 0 && !sup.first().is(':visible'))
+                                $('.scroll-top').show();
+                            else if(top == 0 && sup.first().is(':visible'))
+                                $('.scroll-top').hide();
+                        });
+                    }
+                </script>
 HTML;
         }
     }
