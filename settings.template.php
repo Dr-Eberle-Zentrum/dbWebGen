@@ -65,9 +65,9 @@
 		- preprocess_func: string (optional)
 			Name of a function that will be called brefore any processing is performed by dbWebGen. Check engine.php about available includes
 		- global_search: array (optional)
-			If this assoc. array is provided, global full text search in all tables is enabled. Lookup fields are not resolved. See also related settings: table/global_search and table/field/global_search settings for inclusion or exclusion of individual tables or columns
+			If this assoc. array is provided, global full text search in all tables is enabled. Settings indicated with an asterisk (*) can be overriden in table and even field settings by providing a custom global_search setting array there.
 			- include_table: boolean
-				Whether or not to include each table by default in the global search.
+				Whether or not to include each table by default in the global search. If this is set to false, global search will only work if this is overriden with global_search/include_table = true in at least one table.
 			- min_search_len: int (optional) (default: 3)
 				Minimum number of characters in the search string
 			- max_preview_results_per_table: int (optional) (default: 10)
@@ -79,7 +79,7 @@
 			- transliterator_rules: string (optional) (default: ':: Any-Latin; :: Latin-ASCII;')
 				Rules to be used for PHP's Transliterator::createFromRules factory method.
 			- cache_ttl: int (optional) (default: 3600)
-				Number of seconds to cache each search result. Default is one hour. Note that this setting is only effective if $APP/cache_dir is set and valid.
+				Number of seconds to cache each search result. Default is one hour. Note that this setting is only effective if $APP/cache_dir is set and valid. If you set this to 0, there will be no caching of global search results.
 
 	======================================================================================================== */
 	$APP = array(

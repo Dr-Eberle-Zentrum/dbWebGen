@@ -22,7 +22,7 @@
         //--------------------------------------------------------------------------------------
         protected static function /*bool*/ read_cache(&$html) {
             global $APP;
-            if(!self::is_preview() || isset($_GET['nocache']) || !isset($APP['cache_dir']))
+            if(!self::is_preview() || isset($_GET['nocache']) || !isset($APP['cache_dir']) || self::get_cache_ttl() == 0)
                 return false;
             $dir = sprintf('%s/global_search', $APP['cache_dir']);
             self::sanitize_search_term();
@@ -45,7 +45,7 @@
         //--------------------------------------------------------------------------------------
         protected static function write_cache($html) {
             global $APP;
-            if(!self::is_preview() || !isset($APP['cache_dir']))
+            if(!self::is_preview() || !isset($APP['cache_dir']) || self::get_cache_ttl() == 0)
                 return false;
             $dir = sprintf('%s/global_search', $APP['cache_dir']);
 			create_dir_if_not_exists($dir);
