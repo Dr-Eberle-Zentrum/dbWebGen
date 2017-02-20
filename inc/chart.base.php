@@ -97,7 +97,10 @@
 
 			// make version
 			$version = "<!-- " . $this->cache_get_version() . " -->\n";
-			return @file_put_contents($dir . '/' . $query_id . '.html', $version . $js);
+			$filename = $dir . '/' . $query_id . '.html';
+			$ret = @file_put_contents($filename, $version . $js);
+			@chmod($filename, 0777);
+			return $ret;
 		}
 
 		//--------------------------------------------------------------------------------------

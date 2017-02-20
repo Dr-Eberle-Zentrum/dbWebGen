@@ -26,10 +26,13 @@
 	function create_dir_if_not_exists($dir) {
 	//------------------------------------------------------------------------------------------
 		if(!@is_dir($dir)) {
+			$old = umask(0);
 			if(!@mkdir($dir, 0777, true)) {
+				umask($old);
 				$error = error_get_last();
 				return proc_error($error['message']);
 			}
+			umask($old);
 		}
 		return true;
 	}

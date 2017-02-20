@@ -164,6 +164,7 @@ SETTINGS;
 				// otherwise make file
 				$node_pos = '<script>' . $_POST['node_positions'] . '</script>';
 				@file_put_contents($cache_file, $node_pos);
+				@chmod($cache_file, 0777);
 				echo 'OK';
 			}
 		}

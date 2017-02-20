@@ -51,7 +51,9 @@
 			create_dir_if_not_exists($dir);
             self::sanitize_search_term();
             $filename = sprintf('%s/%s.html', $dir, urlencode($_GET['q']));
-			return @file_put_contents($filename, $html);
+			$ret = @file_put_contents($filename, $html);
+            @chmod($filename, 0777);
+            return $ret;
         }
 
         //--------------------------------------------------------------------------------------
