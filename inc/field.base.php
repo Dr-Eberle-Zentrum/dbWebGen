@@ -39,6 +39,7 @@
 		protected /*string*/	$table_name;
 		protected /*string*/	$field_name;
 		protected /*array ref*/	$field;
+		protected /*array ref*/	$table;
 		protected /*array*/		$render_settings;
 
 		//--------------------------------------------------------------------------------------
@@ -51,6 +52,8 @@
 			$this->table_name = $table_name;
 			$this->field_name = $field_name;
 			$this->field = $field;
+			global $TABLES;
+			$this->table = &$TABLES[$table_name];
 		}
 
 		//--------------------------------------------------------------------------------------
@@ -207,12 +210,12 @@
 		public abstract function /*bool*/ is_included_in_global_search();
 
 		//--------------------------------------------------------------------------------------
-		// expression used in sprintf(...) to fetch fields of this type. default: no transform
+		// expression used in sprintf(...) to fetch fields of this type. default: no transform.
 		// override if needed (see e.g. T_POSTGIS_GEOM)
 		public function /*string*/ sql_select_transformation() {
 			return '%s';
 		}
-		
+
 		//--------------------------------------------------------------------------------------
 		public function /*string*/ get_global_search_condition(
 			$param_name,

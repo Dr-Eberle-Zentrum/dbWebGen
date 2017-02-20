@@ -168,7 +168,7 @@
 				if(!is_field_hidden_in_list($field))
 					$relevant_fields[$field_name] = $field;
 			require_once 'record_renderer.php';
-			$rr = new RecordRenderer($table_name, $table, $relevant_fields, $res, true, true, true, null);
+			$rr = new RecordRenderer($table_name, $table, $relevant_fields, $res, true, true, null);
 			echo $rr->html();
 
 			echo $pag;

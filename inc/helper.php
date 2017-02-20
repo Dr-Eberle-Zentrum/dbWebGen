@@ -770,10 +770,7 @@ STR;
 				foreach($id_display_map as $id_val => $display_val) {
 					$linked_rec = array();
 					$linked_rec['raw_val'] = $display_val;
-
-					$params = array(
-						'mode' => MODE_VIEW
-					);
+					$params = array('mode' => MODE_VIEW);
 
 					if($field['lookup']['cardinality'] == CARDINALITY_MULTIPLE
 						&& isset($TABLES[$field['linkage']['table']])
@@ -796,13 +793,13 @@ STR;
 					$linked_rec['class'] = '';
 					if($linked_rec['html_val'] == '') {
 						$linked_rec['title'] = 'There is no display value for this referenced record, so its identifier is displayed here';
-						$linked_rec['html_val'] = html($linked_rec['raw_val'] = $id_val);
+						$linked_rec['html_val'] = $highlighter->highlight(html($linked_rec['raw_val'] = $id_val));
 						$linked_rec['class'] = 'dotted';
 					}
 
 					$linked_records[] = $linked_rec;
 				}
-				$val = html_linked_records($field, $linked_records, $_GET['mode'] == MODE_LIST ? $APP['max_text_len'] : 0);
+				$val = html_linked_records($field, $linked_records, $_GET['mode'] == MODE_VIEW ? 0 : $APP['max_text_len']);
 			}
 			else
 				$val = '';

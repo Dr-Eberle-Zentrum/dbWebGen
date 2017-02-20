@@ -100,7 +100,7 @@
 		//--------------------------------------------------------------------------------------
 		public function /*bool*/ is_included_in_global_search() {
 		//--------------------------------------------------------------------------------------
-			return false; 
+			return true;
 		}
 
 		//--------------------------------------------------------------------------------------
@@ -310,6 +310,65 @@
 				"<div class='col-sm-offset-3 col-sm-9 multiple-select-ul' id='%s_list'>%s</div>",
 				$this->field_name, $this->linked_items_div
 			);
+		}
+
+		//--------------------------------------------------------------------------------------
+		// expression used in sprintf(...) to fetch fields of this type. default: no transform.
+		// override if needed (see e.g. T_POSTGIS_GEOM)
+		public function /*string*/ sql_select_transformation() {
+			if($this->get_cardinality() == CARDINALITY_SINGLE) {
+				return sprintf('(SELECT %s FROM %s k WHERE %s = t.%s) %s, t.%s %s',
+					resolve_display_expression($this->get_lookup_display(), 'k'),
+					db_esc($this->get_lookup_table_name()), db_esc($this->get_lookup_field_name()),
+					db_esc($this->field_name), db_esc($this->field_name), db_esc($this->field_name),
+					db_postfix_fieldname($this->field_name, FK_FIELD_POSTFIX, true));
+			}
+			else {
+				$linkage = $this->get_linkage_info();
+				return sprintf(
+					"(SELECT '[' || array_to_json(array_agg(%s)) || ',' || array_to_json(array_agg(%s)) || ']'
+					 FROM %s other, %s link
+					 WHERE link.%s = t.%s
+					 AND other.%s = link.%s) %s",
+					db_esc($this->get_lookup_field_name(), 'other'), resolve_display_expression($this->get_lookup_display(), 'other'),
+					db_esc($this->get_lookup_table_name()), db_esc($linkage['table']),
+					db_esc($linkage['fk_self']), db_esc($this->table['primary_key']['columns'][0]),
+					db_esc($this->get_lookup_field_name()), db_esc($linkage['fk_other']), db_esc($this->field_name));
+			}
+		}
+
+		//--------------------------------------------------------------------------------------
+		public function /*string*/ get_global_search_condition(
+			$param_name,
+			$search_string_transformation,
+			$table_qualifier = null)
+		{
+			if($this->get_cardinality() == CARDINALITY_SINGLE) {
+				$s = sprintf(
+					"(SELECT (%s)::text FROM %s k WHERE %s = t.%s) like '%%'||:%s||'%%'",
+					sprintf($search_string_transformation, resolve_display_expression($this->get_lookup_display(), 'k')),
+					db_esc($this->get_lookup_table_name()),
+					db_esc($this->get_lookup_field_name()),
+					db_esc($this->field_name),
+					$param_name
+				);
+				return $s;
+			}
+			else {
+				$linkage = $this->get_linkage_info();
+				$s = sprintf(
+					"(SELECT array_to_string(array_agg(%s), ' ')
+					 FROM %s other, %s link
+					 WHERE link.%s = t.%s
+					 AND other.%s = link.%s)
+					 like '%%'||:%s||'%%'",
+					sprintf($search_string_transformation, resolve_display_expression($this->get_lookup_display(), 'other')),
+					db_esc($this->get_lookup_table_name()), db_esc($linkage['table']),
+					db_esc($linkage['fk_self']), db_esc($this->table['primary_key']['columns'][0]),
+					db_esc($this->get_lookup_field_name()), db_esc($linkage['fk_other']),
+					$param_name);
+				return $s;
+			}
 		}
 	}
 ?>

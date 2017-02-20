@@ -261,7 +261,7 @@ HTML;
     			return proc_error('Executing SQL statement failed', $db);
 
             $highlighter = new SearchResultHighlighter($transformed_search_term, self::transliterator_rules());
-            $rr = new RecordRenderer($table_name, $table, $relevant_fields, $stmt, false, false, null, $highlighter);
+            $rr = new RecordRenderer($table_name, $table, $relevant_fields, $stmt, false, false, $highlighter);
             $num_results = $rr->num_results();
             if($num_results == 0)
                 return ''; // don't render anything

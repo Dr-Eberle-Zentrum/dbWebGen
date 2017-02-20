@@ -8,7 +8,6 @@
         protected $fields;
         protected $allow_delete;
         protected $num_results;
-        protected $has_fk_lookups;
         protected $has_search_sort;
         protected $html;
         protected $html_highlighter;
@@ -20,7 +19,6 @@
             &$relevant_fields,
             &$stmt,
             $allow_delete_icon,
-            $has_fk_lookups,
             $has_search_sort,
             $html_highlighter)
         {
@@ -30,7 +28,6 @@
             $this->table = $table;
             $this->fields = $relevant_fields;
             $this->allow_delete = $allow_delete_icon;
-            $this->has_fk_lookups = $has_fk_lookups;
             $this->has_search_sort = $has_search_sort;
             $this->html_highlighter = $html_highlighter;
             $this->build();
@@ -59,7 +56,8 @@
                 $id_str = '';
                 foreach($this->table['primary_key']['columns'] as $pk) {
                     // field with postfixed name contains the raw value (not lookup display value) of referenced primary keys
-                    $id_str .= "&amp;{$pk}=" . ($this->has_fk_lookups ? urlencode($record[db_postfix_fieldname($pk, FK_FIELD_POSTFIX, false)]) : urlencode($record[$pk]));
+                    $postfixed_name = db_postfix_fieldname($pk, FK_FIELD_POSTFIX, false);
+                    $id_str .= "&amp;{$pk}=" . (isset($record[$postfixed_name]) ? urlencode($record[$postfixed_name]) : urlencode($record[$pk]));
                 }
 
                 $table_body .= "<tr><td class='fit'>\n";
