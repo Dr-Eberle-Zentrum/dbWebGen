@@ -78,6 +78,8 @@
 				Possibility to override the $APP/search_string_transformation setting if needed here
 			- transliterator_rules: string (optional) (default: ':: Any-Latin; :: Latin-ASCII;')
 				Rules to be used for PHP's Transliterator::createFromRules factory method.
+			- cache_ttl: int (optional) (default: 3600)
+				Number of seconds to cache each search result. Default is one hour. Note that this setting is only effective if $APP/cache_dir is set and valid.
 
 	======================================================================================================== */
 	$APP = array(

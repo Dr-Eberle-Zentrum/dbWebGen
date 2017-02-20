@@ -2,6 +2,57 @@
     //==========================================================================================
     class GlobalSearch {
     //==========================================================================================
+        protected static $search_term_sanitized = false;
+
+        //--------------------------------------------------------------------------------------
+        // call this before using $_GET['q']
+        public static function sanitize_search_term() {
+            if(!self::$search_term_sanitized) {
+                if(isset($_GET['q']))
+                    $_GET['q'] = trim($_GET['q'], "% \t\n\r\0\x0B");
+                self::$search_term_sanitized = true;
+            }
+        }
+
+        //--------------------------------------------------------------------------------------
+        public static function get_cache_ttl() {
+            return self::get_setting('cache_ttl', 3600);
+        }
+
+        //--------------------------------------------------------------------------------------
+        protected static function /*bool*/ read_cache(&$html) {
+            global $APP;
+            if(!self::is_preview() || isset($_GET['nocache']) || !isset($APP['cache_dir']))
+                return false;
+            $dir = sprintf('%s/global_search', $APP['cache_dir']);
+            self::sanitize_search_term();
+            $filename = sprintf('%s/%s.html', $dir, urlencode($_GET['q']));
+            $t = @filemtime($filename);
+			if($t === false) // probably does not exist yet
+				return false;
+			if(time() - $t > self::get_cache_ttl()) // cache expired
+				return false;
+			$html = @file_get_contents($filename);
+			if($html === false)
+            	return false;
+            $html = sprintf(
+                '<div class="alert alert-warning"><b>Note:</b> The search results for this search term were retrieved from the cache. Fresh results for this search term will be available after the cache expires in %s minutes.</div>',
+                intval((self::get_cache_ttl() - (time() - $t)) / 60)
+            ) . $html;
+            return true;
+        }
+
+        //--------------------------------------------------------------------------------------
+        protected static function write_cache($html) {
+            global $APP;
+            if(!self::is_preview() || !isset($APP['cache_dir']))
+                return false;
+            $dir = sprintf('%s/global_search', $APP['cache_dir']);
+			create_dir_if_not_exists($dir);
+            self::sanitize_search_term();
+            $filename = sprintf('%s/%s.html', $dir, urlencode($_GET['q']));
+			return @file_put_contents($filename, $html);
+        }
 
         //--------------------------------------------------------------------------------------
         protected static function get_table_settings(&$table /*string|array*/) {
@@ -86,10 +137,8 @@
         //--------------------------------------------------------------------------------------
         public static function /*string*/ render_searchbox() {
         //--------------------------------------------------------------------------------------
+            self::sanitize_search_term();
             $mode = MODE_GLOBALSEARCH;
-            if(isset($_GET['q']))
-                $_GET['q'] = trim(trim($_GET['q']), '%');
-
             $q = isset($_GET['mode']) && $_GET['mode'] == MODE_GLOBALSEARCH && isset($_GET['q']) ? unquote($_GET['q']) : '';
 
             return <<<HTML
@@ -110,7 +159,12 @@ HTML;
         //--------------------------------------------------------------------------------------
             global $TABLES;
 
+            self::sanitize_search_term();
             $head = sprintf('<h1>Search Results for <code>%s</code></h1>', html($_GET['q']));
+
+            $is_from_cache = self::read_cache($html);
+            if($is_from_cache)
+                return $html;
 
             if(mb_strlen($_GET['q']) < self::min_search_len())
                 return $head . sprintf('<p>This search term is too short, it must contain at least %s characters.</p>', self::min_search_len());
@@ -150,7 +204,9 @@ HTML;
                     $total_tables > 3 ? 'Click to jump to table: ' . implode(' | ', $anchors) : ''
                 );
             }
-            return $head . $msg . $body;
+            $html = $head . $msg . $body;
+            self::write_cache($html);
+            return $html;
         }
 
         //--------------------------------------------------------------------------------------
@@ -159,6 +215,7 @@ HTML;
             require_once 'record_renderer.php';
             require_once 'fields.php';
 
+            self::sanitize_search_term();
             $is_preview = self::is_preview();
             $max_results = $is_preview? self::max_preview_results_per_table() : self::max_detail_results();
             $param_name = 'q';

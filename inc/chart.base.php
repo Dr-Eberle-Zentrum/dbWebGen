@@ -93,13 +93,7 @@
 
 			$query_id = $this->page->get_stored_query_id();
 			$dir = $this->cache_get_dir();
-
-			if(!@is_dir($dir)) {
-				if(!@mkdir($dir, 0777, true)) {
-					$error = error_get_last();
-					proc_error($error['message']);
-				}
-			}
+			create_dir_if_not_exists($dir);
 
 			// make version
 			$version = "<!-- " . $this->cache_get_version() . " -->\n";
