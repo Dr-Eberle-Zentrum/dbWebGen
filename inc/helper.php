@@ -23,6 +23,18 @@
 	}
 
 	//------------------------------------------------------------------------------------------
+	function create_dir_if_not_exists($dir) {
+	//------------------------------------------------------------------------------------------
+		if(!@is_dir($dir)) {
+			if(!@mkdir($dir, 0777, true)) {
+				$error = error_get_last();
+				return proc_error($error['message']);
+			}
+		}
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------
 	function starts_with($prefix, $text) {
 	//------------------------------------------------------------------------------------------
 		return mb_substr($text, 0, mb_strlen($prefix)) === $prefix;
@@ -564,10 +576,12 @@ STR;
 	}
 
 	//------------------------------------------------------------------------------------------
-	function html($text, $max_chars = 0, $expandable = false, $html_linebreaks = false) {
+	function html($text, $max_chars = 0, $expandable = false, $html_linebreaks = false, $highlighter = null) {
 	//------------------------------------------------------------------------------------------
 		if($text === null)
 			return '';
+		if($highlighter === null)
+			$highlighter = new NothingHighlighter;
 
 		$text = strval($text);
 		$len = mb_strlen($text);
@@ -577,18 +591,18 @@ STR;
 			define('ENT_HTML401', 0);
 
 		if($max_chars > 0 && $len > $max_chars) {
-			$ret = htmlspecialchars(mb_substr($text, 0, $max_chars), ENT_COMPAT | ENT_HTML401);
+			$ret = $highlighter->highlight(htmlspecialchars(mb_substr($text, 0, $max_chars), ENT_COMPAT | ENT_HTML401));
 
 			if($expandable)
 				$ret .= "<a role='button' title='Text clipped due to length. Click to show clipped text' class='clipped_text'>[...]</a><span class='clipped_text'>" .
-				htmlspecialchars(mb_substr($text, $max_chars), ENT_COMPAT | ENT_HTML401) .
+				$highlighter->highlight(htmlspecialchars(mb_substr($text, $max_chars), ENT_COMPAT | ENT_HTML401)) .
 				"</span>";
 			else
 				$ret .= '...';
 		}
 
 		else
-			$ret = htmlspecialchars($text, ENT_COMPAT | ENT_HTML401);
+			$ret = $highlighter->highlight(htmlspecialchars($text, ENT_COMPAT | ENT_HTML401));
 
 		if($html_linebreaks)
 			$ret = nl2br($ret);
@@ -613,15 +627,86 @@ STR;
 		return "<a class='$class' title='$title' href=\"?$href\">$label_html</a>";
 	}
 
+	//------------------------------------------------------------------------------------------
+	class NothingHighlighter {
+	//------------------------------------------------------------------------------------------
+		public function highlight($html, $css_class = 'hl') {
+			return $html;
+		}
+	}
 
 	//------------------------------------------------------------------------------------------
-	function prepare_field_display_val(&$table, &$record, &$field, $col, $val) {
+	// highlights all occurrences of an ascii $term_to_highlight in some
+	// $html string that may contain all sorts of weird characters
+	class SearchResultHighlighter {
+	//------------------------------------------------------------------------------------------
+		public $term_to_highlight;
+		protected $term_len;
+		protected static $transliterator = null;
+
+		//------------------------------------------------------------------------------------------
+		public function __construct(
+			$term_to_highlight, 	// must be an already transliterated search term (ASCII only)
+			$transliterator_rules 	// rules passed to Transliterator::createFromRules
+		) {
+			$this->term_to_highlight = $term_to_highlight;
+			$this->term_len = mb_strlen($this->term_to_highlight);
+			if(self::$transliterator === null) // Transliterator only available PHP >= 5.4.0, PECL intl >= 2.0.0
+				self::$transliterator = class_exists('Transliterator') ? Transliterator::createFromRules($transliterator_rules) : null;
+		}
+
+		//------------------------------------------------------------------------------------------
+		public function highlight(
+			$html,				// the HTML in which to highlight all occurrences of $this->term_to_highlight
+			$css_class = 'hl'	// the CSS class used to highlight occurrences
+		) {
+			if(self::$transliterator === null)
+				return $html;
+			$result = '';
+			$source_len = mb_strlen($html);
+			$matched_term_chars = 0;
+			$source_match_startpos = 0;
+			$source_match_len = 0;
+			for($i = 0; $i < $source_len; $i++) {
+				$c = mb_substr($html, $i, 1);
+				$c_trans = mb_strtolower(self::$transliterator->transliterate($c));
+				$c_trans_len = mb_strlen($c_trans); // note: single transliterated chars can be more than one char, e.g. transliterate('手') yields 'shou'
+				if($c_trans_len <= $this->term_len - $matched_term_chars && $c_trans === mb_substr($this->term_to_highlight, $matched_term_chars, $c_trans_len))	{
+					if($matched_term_chars == 0)
+						$source_match_startpos = $i;
+					$matched_term_chars += $c_trans_len;
+					$source_match_len++;
+					if($matched_term_chars == $this->term_len) {
+						$result .= sprintf('<span class="%s">%s</span>', $css_class, mb_substr($html, $source_match_startpos, $source_match_len));
+						$matched_term_chars = $source_match_len = 0;
+					}
+				}
+				else {
+					$result .= $source_match_len > 0 ? mb_substr($html, $source_match_startpos, $source_match_len + 1) : $c;
+					$matched_term_chars = $source_match_startpos = $source_match_len = 0;
+				}
+			}
+			return $result;
+		}
+	}
+
+	//------------------------------------------------------------------------------------------
+	function console_log($data) {
+	//------------------------------------------------------------------------------------------
+		echo '<script>console.log('.json_encode($data).')</script>';
+	}
+
+	//------------------------------------------------------------------------------------------
+	function prepare_field_display_val(&$table, &$record, &$field, $col, $val, $highlighter = null) {
 	//------------------------------------------------------------------------------------------
 		global $TABLES;
 		global $APP;
 
+		if($highlighter === null)
+			$highlighter = new NothingHighlighter;
+
 		if($field['type'] == T_ENUM && $val !== NULL) {
-			$val = html($field['values'][$val]);
+			$val = $highlighter->highlight(html($field['values'][$val]));
 		}
 		else if($field['type'] == T_NUMBER && $val !== NULL) {
 			if(isset($field['max_decimals'])) {
@@ -636,12 +721,13 @@ STR;
 			}
 			else
 				$val = (float) $val;
+			$val = $highlighter->highlight((string) $val); // TODO CHECK WHETHER THIS SCREWS UP ANYTHING
 		}
 		else if($field['type'] == T_PASSWORD) {
 			$val = '●●●●●';
 		}
 		else if($field['type'] == T_UPLOAD) {
-			$val = "<a href='". get_file_url($val, $field) ."'>$val</a>";
+			$val = "<a href='". get_file_url($val, $field) ."'>" . $highlighter->highlight(html($val)). '</a>';
 		}
 		else if($field['type'] == T_LOOKUP && $field['lookup']['cardinality'] == CARDINALITY_SINGLE) {
 			$href = isset($TABLES[$field['lookup']['table']]) && in_array(MODE_VIEW, $TABLES[$field['lookup']['table']]['actions']) ?
@@ -659,7 +745,7 @@ STR;
 				$class = 'dotted';
 			}
 
-			$val = get_lookup_display_html($class, $title, $href, $html_val);
+			$val = get_lookup_display_html($class, $title, $href, $highlighter->highlight($html_val));
 		}
 		else if($field['type'] == T_LOOKUP && $field['lookup']['cardinality'] == CARDINALITY_MULTIPLE) {
 			if($val !== null && trim($val) != '') {
@@ -705,7 +791,7 @@ STR;
 					}
 
 					$linked_rec['href'] = isset($TABLES[$params['table']]) && in_array(MODE_VIEW, $TABLES[$params['table']]['actions']) ? http_build_query($params) : null;
-					$linked_rec['html_val'] = html($display_val);
+					$linked_rec['html_val'] = $highlighter->highlight(html($display_val));
 					$linked_rec['title'] = '';
 					$linked_rec['class'] = '';
 					if($linked_rec['html_val'] == '') {
@@ -723,9 +809,9 @@ STR;
 		}
 		else {
 			if($_GET['mode'] == MODE_VIEW)
-				$val = html($val, 0, false, true);
-			else // MODE_LIST: limit chars to display
-				$val = html($val, $APP['max_text_len'], true);
+				$val = html($val, 0, false, true, $highlighter);
+			else // MODE_LIST or other: limit chars to display
+				$val = html($val, $APP['max_text_len'], true, false, $highlighter);
 		}
 
 		return $val;

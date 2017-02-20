@@ -13,11 +13,11 @@
 		die('This is the engine, you put your app into another directory and define ENGINE_PATH to point here. Note: ENGINE_PATH must end with a slash.');
 
 	require_once ENGINE_PATH . 'inc/constants.php';
-	require_once 'settings.php';
 	require_once ENGINE_PATH . 'inc/helper.php';
 	require_once ENGINE_PATH . 'inc/container.php';
 	require_once ENGINE_PATH . 'inc/login.php';
 	require_once ENGINE_PATH . 'inc/page.php';
+	require_once 'settings.php';
 
 	// initialize session and plugins and stuff
 	{
@@ -71,6 +71,8 @@
 			process_func();
 			exit;
 	}
+
+	require_once ENGINE_PATH . 'inc/global_search.php';
 
 	ob_start();
 ?>

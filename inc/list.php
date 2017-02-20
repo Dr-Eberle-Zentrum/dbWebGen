@@ -77,35 +77,6 @@
 	}
 
 	//------------------------------------------------------------------------------------------
-	function render_search_sort($field_name) {
-	//------------------------------------------------------------------------------------------
-		$sort_field = isset($_GET['sort']) ? $_GET['sort'] : '';
-		$sort_dir = isset($_GET['dir']) ? $_GET['dir'] : 'asc';
-
-		$t = "<div class='sort-search'>";
-
-		if($field_name == $sort_field && $sort_dir == 'asc')
-			$t .= "<span class='glyphicon glyphicon-arrow-up'></span>";
-		else
-			$t .= "<a href='". build_get_params(array('sort'=>$field_name,'dir'=>'asc')) ."' title='Sort Ascending'><span class='glyphicon glyphicon-arrow-up'></span></a>";
-
-		if($field_name == $sort_field && $sort_dir == 'desc')
-			$t .= "<span class='glyphicon glyphicon-arrow-down'></span>";
-		else
-			$t .= "<a href='". build_get_params(array('sort'=>$field_name,'dir'=>'desc')) ."' title='Sort Descending'><span class='glyphicon glyphicon-arrow-down'></span></a>";
-
-		$search_val = (isset($_GET[SEARCH_PARAM_QUERY]) && isset($_GET[SEARCH_PARAM_FIELD]) && $_GET[SEARCH_PARAM_FIELD] == $field_name ? unquote($_GET[SEARCH_PARAM_QUERY]) : '');
-
-		$search_option = isset($_GET[SEARCH_PARAM_OPTION]) ? $_GET[SEARCH_PARAM_OPTION] : SEARCH_ANY;
-
-		$t .= " <a href='javascript:void(0)' title='Search' data-value='{$search_val}' data-field='{$field_name}' data-option='{$search_option}' data-purpose='search' data-toggle='popover' data-container='body' data-placement='top'><span class='glyphicon glyphicon-search'></span></a>";
-
-		$t .= "</div>";
-
-		return $t;
-	}
-
-	//------------------------------------------------------------------------------------------
 	function render_list() {
 	//------------------------------------------------------------------------------------------
 		global $TABLES;
@@ -192,102 +163,17 @@
 
 			echo $pag;
 
-			$table_body = "<tbody>\n";
-			$col_longest_content = array();
+			$relevant_fields = array();
+			foreach($fields as $field_name => &$field)
+				if(!is_field_hidden_in_list($field))
+					$relevant_fields[$field_name] = $field;
+			require_once 'record_renderer.php';
+			$rr = new RecordRenderer($table_name, $table, $relevant_fields, $res, true, true, true, null);
+			echo $rr->html();
 
-			while($record = $res->fetch(PDO::FETCH_ASSOC)) {
-				#debug_log($record);
-				$id_str = '';
-
-				foreach($table['primary_key']['columns'] as $pk) {
-					// field with postfixed name contains the raw value (not lookup display value) of referenced primary keys
-					$id_str .= "&amp;{$pk}=" . urlencode($record[db_postfix_fieldname($pk, FK_FIELD_POSTFIX, false)]);
-				}
-
-				$table_body .= "<tr><td class='fit'>\n";
-				$action_icons = array();
-
-				if(isset($table['render_links']) && is_allowed($table, MODE_LINK)) {
-					foreach($table['render_links'] as $render_link) {
-						$action_icons[] = "<a href='" .
-							sprintf($render_link['href_format'], $record[$render_link['field']]) .
-							"'><span title='{$render_link['title']}' class='glyphicon glyphicon-{$render_link['icon']}'></span></a>";
-					}
-				}
-
-				if(is_allowed($table, MODE_VIEW)) {
-					$action_icons[] = "<a href='?table={$table_name}&amp;mode=".MODE_VIEW."{$id_str}' data-purpose='view'><span title='View this record' class='glyphicon glyphicon-zoom-in'></span></a>";					
-				}
-
-				if(is_allowed($table, MODE_EDIT))
-					$action_icons[] = "<a href='?table={$table_name}&amp;mode=".MODE_EDIT."{$id_str}'><span title='Edit this record' class='glyphicon glyphicon-edit'></span></a>";
-
-				if(is_allowed($table, MODE_DELETE))
-					$action_icons[] = "<a role='button' data-href='?table={$table_name}{$id_str}&amp;mode=".MODE_DELETE."' data-toggle='modal' data-target='#confirm-delete'><span title='Delete this record' class='glyphicon glyphicon-trash'></span></a>";
-
-				if(isset($table['custom_actions'])) {
-					foreach($table['custom_actions'] as $custom_action) {
-						if($custom_action['mode'] == $_GET['mode']) {
-							// call custom action handler
-							$action_icons[] = $custom_action['handler']($table_name, $table, $record, $custom_action);
-						}
-					}
-				}
-
-				$table_body .= implode('&nbsp;&nbsp;', $action_icons) . "&nbsp;&nbsp;&nbsp</td>\n";
-
-				$col_no = 0;
-				foreach($record as $col => $val) {
-					if(!isset($fields[$col]) || is_field_hidden_in_list($fields[$col]))
-						continue;
-
-					$css = '';
-					if(isset($_GET[SEARCH_PARAM_FIELD]) && $_GET[SEARCH_PARAM_FIELD] === $col)
-						$css = 'class="bg-success"';
-
-					$val = prepare_field_display_val($table, $record, $fields[$col], $col, $val);
-					$table_body .= "<td $css>{$val}</td>\n";
-
-					// determine max cell len
-					$textlen = mb_strlen(strip_tags($val));
-					if(!isset($col_longest_content[$col_no]) || $textlen > $col_longest_content[$col_no])
-						$col_longest_content[$col_no] = $textlen;
-
-					$col_no++;
-				}
-
-				$table_body .= "</tr>\n";
-			}
-			$table_body .= "</tbody></table>\n";
-
-			$table_head = "<table class='table table-hover table-striped table-condensed'>\n";
-			$table_head .= "<thead><tr class='info'><th class='fit'></th>\n";
-
-			$col_no = 0;
-			for($i=0; $i<$res->columnCount(); $i++) {
-				$meta = $res->getColumnMeta($i);
-				$col = $meta['name'];
-				if(!isset($fields[$col]) || is_field_hidden_in_list($fields[$col]))
-					continue;
-
-				$minwidth = '';
-				if(isset($col_longest_content[$col_no])) {
-					$mw = min(get_mincolwidth_max(), $col_longest_content[$col_no] * get_mincolwidth_pxperchar());
-					$minwidth = "style='min-width:{$mw}px'";
-				}
-				$col_no++;
-
-				$table_head .= "<th $minwidth>{$fields[$col]['label']}<br />" . render_search_sort($col /*, $fields[$col]*/) . "</th>";
-			}
-			$table_head .= "</tr></thead>\n";
-
-			echo "<div class='panel panel-default'><div class='table-responsive'>";
-			echo $table_head;
-			echo $table_body;
-			echo "</div></div>";
+			echo $pag;
 		}
 
-		echo $pag;
 		echo "</div>";
 
 		if(is_allowed($table, MODE_DELETE))

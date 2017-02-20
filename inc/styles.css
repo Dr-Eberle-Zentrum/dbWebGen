@@ -331,3 +331,11 @@ div.leaflet-control-layers-overlays label {
 .dropdown-menu {
 	z-index: 999999 !important;
 }
+
+#global-search-box {
+	width: 100px
+}
+
+.scroll-top {
+	display: none;
+}

@@ -3,7 +3,7 @@
 	class PasswordField extends SingleLineTextInputField
 	//==========================================================================================
 	{
-		//--------------------------------------------------------------------------------------		
+		//--------------------------------------------------------------------------------------
 		protected function /*string*/ render_internal(&$output_buf) {
 		// render_settings: form_method, name_attr, id_attr
 		//--------------------------------------------------------------------------------------
@@ -17,6 +17,21 @@
 				$this->get_focus_attr()
 			);
 			return $output_buf;
+		}
+
+		//--------------------------------------------------------------------------------------
+		public function /*bool*/ is_included_in_global_search() {
+		//--------------------------------------------------------------------------------------
+			return false;
+		}
+
+		//--------------------------------------------------------------------------------------
+		public function /*string*/ get_global_search_condition(
+			$param_name,
+			$search_string_transformation,
+			$table_qualifier = null)
+		{
+			return false;
 		}
 	}
 ?>
