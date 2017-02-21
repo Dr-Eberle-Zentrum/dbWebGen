@@ -531,7 +531,7 @@ HTML;
 					// render form for parameters:
 					$this->viz_ui .= <<<HTML
 					<p><form class='form-inline' method='get'>
-						{$param_fields} <button class='btn btn-default' type='submit'>Refresh!</button>
+						{$param_fields} <button class='btn btn-default hidden-print' type='submit'>Refresh!</button>
 					</form></p>
 HTML;
 				}

@@ -339,3 +339,10 @@ div.leaflet-control-layers-overlays label {
 .scroll-top {
 	display: none;
 }
+
+@media print {
+	/* remove the explicit hyperlinks in print view */
+	a[href]:after {
+		content: none !important;
+	}
+}

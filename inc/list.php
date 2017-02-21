@@ -22,7 +22,7 @@
 		$prev_href = build_get_params(array('page' => $cur_page - 1));
 		$next_href = build_get_params(array('page' => $cur_page + 1));
 
-		$div = "<p><div class='btn-group'>\n";
+		$div = "<p><div class='hidden-print'><div class='btn-group'>\n";
 		$div .= "<a href='$prev_href' class='btn btn-sm btn-default $prev_disabled'><span class='glyphicon glyphicon-triangle-left'></span></a>\n";
 		$div .= "<a href='$next_href' class='btn btn-sm btn-default $next_disabled'><span class='glyphicon glyphicon-triangle-right'></span></a>\n";
 		$div .= '</div><span class="page-jumper">Jump to page: ';
@@ -51,7 +51,7 @@
 		}
 
 		$div .= "\n";
-		$div .= "</span></p>\n";
+		$div .= "</span></div></p>\n";
 		return $div;
 	}
 
@@ -127,7 +127,7 @@
 		echo "<div class='col-sm-12'>\n";
 
 		if(is_allowed($table, MODE_NEW))
-			echo "<p><a href='?table={$table_name}&amp;mode=".MODE_NEW."' class='btn btn-default'><span class='glyphicon glyphicon-plus'></span> New {$table['item_name']}</a></p>\n";
+			echo "<p class='hidden-print'><a href='?table={$table_name}&amp;mode=".MODE_NEW."' class='btn btn-default'><span class='glyphicon glyphicon-plus'></span> New {$table['item_name']}</a></p>\n";
 
 		if($search !== null) {
 			$search_type = 'contains';
@@ -138,7 +138,7 @@
 				case SEARCH_WORD: $search_type = 'contains word'; break;
 			}
 			echo "<p class='text-info'>Searching all records where <b>".html($fields[$_GET[SEARCH_PARAM_FIELD]]['label'])."</b> {$search_type} <span class='bg-success'><strong>".html($_GET[SEARCH_PARAM_QUERY])."</strong></span> ".
-			"<a class='btn btn-default space-left' href='?".http_build_query(array('table'=>$table_name, 'mode'=>MODE_LIST))."'><span class='glyphicon glyphicon-remove-circle'></span> Clear search</a></p>\n";
+			"<a class='btn btn-default space-left hidden-print' href='?".http_build_query(array('table'=>$table_name, 'mode'=>MODE_LIST))."'><span class='glyphicon glyphicon-remove-circle'></span> Clear search</a></p>\n";
 		}
 
 		if($num_records == 0) {

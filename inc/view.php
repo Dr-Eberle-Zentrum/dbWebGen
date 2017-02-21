@@ -124,7 +124,7 @@
 		}
 
 		if($addl_data != '')
-			echo "<p><div class='btn-group'>{$addl_data}</div></p>\n";
+			echo "<div class='btn-group hidden-print'>{$addl_data}</div>\n";
 
 		$table_html = '';
 		$table_html .= "<p><form class='form-horizontal bg-gray' role='form' data-type='view'>\n";

@@ -60,7 +60,7 @@
                     $id_str .= "&amp;{$pk}=" . (isset($record[$postfixed_name]) ? urlencode($record[$postfixed_name]) : urlencode($record[$pk]));
                 }
 
-                $table_body .= "<tr><td class='fit'>\n";
+                $table_body .= "<tr><td class='fit'><div class='hidden-print'>\n";
                 $action_icons = array();
 
                 if(isset($this->table['render_links']) && is_allowed($this->table, MODE_LINK)) {
@@ -90,7 +90,7 @@
                     }
                 }
 
-                $table_body .= implode('&nbsp;&nbsp;', $action_icons) . "&nbsp;&nbsp;&nbsp</td>\n";
+                $table_body .= implode('&nbsp;&nbsp;', $action_icons) . "&nbsp;&nbsp;&nbsp</div></td>\n";
 
                 $col_no = 0;
                 foreach($record as $col => $val) {
@@ -134,7 +134,7 @@
                 $col_no++;
 
                 $table_head .= sprintf(
-                    '<th %s>%s%s</th>',
+                    '<th %s>%s<span class="hidden-print">%s</span></th>',
                     $minwidth,
                     $this->fields[$col]['label'],
                     $this->has_search_sort ? '<br />' . $this->render_search_sort($col) : ''
