@@ -9,7 +9,7 @@
         public static function sanitize_search_term() {
             if(!self::$search_term_sanitized) {
                 if(isset($_GET['q']))
-                    $_GET['q'] = trim($_GET['q'], "% \t\n\r\0\x0B");
+                    $_GET['q'] = mb_strtolower(trim($_GET['q'], "% \t\n\r\0\x0B"));
                 self::$search_term_sanitized = true;
             }
         }
@@ -171,7 +171,7 @@ HTML;
             if(mb_strlen($_GET['q']) < self::min_search_len())
                 return $head . sprintf('<p>This search term is too short, it must contain at least %s characters.</p>', self::min_search_len());
 
-            // to speed up, retrieve transformed value once from database
+            // to speed up, retrieve transformed query term once from database
             db_get_single_val('select ' . sprintf(self::search_string_transformation(), '?'), array($_GET['q']), $transformed_search_term);
 
             if(!self::is_preview()) {
