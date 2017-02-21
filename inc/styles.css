@@ -340,6 +340,12 @@ div.leaflet-control-layers-overlays label {
 	display: none;
 }
 
+/* highlight global search results */
+span.hl {
+    background-color: yellow;
+    font-weight: bold;
+}
+
 @media print {
 	/* remove the explicit hyperlinks in print view */
 	a[href]:after {
