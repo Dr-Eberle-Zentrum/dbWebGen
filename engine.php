@@ -12,7 +12,7 @@
 	if(!defined('ENGINE_PATH'))
 		die('This is the engine, you put your app into another directory and define ENGINE_PATH to point here. Note: ENGINE_PATH must end with a slash. See the README file for details.');
 	if(!defined('ENGINE_PATH_LOCAL')) define('ENGINE_PATH_LOCAL', ENGINE_PATH);
-	if(!defined('ENGINE_PATH_HTTP')) define('ENGINE_PATH_HTTP', ENGINE_PATH);
+	define('ENGINE_PATH_HTTP', ENGINE_PATH);
 
 	require_once ENGINE_PATH_LOCAL . 'inc/constants.php';
 	require_once ENGINE_PATH_LOCAL . 'inc/helper.php';
