@@ -571,16 +571,6 @@ HTML;
 			}
 
 			$this->viz_ui .= "<script>\n{$js}\n</script>\n";
-
-			if(isset($_GET['padding']) && $_GET['padding'] == 'none') {
-				$this->viz_ui .= <<<JS
-					<script>
-						$(document).ready(function() {
-							$('#main-container').addClass('no-padding');
-						});
-					</script>
-JS;
-			}
 		}
 
 		//--------------------------------------------------------------------------------------
@@ -634,6 +624,16 @@ HTML;
 			}
 
 			echo $this->viz_ui;
+
+			if(isset($_GET['padding']) && $_GET['padding'] == 'none') {
+				echo <<<JS
+				<script>
+					$(document).ready(function() {
+						$('#main-container').addClass('no-padding');
+					});
+				</script>
+JS;
+			}
 		}
 	};
 ?>
