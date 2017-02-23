@@ -9,8 +9,8 @@
 
         add_javascript('https://unpkg.com/leaflet@1.0.3/dist/leaflet.js');
         add_stylesheet('https://unpkg.com/leaflet@1.0.3/dist/leaflet.css');
-        add_javascript(ENGINE_PATH . 'inc/leaflet.draw/leaflet.draw.js');
-        add_stylesheet(ENGINE_PATH . 'inc/leaflet.draw/leaflet.draw.css');
+        add_javascript(ENGINE_PATH_HTTP . 'inc/leaflet.draw/leaflet.draw.js');
+        add_stylesheet(ENGINE_PATH_HTTP . 'inc/leaflet.draw/leaflet.draw.css');
         add_javascript('https://cdn-geoweb.s3.amazonaws.com/terraformer/1.0.6/terraformer.min.js');
         add_javascript('https://cdn-geoweb.s3.amazonaws.com/terraformer-wkt-parser/1.1.1/terraformer-wkt-parser.min.js');
         add_javascript('https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js');

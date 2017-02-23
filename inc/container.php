@@ -161,38 +161,38 @@
 			else {
 				switch($_GET['mode']) {
 					case MODE_NEW:
-						require_once ENGINE_PATH . 'inc/fields.php';
-						require_once ENGINE_PATH . 'inc/new_edit.php';
+						require_once ENGINE_PATH_LOCAL . 'inc/fields.php';
+						require_once ENGINE_PATH_LOCAL . 'inc/new_edit.php';
 						process_form();
 						render_form();
 						break;
 
 					case MODE_EDIT:
-						require_once ENGINE_PATH . 'inc/fields.php';
-						require_once ENGINE_PATH . 'inc/new_edit.php';
+						require_once ENGINE_PATH_LOCAL . 'inc/fields.php';
+						require_once ENGINE_PATH_LOCAL . 'inc/new_edit.php';
 						if(!process_form())
 							render_form();
 						break;
 
 					case MODE_LIST:
-						require_once ENGINE_PATH . 'inc/list.php';
+						require_once ENGINE_PATH_LOCAL . 'inc/list.php';
 						render_list();
 						break;
 
 					case MODE_VIEW:
-						require_once ENGINE_PATH . 'inc/view.php';
+						require_once ENGINE_PATH_LOCAL . 'inc/view.php';
 						render_view();
 						break;
 
 					case MODE_QUERY:
-						require_once ENGINE_PATH . 'inc/fields.php';
-						require_once ENGINE_PATH . 'inc/query.php';
+						require_once ENGINE_PATH_LOCAL . 'inc/fields.php';
+						require_once ENGINE_PATH_LOCAL . 'inc/query.php';
 						$p = new QueryPage;
 						$p->render();
 						break;
 
 					case MODE_MAP_PICKER:
-						require_once ENGINE_PATH . 'inc/map_picker.php';
+						require_once ENGINE_PATH_LOCAL . 'inc/map_picker.php';
 						render_map_picker();
 						break;
 

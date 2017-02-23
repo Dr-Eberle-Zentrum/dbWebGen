@@ -10,13 +10,15 @@
 	$META_INCLUDES = array();
 
 	if(!defined('ENGINE_PATH'))
-		die('This is the engine, you put your app into another directory and define ENGINE_PATH to point here. Note: ENGINE_PATH must end with a slash.');
+		die('This is the engine, you put your app into another directory and define ENGINE_PATH to point here. Note: ENGINE_PATH must end with a slash. See the README file for details.');
+	if(!defined('ENGINE_PATH_LOCAL')) define('ENGINE_PATH_LOCAL', ENGINE_PATH);
+	if(!defined('ENGINE_PATH_HTTP')) define('ENGINE_PATH_HTTP', ENGINE_PATH);
 
-	require_once ENGINE_PATH . 'inc/constants.php';
-	require_once ENGINE_PATH . 'inc/helper.php';
-	require_once ENGINE_PATH . 'inc/container.php';
-	require_once ENGINE_PATH . 'inc/login.php';
-	require_once ENGINE_PATH . 'inc/page.php';
+	require_once ENGINE_PATH_LOCAL . 'inc/constants.php';
+	require_once ENGINE_PATH_LOCAL . 'inc/helper.php';
+	require_once ENGINE_PATH_LOCAL . 'inc/container.php';
+	require_once ENGINE_PATH_LOCAL . 'inc/login.php';
+	require_once ENGINE_PATH_LOCAL . 'inc/page.php';
 	require_once 'settings.php';
 
 	// initialize session and plugins and stuff
@@ -52,13 +54,13 @@
 	// any special processing?
 	if(is_logged_in()) switch(safehash($_GET, 'mode', '')) {
 		case MODE_DELETE:
-			require_once ENGINE_PATH . 'inc/delete.php';
+			require_once ENGINE_PATH_LOCAL . 'inc/delete.php';
 			if(!process_delete())
 				render_messages();
 			exit;
 
 		case MODE_CREATE_DONE:
-			require_once ENGINE_PATH . 'inc/create_new_done.php';
+			require_once ENGINE_PATH_LOCAL . 'inc/create_new_done.php';
 			process_create_new_done();
 			exit;
 
@@ -67,12 +69,12 @@
 			exit;
 
 		case MODE_FUNC:
-			require_once ENGINE_PATH . 'inc/func.php';
+			require_once ENGINE_PATH_LOCAL . 'inc/func.php';
 			process_func();
 			exit;
 	}
 
-	require_once ENGINE_PATH . 'inc/global_search.php';
+	require_once ENGINE_PATH_LOCAL . 'inc/global_search.php';
 
 	ob_start();
 ?>
@@ -88,8 +90,8 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/css/select2.min.css" rel="stylesheet">
   <link href="https://select2.github.io/select2-bootstrap-theme/css/select2-bootstrap.css" rel="stylesheet"><!-- Bootstrap theme from https://github.com/select2/select2-bootstrap-theme -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.min.js"></script>
-  <link href="<?= ENGINE_PATH ?>inc/styles.css" rel="stylesheet">
-  <script src="<?= ENGINE_PATH ?>inc/dbweb.js"></script>
+  <link href="<?= ENGINE_PATH_HTTP ?>inc/styles.css" rel="stylesheet">
+  <script src="<?= ENGINE_PATH_HTTP ?>inc/dbweb.js"></script>
   <script src="https://unpkg.com/transliteration/lib/browser/transliteration.min.js"></script>
   <!--META_INCLUDES_GO_HERE-->
 </head>

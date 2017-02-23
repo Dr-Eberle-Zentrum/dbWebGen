@@ -1,5 +1,5 @@
 # dbWebGen - Database Web Generator for PHP
-This PHP application automatically generates a responsive web app on top of your relational database. The app allows users to 
+This PHP application automatically generates a responsive web app on top of your relational database. The app allows users to
 * Create and edit records via web forms, taking into account foreign keys and other constraints
 * View stored records along with related records from other tables
 * Browse and filter records in a table
@@ -15,7 +15,7 @@ Developers may add custom functionality and extensions to the engine through hoo
 ## Get it Running
 * Clone this repository into any folder that is served by your webserver.
 * Since this repository contains the app engine only, you need to create another folder that will serve as the actual app folder
-* In the app folder, create a PHP file that serves as the main entry point of the app (typically `index.php`). This file is very simple: it must include a definition of the constant `ENGINE_PATH`, which shall define the path to app engine folder. The other line in this file is the inclusion of `engine.php` from the app engine folder.
+* In the app folder, create a PHP file that serves as the main entry point of the app (typically `index.php`). This file is very simple: it must include a definition of the constant `ENGINE_PATH`, which shall define the relative path to app engine folder. The other line in this file is the inclusion of `engine.php` from the app engine folder. Note: if required, you may use `ENGINE_PATH_LOCAL` to define the relative or absolute local file system path to the engine folder, which is used for including `.php` files; and `ENGINE_PATH_HTTP` to define the relative path to the engine folder, which is used to point to files in `<script>` or `<link>`)
 * Copy `settings.template.php` into your app folder, rename it to `settings.php`, and fill the file with settings that reflect your app and database structure.
 * Direct your web browser to the app folder and be happy.
 
