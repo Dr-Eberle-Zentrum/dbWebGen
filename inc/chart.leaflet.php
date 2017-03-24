@@ -215,6 +215,7 @@ SETTINGS;
 			];
 			var data_headers = {$data_headers};
 			var data_markers = [];
+			var markers_layer = L.layerGroup();
 			var map;
 			var basemap;
 			var chart_div;
@@ -269,8 +270,9 @@ SETTINGS;
 						layer = omnivore.wkt.parse(data_table[m][0]).getLayers()[0];
 					}
 					data_markers[m] = layer;
-					layer.bindPopup(m.toString()).addTo(map);
+					layer.bindPopup(m.toString()).addTo(markers_layer);
 				}
+				markers_layer.addTo(map);
 
 				if('{$this->page->get_post($this->ctrlname('scale'))}' === 'ON') {
 					new L.control.scale({

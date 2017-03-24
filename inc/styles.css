@@ -61,7 +61,7 @@ span.multiple-select-id {
 }
 
 .clickable {
-	cursor: hand;
+	cursor: pointer;
 }
 
 .null {
