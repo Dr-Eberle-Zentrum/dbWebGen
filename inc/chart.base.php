@@ -61,8 +61,9 @@
 		// returns cached js for visualization, or false if no cache exists
 		public /*string | false*/ function cache_get_js() {
 		//-------------------------------------------------------------------------------------
-			if(!$this->page->is_cache_enabled() || !$this->get_param_checkbox('caching', false) || isset($_GET['nocache']))
+			if(!$this->get_param_checkbox('caching', false)) // caching enabled by stored query setting?
 				return false;
+
 			$query_id = $this->page->get_stored_query_id();
 			$dir = $this->cache_get_dir();
 			// read cache
@@ -88,9 +89,8 @@
 		// store cached js of visualization; true on success, else false
 		public /*bool*/ function cache_put_js($js) {
 		//--------------------------------------------------------------------------------------
-			if(!$this->page->is_cache_enabled() || !$this->get_param_checkbox('caching', false) || isset($_GET['nocache']))
+			if(!$this->get_param_checkbox('caching', false)) // caching enabled by stored query setting?
 				return false;
-
 			$query_id = $this->page->get_stored_query_id();
 			$dir = $this->cache_get_dir();
 			create_dir_if_not_exists($dir);

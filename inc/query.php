@@ -17,6 +17,7 @@
 		protected $error_msg;
 		protected $db;
 		protected $stored_title, $stored_description; // set only from stored query
+		protected $query_info = null;
 
 		//--------------------------------------------------------------------------------------
 		public static $chart_types = array(
@@ -59,6 +60,9 @@
 			else {
 				$this->sql = trim($this->get_post(QUERYPAGE_FIELD_SQL, ''));
 				$this->view = $this->get_urlparam(QUERY_PARAM_VIEW, QUERY_VIEW_FULL);
+
+				// fill parameterized query info, if there are params
+				$this->query_info = $this->parse_param_query();
 			}
 		}
 
@@ -474,12 +478,20 @@ HTML;
 		}
 
 		//--------------------------------------------------------------------------------------
+		public function can_cache() {
+		//--------------------------------------------------------------------------------------
+			return $this->is_cache_enabled() // cache setting enabled
+				&& !isset($_GET['nocache']) // caching not turned off in URL param
+				&& $this->is_stored_query() // must be a loaded stored query and
+				&& count($this->query_info['params']) == 0 // must not be a parameterized query and
+				&& $this->view != QUERY_VIEW_FULL // must not be in SQL editing mode
+				;
+		}
+
+		//--------------------------------------------------------------------------------------
 		protected function build_visualization_part() {
 		//--------------------------------------------------------------------------------------
 			$this->viz_ui = '';
-
-			// see whether we have a parameterized query
-			$param_query = $this->parse_param_query();
 
 			if($this->view === QUERY_VIEW_RESULT) {
 				$size = 12;
@@ -499,12 +511,12 @@ JS;*/
 					$this->viz_ui .= "<h3 style='$css'>" . html($this->stored_title) . "</h3>\n";
 				if($this->stored_description != '' && !$nometa)
 					$this->viz_ui .= '<p>' . html($this->stored_description) . "</p>\n";
-				if(count($param_query['params']) > 0) {
+				if(count($this->query_info['params']) > 0) {
 					$param_fields = '';
-					foreach($param_query['params'] as $param_name => $param_value) {
+					foreach($this->query_info['params'] as $param_name => $param_value) {
 						$control_html = '';
-						if(isset($param_query['lookups'][$param_name])) {
-							$lookup_expr = $param_query['lookups'][$param_name];
+						if(isset($this->query_info['lookups'][$param_name])) {
+							$lookup_expr = $this->query_info['lookups'][$param_name];
 							if(preg_match('/^table:(?P<table>[^,]+),field:(?P<field>.+)$/', $lookup_expr, $matches)) {
 								$control_html = $this->render_lookup_field($matches['table'], $matches['field'], substr($param_name, 1), $param_value);
 							}
@@ -551,23 +563,26 @@ HTML;
 				return;
 
 			$js = false;
-
+			$can_cache = $this->can_cache();
 			// caching only when it's not a parameterized query
-			if($this->is_stored_query() && count($param_query['params']) == 0)
+			if($can_cache)
 				$js = $this->chart->cache_get_js();
 
 			if($js === false) {
-				$stmt = $this->db->prepare($param_query['sql']);
+				$stmt = $this->db->prepare($this->query_info['sql']);
 				if($stmt === false)
 					return proc_error('Failed to prepare statement', $this->db);
 
-				if($stmt->execute($param_query['params']) === false)
+				if($stmt->execute($this->query_info['params']) === false)
 					return proc_error('Failed to execute statement', $this->db);
 
 				$js = $this->chart->get_js($stmt);
 
-				if($this->is_stored_query() && count($param_query['params']) == 0)
+				if($can_cache)
 					$this->chart->cache_put_js($js);
+			}
+			else {
+				$js .= "console.log('Query visualization loaded from cache.');";
 			}
 
 			$this->viz_ui .= "<script>\n{$js}\n</script>\n";
