@@ -184,6 +184,13 @@ SETTINGS;
 		}
 
 		//--------------------------------------------------------------------------------------
+		// override in subclass if custom map bounds fitting is desired
+		protected /*bool*/ function shall_fit_bounds_to_markers() {
+		//--------------------------------------------------------------------------------------
+			return true;
+		}
+
+		//--------------------------------------------------------------------------------------
 		// returns html/js to render page
 		public /*string*/ function get_js(/*PDOStatement*/ $query_result) {
 		//--------------------------------------------------------------------------------------
@@ -208,6 +215,7 @@ SETTINGS;
 
 			$attribution_js = json_encode(trim($this->page->get_post($this->ctrlname('attribution'), '')));
 			$has_attribution_js = $attribution_js !== '' ? 'true' : 'false';
+			$fit_bounds = $this->shall_fit_bounds_to_markers() ? 'true' : 'false';
 
 			$js = <<<JS
 			var data_table = [
@@ -282,7 +290,8 @@ SETTINGS;
 					}).addTo(map);
 				}
 
-				map.fitBounds(L.featureGroup(data_markers).getBounds());
+				if($fit_bounds)
+					map.fitBounds(L.featureGroup(data_markers).getBounds());
 
 				// invalidate map after resize to make leaflet fetch missing tiles
 				chart_div.deferredResize(function() {
@@ -290,20 +299,22 @@ SETTINGS;
 				}, 500);
 
 				if('{$this->page->get_post($this->ctrlname('minimap'))}' === 'ON') {
-					new L.Control.MiniMap(get_base_tilelayer(), {
-						position: 'bottomright',
-						zoomAnimation: true,
-						toggleDisplay: true,
-						autoToggleDisplay: true,
-						minimized: false,
-						width: 250,
-						aimingRectOptions: {
-							color: 'blue',
-							weight: 5,
-							fillColor: 'lightblue',
-							fillOpacity: 0.4
-						}
-					}).addTo(map);
+					map.on('load', function() {
+						new L.Control.MiniMap(get_base_tilelayer(), {
+							position: 'bottomright',
+							zoomAnimation: true,
+							toggleDisplay: true,
+							autoToggleDisplay: true,
+							minimized: false,
+							width: 250,
+							aimingRectOptions: {
+								color: 'blue',
+								weight: 5,
+								fillColor: 'lightblue',
+								fillOpacity: 0.4
+							}
+						}).addTo(map);
+					});
 				}
 
 				map.on('popupopen', function(e) {

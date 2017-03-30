@@ -52,17 +52,33 @@
 	}
 
 	//------------------------------------------------------------------------------------------
-	function add_javascript($src) {
+	function add_meta_include($template, $file, $cache_control) {
 	//------------------------------------------------------------------------------------------
 		global $META_INCLUDES;
-		$META_INCLUDES[] = "<script type='text/javascript' src='$src'></script>";
+		if($cache_control) {
+			$t = @filemtime($file);
+			if($t !== false)
+				$file .= "?v=$t";
+		}
+		$META_INCLUDES[] = sprintf($template, $file);
 	}
 
 	//------------------------------------------------------------------------------------------
-	function add_stylesheet($src) {
+	function add_javascript(
+		$src,
+		$cache_control = false // only set this to true for local relative paths
+	) {
 	//------------------------------------------------------------------------------------------
-		global $META_INCLUDES;
-		$META_INCLUDES[] = "<link rel='stylesheet' href='$src' />";
+		add_meta_include("  <script type='text/javascript' src='%s'></script>", $src, $cache_control);
+	}
+
+	//------------------------------------------------------------------------------------------
+	function add_stylesheet(
+		$src,
+		$cache_control = false // only set this to true for local relative paths
+	) {
+	//------------------------------------------------------------------------------------------
+		add_meta_include("  <link rel='stylesheet' href='%s' />", $src, $cache_control);
 	}
 
 	//------------------------------------------------------------------------------------------
