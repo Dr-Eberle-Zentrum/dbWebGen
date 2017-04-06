@@ -55,6 +55,7 @@ $(window).load(function() {
     handle_tabs();
     set_dblclick_handler();
     set_map_picker_handler();
+    prepare_navigate_away_warning();
 });
 
 //------------------------------------------------------------------------------------------
@@ -547,4 +548,22 @@ function init_file_selection_handler() {
       var label = input.val().replace(/\\/g, '/').replace(/.*\//, '');
       input.trigger('fileselect', [numFiles, label]);
     });
+}
+
+//------------------------------------------------------------------------------------------
+function prepare_navigate_away_warning() {
+//------------------------------------------------------------------------------------------
+    $('form[data-navigate-away-warning="true"]')
+    .submit(function() {
+        set_navigate_away_warning(false);
+    })
+    .find(':input').on('change', function() {
+        set_navigate_away_warning(true);
+    });
+}
+
+//------------------------------------------------------------------------------------------
+function set_navigate_away_warning(/*bool*/ on) {
+//------------------------------------------------------------------------------------------
+    window.onbeforeunload = (on? (function() { return true }) : null);
 }

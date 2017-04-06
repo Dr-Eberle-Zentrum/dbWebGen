@@ -68,7 +68,7 @@
 		if(is_inline())
 			echo "<p>Note that your edits will only be stored in the database if the original form is also submitted</p>\n";
 
-		echo "<form class='form-horizontal bg-gray' role='form' method='post' enctype='multipart/form-data'><fieldset>\n";
+		echo "<form class='form-horizontal bg-gray' role='form' method='post' enctype='multipart/form-data' data-navigate-away-warning='true'><fieldset>\n";
 
 		$form_tabs = new FormTabs($table);
 		echo $form_tabs->begin();
