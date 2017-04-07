@@ -90,14 +90,14 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/css/select2.min.css" rel="stylesheet">
   <link href="https://select2.github.io/select2-bootstrap-theme/css/select2-bootstrap.css" rel="stylesheet"><!-- Bootstrap theme from https://github.com/select2/select2-bootstrap-theme -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.min.js"></script>
-  <link href="<?= ENGINE_PATH_HTTP ?>inc/styles.css" rel="stylesheet">
-  <script src="<?= ENGINE_PATH_HTTP ?>inc/dbweb.js"></script>
   <script src="https://unpkg.com/transliteration/lib/browser/transliteration.min.js"></script>
   <!--META_INCLUDES_GO_HERE-->
 </head>
 <body>
 
 <?
+	add_stylesheet(ENGINE_PATH_HTTP . 'inc/styles.css', true);
+	add_javascript(ENGINE_PATH_HTTP . 'inc/dbweb.js', true);
 	check_pseudo_login_public_queryviz();
 	render_navigation_bar();
 ?>
