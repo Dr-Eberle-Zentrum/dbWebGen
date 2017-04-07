@@ -1193,9 +1193,10 @@ STR;
 	}
 
 	//------------------------------------------------------------------------------------------
-	function db_get_single_val($sql, $params, &$retrieved_value) {
+	function db_get_single_val($sql, $params, &$retrieved_value, $db = false) {
 	//------------------------------------------------------------------------------------------
-		$db = db_connect();
+		if($db === false)
+			$db = db_connect();
 		if($db === false)
 			return proc_error('Cannot connect to DB.');
 
@@ -1211,9 +1212,10 @@ STR;
 	}
 
 	//------------------------------------------------------------------------------------------
-	function db_get_single_row($sql, $params, &$row) {
+	function db_get_single_row($sql, $params, &$row, $db = false) {
 	//------------------------------------------------------------------------------------------
-		$db = db_connect();
+		if($db === false)
+			$db = db_connect();
 		if($db === false)
 			return proc_error('Cannot connect to DB.');
 
