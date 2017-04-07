@@ -477,17 +477,30 @@ EOT;
 				$arr_inline_details[$field_name] = $_POST[$field_name];
 
 			if($field_info['type'] == T_UPLOAD) {
-				if(!isset($_FILES[$field_name]))
-					return proc_error("Please browse for an upload for <b>{$field_info['label']}</b>.");
+				$file_provided = isset($_FILES[$field_name])
+					&& @file_exists($_FILES[$field_name]['tmp_name'])
+					&& is_uploaded_file($_FILES[$field_name]['tmp_name']);
 
-				if($_FILES[$field_name]['size'] == 0)
-					return proc_error("No file to upload selected for field <b>{$field_info['label']}</b>.");
+				if(!$file_provided) {
+					if($_GET['mode'] == MODE_NEW) {
+						if(is_field_required($field_info))
+							return proc_error("No file provided for mandatory upload <b>{$field_info['label']}</b>.");
+						else
+							continue;
+					}
 
+					if($_GET['mode'] ==  MODE_EDIT)
+						continue; //issue #20
+
+					// something's wrong here.
+					return proc_error('Invalid mode. Do not fiddle with the URL, please.');
+				}
+
+				// from here on it holds $file_provided = true
 				if($_FILES[$field_name]['error'] !== UPLOAD_ERR_OK)
 					return proc_error(get_file_upload_error_msg($_FILES[$field_name]['error']));
 
-				$succ = handle_uploaded_file($table, $field_name, $field_info, $_FILES[$field_name]);
-				if($succ === false)
+				if(handle_uploaded_file($table, $field_name, $field_info, $_FILES[$field_name]) === false)
 					return false;
 
 				if($field_info['store'] & STORE_FOLDER) {

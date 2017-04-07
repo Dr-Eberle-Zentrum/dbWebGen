@@ -11,6 +11,12 @@
 		}
 
 		//--------------------------------------------------------------------------------------
+		public function is_required() {
+		//--------------------------------------------------------------------------------------
+			return $_GET['mode'] == MODE_EDIT ? false : parent::is_required(); // issue #20
+		}
+
+		//--------------------------------------------------------------------------------------
 		protected function /*string*/ render_internal(&$output_buf) {
 		// render_settings: form_method, name_attr, id_attr
 		//--------------------------------------------------------------------------------------
@@ -23,6 +29,8 @@
 				$this->get_control_name(),
 				$this->get_control_name()
 			);
+			if($_GET['mode'] == MODE_EDIT)
+				$output_buf .= '<span class="help-block">Note: If you don\'t want to replace the existing file on the server, you may leave this field empty.</span>';
 			return $output_buf;
 		}
 
