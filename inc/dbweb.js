@@ -350,10 +350,14 @@ function get_popup_position(elem, width, height) {
 //------------------------------------------------------------------------------------------
 function set_map_picker_handler() {
 //------------------------------------------------------------------------------------------
-    $('button[data-map-url]').click(function() {
+    $('a[data-map-url]').click(function() {
         var popup = get_popup_position(this, 800, 800);
+        var url = $(this).data('map-url');
+        var target_ctrl = $('#' + $(this).data('target-ctrl'));
+        if(target_ctrl.length > 0)
+            url += '&val=' + encodeURI(target_ctrl.val());
         window.open(
-            $(this).data('map-url') + '&val=' + encodeURI($('#' + $(this).data('target-ctrl')).val()),
+            url,
             '_blank',
             'location=0,menubar=0,resizable=1,scrollbars=1,toolbar=0,left='+popup.x+',top='+popup.y+',width='+popup.width+',height='+popup.height
         );

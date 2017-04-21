@@ -824,8 +824,21 @@ STR;
 				$val = '';
 		}
 		else {
-			if($_GET['mode'] == MODE_VIEW)
+			if($_GET['mode'] == MODE_VIEW) {
 				$val = html($val, 0, false, true, $highlighter);
+
+				if(trim($val) !== '' && $field['type'] == T_POSTGIS_GEOM) {
+					// append map button to show location
+					require_once 'field.base.php';
+					require_once 'field.postgisgeom.php';
+					$field_obj = FieldFactory::create($_GET['table'], $col);
+					if($field_obj->has_map_picker()) {
+						$val = $field_obj->render_map_picker_button(
+							$val, 'map-marker', 'Click to show this location on a popup map', true, 'btn-link', $record[$col]
+						);
+					}
+				}
+			}
 			else // MODE_LIST or other: limit chars to display
 				$val = html($val, $APP['max_text_len'], true, false, $highlighter);
 		}

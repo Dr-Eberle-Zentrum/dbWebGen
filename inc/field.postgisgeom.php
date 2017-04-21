@@ -22,20 +22,36 @@
 		}
 
 		//--------------------------------------------------------------------------------------
+		public function render_map_picker_button($label, $glyphicon, $title, $readonly, $css_class, $val = null) {
+		//--------------------------------------------------------------------------------------
+			$url_params = array(
+				'mode' => MODE_MAP_PICKER,
+				'table' => $this->table_name,
+				'field' => $this->field_name,
+				'ctrl_id' => $this->get_control_id(),
+				'readonly' => $readonly ? 'true' : 'false'
+			);
+			if($val !== null)
+				$url_params['val'] = $val;
+			return sprintf(
+				"<a role='button' class='%s' data-target-ctrl='%s' data-map-url='?%s' title='%s' formnovalidate><span class='glyphicon glyphicon-%s'></span> %s</a>",
+				$css_class,
+				$this->get_control_id(),
+				http_build_query($url_params),
+				unquote($title),
+				$glyphicon,
+				html($label)
+			);
+		}
+
+		//--------------------------------------------------------------------------------------
 		protected function /*string*/ render_internal(&$output_buf) {
 		// render_settings: form_method, name_attr, id_attr
 		//--------------------------------------------------------------------------------------
 			$map_picker = '';
 			if($this->has_map_picker()) {
-				$map_picker = sprintf(
-					"</div><div class='col-sm-2'><button type='button' class='btn btn-default' data-target-ctrl='%s' data-map-url='?%s' formnovalidate><span title='Assign location from map' class='glyphicon glyphicon-map-marker'></span> Map</button>",
-					$this->get_control_id(),
-					http_build_query(array(
-						'mode' => MODE_MAP_PICKER,
-						'table' => $this->table_name,
-						'field' => $this->field_name,
-						'ctrl_id' => $this->get_control_id()
-					))
+				$map_picker = "</div><div class='col-sm-2'>" . $this->render_map_picker_button(
+					'Map', 'map-marker', 'Assign location from map', false, 'btn btn-default'
 				);
 			}
 

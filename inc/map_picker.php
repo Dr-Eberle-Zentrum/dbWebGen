@@ -44,11 +44,20 @@
         $map_options = json_encode((object) $field_settings->get_map_options());
         $draw_options = json_encode((object) $field_settings->get_draw_options());
 
-        echo <<<HTML
-            <div class="container-fluid" style="margin-top: .5em; 0">
+        $is_readonly = isset($_GET['readonly']) && $_GET['readonly'] == 'true';
+        $is_readonly_js = json_encode($is_readonly);
+        $edit_info = '';
+        if(!$is_readonly) {
+            $edit_info = <<<HTML
                 <div id="infos" class="col-sm-12">
                     <div class="alert alert-info">Place the shape at the desired location. To create a shape, click any of the shape icons (e.g. the <span class='glyphicon glyphicon-map-marker'></span> marker icon) and then draw the shape on the map. To edit an existing shape, click the <span class='glyphicon glyphicon-edit'></span> icon and follow the instructions. When you're done, click the <span class="glyphicon glyphicon-check"></span> Done button. Double click to move an overlay image to the front.</div>
                 </div>
+HTML;
+        }
+
+        echo <<<HTML
+            <div class="container-fluid" style="margin-top: .5em; 0">
+                $edit_info
                 <div id="map_picker" class="col-sm-12 fill-height" data-margin-bottom="7" style="border: 1px solid gray"></div>
             </div>
             <script>
@@ -96,27 +105,29 @@
                     map.addLayer(drawnItems);
                     if(curLayer)
                         curLayer.addTo(drawnItems);
-                    L.Control.DoneButton = L.Control.extend({
-                        onAdd: function(map) {
-                            var container = L.DomUtil.create('div', 'leaflet-bar');
-                            container.innerHTML = '<button class="btn btn-primary" onclick="finish_map_picker()"><span class="glyphicon glyphicon-check"></span> Done</button>';
-                            return container;
-                        }
-                    });
-                    new L.Control.DoneButton({
-                        position: 'topright'
-                    }).addTo(map);
-                    new L.Control.Draw({
-                        position: 'topright',
-                        draw: $draw_options,
-                        edit: { featureGroup: drawnItems }
-                    }).addTo(map);
-                    map.on('draw:created', function(e) {
-                        drawnItems.addLayer(e.layer);
-                    });
-                    map.on('draw:drawstart', function(e) {
-                        drawnItems.clearLayers();
-                    });
+                    if(!$is_readonly_js) {
+                        L.Control.DoneButton = L.Control.extend({
+                            onAdd: function(map) {
+                                var container = L.DomUtil.create('div', 'leaflet-bar');
+                                container.innerHTML = '<button class="btn btn-primary" onclick="finish_map_picker()"><span class="glyphicon glyphicon-check"></span> Done</button>';
+                                return container;
+                            }
+                        });
+                        new L.Control.DoneButton({
+                            position: 'topright'
+                        }).addTo(map);
+                        new L.Control.Draw({
+                            position: 'topright',
+                            draw: $draw_options,
+                            edit: { featureGroup: drawnItems }
+                        }).addTo(map);
+                        map.on('draw:created', function(e) {
+                            drawnItems.addLayer(e.layer);
+                        });
+                        map.on('draw:drawstart', function(e) {
+                            drawnItems.clearLayers();
+                        });
+                    }
                     if(typeof map_picker_finish_init === 'function')
                         map_picker_finish_init();  // in custom JS!
                 });
