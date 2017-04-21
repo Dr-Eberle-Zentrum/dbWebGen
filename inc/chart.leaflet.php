@@ -227,6 +227,7 @@ SETTINGS;
 			var map;
 			var basemap;
 			var chart_div;
+			var coord_data_format = '{$this->page->get_post($this->ctrlname('data_format'))}';
 
 			function get_base_tilelayer() {
 				var custom_tile_url = '{$this->page->get_post($this->ctrlname('custom_tile_url'), '')}';
@@ -242,7 +243,7 @@ SETTINGS;
 				return tile_layer;
 			}
 
-			document.addEventListener("DOMContentLoaded", function() {
+			document.addEventListener('DOMContentLoaded', function() {
 				chart_div = $('#chart_div');
 				chart_div.css('overflow', 'hidden');
 
@@ -266,15 +267,15 @@ SETTINGS;
 				// we store the row index of the marker in the popup. Only when opened, it will display the whole data stored in the record
 				for(var m=0; m<data_table.length; m++) {
 					var layer;
-					if('{$this->page->get_post($this->ctrlname('data_format'))}' === 'point'
-						|| '{$this->page->get_post($this->ctrlname('data_format'))}' === '' // legacy: default
+					if(coord_data_format === 'point'
+						|| coord_data_format === '' // legacy: default
 					) {
 						layer = L.marker([
 							data_table[m][0],
 							data_table[m][1]
 						]);
 					}
-					else if('{$this->page->get_post($this->ctrlname('data_format'))}' === 'wkt') {
+					else if(coord_data_format === 'wkt') {
 						layer = omnivore.wkt.parse(data_table[m][0]).getLayers()[0];
 					}
 					data_markers[m] = layer;
@@ -328,7 +329,7 @@ SETTINGS;
 
 					// point coordinates: third column starts data
 					// wkt: second column starts data
-					var col_data_start = '{$this->page->get_post($this->ctrlname('data_format'))}' === 'wkt' ? 1 : 2;
+					var col_data_start = (coord_data_format === 'wkt' ? 1 : 2);
 
 					for(var i = col_data_start; i < data_headers.length; i++) {
 						if(data_table[nr][i].toString() === '') continue;
