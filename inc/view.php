@@ -137,8 +137,8 @@
 			if(!isset($table['fields'][$col]))
 				continue;*/
 		foreach(array_keys($table['fields']) as $col) {
-			if(!isset($record[$col]))
-				continue;
+			/*if(!isset($record[$col]))
+				continue;*/
 			$val = $record[$col];
 			$table_html .= $form_tabs->new_tab_if_needed($col);
 
@@ -146,7 +146,7 @@
 
 			# display null values?
 			$css_null = '';
-			if(!$APP['view_display_null_fields'] && $val === NULL) {
+			if(!$APP['view_display_null_fields'] && $val === null) {
 				$empty_count++;
 				$css_null = 'null_field';
 			}

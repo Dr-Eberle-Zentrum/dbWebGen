@@ -352,3 +352,7 @@ span.hl {
 		content: none !important;
 	}
 }
+
+#show_null_fields {
+	margin-top: 10px;
+}
