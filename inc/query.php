@@ -74,7 +74,7 @@
 		) {
 		//--------------------------------------------------------------------------------------
 			self::$chart_types[$handle] = $label;
-			if($directory != '' && mb_substr($directory, -1) == '/')
+			if($directory != '' && mb_substr($directory, -1) != '/')
 				$directory .= '/';
 			self::$chart_custom_file_locations[$handle] = $directory;
 		}
