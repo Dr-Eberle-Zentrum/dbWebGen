@@ -35,7 +35,7 @@
 		if(!isset($APP['additional_callable_plugin_functions'])
 			|| !in_array($_GET['target'], $APP['additional_callable_plugin_functions']))
 		{
-			return proc_error('Invalid function call');
+			return proc_error(l10n('error.invalid-function', $_GET['target']));
 		}
 
 		// call func.
@@ -60,7 +60,7 @@
 			|| !isset($_GET['label'])
 			|| !isset($_GET['parent_form']))
 		{
-			return proc_error('Parameter(s) missing or invalid');
+			return proc_error(l10n('error.invalid-params'));
 		}
 		$table = $TABLES[$_GET['table']];
 
@@ -100,10 +100,10 @@
 	//------------------------------------------------------------------------------------------
 	function postgis_transform_wkt_proxy() {
 	//------------------------------------------------------------------------------------------
-		header('Content-Type: text/plain');		
+		header('Content-Type: text/plain');
 		if(postgis_transform_wkt($_REQUEST['geom_wkt'], $_REQUEST['source_srid'], $_REQUEST['target_srid'], $target_wkt))
 			echo $target_wkt;
 		else
-			echo 'invalid WKT input';
+			echo l10n('error.invalid-wkt-input');
 	}
 ?>

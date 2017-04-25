@@ -92,7 +92,7 @@
 				'<span class="glyphicon glyphicon-user"></span> '.
 				(isset($LOGIN['name_field']) ? $_SESSION['user_data'][$LOGIN['name_field']] : '') .
 				'</a></li>'.
-				'<li><a href="#" id="logout"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li></ul>';
+				'<li><a href="#" id="logout"><span class="glyphicon glyphicon-log-out"></span> '.l10n('navbar.logout').'</a></li></ul>';
 			}
 		}
 
@@ -107,14 +107,14 @@
 
 		$menu = array();
 
-		$menu[0] = array('name' => 'New', 'items' => array());
+		$menu[0] = array('name' => l10n('menu.new'), 'items' => array());
 		if($APP['mainmenu_tables_autosort'])
 			uasort($TABLES, 'sort_tables_new');
 		foreach($TABLES as $table_name => $info)
 			if(in_array(MODE_NEW, $info['actions']) && !is_table_hidden_from_menu($info, MODE_NEW))
 				$menu[0]['items'][] = array('label' => $info['item_name'], 'href' => "?table={$table_name}&mode=" . MODE_NEW);
 
-		$menu[1] = array('name' => 'Browse & Edit', 'items' => array());
+		$menu[1] = array('name' => l10n('menu.browse+edit'), 'items' => array());
 		if($APP['mainmenu_tables_autosort'])
 			uasort($TABLES, 'sort_tables_list');
 		foreach($TABLES as $table_name => $info)
@@ -155,7 +155,7 @@
 				if(isset($APP['render_main_page_proc']))
 					$APP['render_main_page_proc']();
 				else
-					echo '<p>Choose an action from the top menu.</p>';
+					echo l10n('main-page.html');
 			}
 
 			else {
@@ -198,12 +198,12 @@
 
 					case MODE_PLUGIN:
 						if(!isset($APP['additional_callable_plugin_functions']))
-							return proc_error('There are no registered plugin functions to call.');
+							return proc_error(l10n('error.no-plugin-functions'));
 
 						if(!isset($_GET[PLUGIN_PARAM_FUNC])
 							|| !in_array($_GET[PLUGIN_PARAM_FUNC], $APP['additional_callable_plugin_functions'])
 							|| !function_exists($_GET[PLUGIN_PARAM_FUNC]))
-							return proc_error('Invalid function specified.');
+							return proc_error(l10n('error.invalid-function', $_GET[PLUGIN_PARAM_FUNC]));
 
 						// call the rendering function
 						$_GET[PLUGIN_PARAM_FUNC]();
@@ -214,12 +214,12 @@
 						break;
 
 					default:
-						throw new Exception("Invalid mode '{$_GET['mode']}'.");
+						throw new Exception(l10n('error.invalid-mode', $_GET['mode']));
 				}
 			}
 		}
 		catch(Exception $e) {
-			proc_error('Exception: ' . $e->getMessage());
+			proc_error(l10n('error.exception', $e->getMessage()));
 		}
 	}
 ?>

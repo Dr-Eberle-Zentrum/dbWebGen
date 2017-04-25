@@ -51,7 +51,7 @@
 			$map_picker = '';
 			if($this->has_map_picker()) {
 				$map_picker = "</div><div class='col-sm-2'>" . $this->render_map_picker_button(
-					'Map', 'map-marker', 'Assign location from map', false, 'btn btn-default'
+					'Map', 'map-marker', l10n('geom-field.map-picker-button-tooltip'), false, 'btn btn-default'
 				);
 			}
 
@@ -81,12 +81,11 @@
 		}
 
 		//--------------------------------------------------------------------------------------
-		//--------------------------------------------------------------------------------------
 		public function /*string*/ get_global_search_condition(
 			$param_name,
 			$search_string_transformation,
-			$table_qualifier = null)
-		{
+			$table_qualifier = null) {
+		//--------------------------------------------------------------------------------------		
 			return sprintf(
 				"lower(st_astext(%s)) like '%%' || :%s || '%%'",
 				db_esc($this->field_name, $table_qualifier),
