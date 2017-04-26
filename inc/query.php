@@ -50,12 +50,12 @@
 
 			if(isset($APP['querypage_permissions_func']) && !$APP['querypage_permissions_func']()) {
 				$this->sql = null;
-				$this->error_msg = 'You are not allowed to view this.';
+				$this->error_msg = l10n('error.not-allowed');
 			}
 
 			if($this->is_stored_query() && !$this->fetch_stored_query()) {
 				$this->sql = null;
-				$this->error_msg = 'Could not retrieve the stored query';
+				$this->error_msg = l10n('error.query-fetch');
 			}
 			else {
 				$this->sql = trim($this->get_post(QUERYPAGE_FIELD_SQL, ''));
@@ -97,18 +97,18 @@
 		//--------------------------------------------------------------------------------------
 			global $APP;
 			if(!isset($APP['querypage_stored_queries_table'])) {
-				$error_msg = 'In $APP the querypage_stored_queries_table setting is missing in settings.php';
+				$error_msg = l10n('error.storedquery-config-table');
 				return false;
 			}
 
 			$db = db_connect();
 			if($db === false) {
-				$error_msg = 'Could not connect to DB';
+				$error_msg = l10n('error.db-connect');
 				return false;
 			}
 
 			if(!QueryPage::create_stored_queries_table($db)) {
-				$error_msg = 'Could not create table';
+				$error_msg = l10n('error.storedquery-create-table');
 				return false;
 			}
 
@@ -135,7 +135,7 @@
 			);
 
 			if($stmt->execute($params) === false) {
-				$error_msg = 'Failed to execute query with ' . arr_str($params);
+				$error_msg = l10n('error.storedquery-exec-params', arr_str($params));
 				return false;
 			}
 
@@ -222,7 +222,7 @@ SQL;
 
 			if($this->has_post_values()) {
 				if(mb_substr(mb_strtolower($this->sql), 0, 6) !== 'select') {
-					proc_error('Invalid SQL query. Only SELECT statements are allowed!');
+					proc_error(l10n('error.storedquery-invalid-sql'));
 					$this->sql = null;
 				}
 
@@ -244,25 +244,17 @@ SQL;
 		//--------------------------------------------------------------------------------------
 			$sql_html = html($this->sql);
 			$sql_field = QUERYPAGE_FIELD_SQL;
-
-			$sql_help = <<<HELPTEXT
-				<p>Enter here the SQL query to execute. Only <code>SELECT</code> queries are possible.</p>
-				<p>
-					<b>Parameterized Queries</b>:
-					It is possible to use named placeholders with default values instead of literal values in the where clause.
-					A parameter looks like <code>#{my_param|default_val}</code>, where <code>my_param</code> is the name of the paramenter, and <code>default_val</code> is the default value. The default value can be empty. The separator <code>|</code> is mandatory even for an empty default value.
-				</p>
-				<p><b>Example</b>: <code>select * from users where lastname = #{n|Norris}</code></p>
-HELPTEXT;
-			$sql_help = get_help_popup('SQL Query Help', $sql_help);
+			$sql_label = l10n('querypage.sql-label');
+			$exec_label = l10n('querypage.exec-button');
+			$sql_help = get_help_popup(l10n('querypage.sql-help-head'), l10n('querypage.sql-help-text'));
 
 			$this->query_ui = <<<QUI
 				<div class="form-group">
-					<label class="control-label" for="{$sql_field}">SQL Query {$sql_help}</label>
-					<textarea class="form-control vresize" id="{$sql_field}" name="{$sql_field}" rows="10">{$sql_html}</textarea>
+					<label class="control-label" for="$sql_field">$sql_label $sql_help</label>
+					<textarea class="form-control vresize" id="$sql_field" name="$sql_field" rows="10">$sql_html</textarea>
 				</div>
 				<div class="form-group">
-					<button class="btn btn-primary" name="submit" type="submit">Execute</button>
+					<button class="btn btn-primary" name="submit" type="submit"><span class="glyphicon glyphicon-triangle-right"></span> $exec_label</button>
 				</div>
 QUI;
 		}
@@ -280,16 +272,20 @@ QUI;
 			if(!$this->is_cache_enabled())
 				return '';
 
+			$head = l10n('querypage.store-settings-heading');
+			$cache_public = l10n('querypage.store-settings-cache-public');
+			$cache_exp = l10n('querypage.store-settings-cache-expires');
+
 			$s = <<<HTML
 			<div class="form-group">
-				<label class="control-label">Settings</label>
+				<label class="control-label">$head</label>
 				<div class="checkbox top-margin-zero">
-					<label>{$this->render_checkbox($this->chart->ctrlname('public_access'), 'ON', false)}This visualization is publicly accessible (use with caution).</label>
+					<label>{$this->render_checkbox($this->chart->ctrlname('public_access'), 'ON', false)}$cache_public</label>
 				</div>
 				<div class="table">
 					<div class="tr">
 						<div class='checkbox td'>
-							<label>{$this->render_checkbox($this->chart->ctrlname('caching'), 'ON', false)}Enable caching of data.<br />Cache expires after (seconds): </label>
+							<label>{$this->render_checkbox($this->chart->ctrlname('caching'), 'ON', false)}$cache_exp:</label>
 						</div>
 						<div class="td align-middle" style="width: 75px">
 							{$this->render_textbox($this->chart->ctrlname('cache_ttl'), strval(DEFAULT_CACHE_TTL), 'input-sm ')}
@@ -315,18 +311,20 @@ HTML;
 				$chart = dbWebGenChart::create($type, $this);
 				$settings .= sprintf('<div id="viz-option-%s">%s</div>', $type, $chart->settings_html());
 			}
+
+			$str_head = l10n('querypage.settings-head');
+			$str_viz_label = l10n('querypage.settings-viz-label');
+
 			$this->settings_ui = <<<STR
 				<div class="panel panel-default">
-					<div class="panel-heading">
-						Result Visualization Settings
-					</div>
+					<div class="panel-heading">$str_head</div>
 					<div class="panel-body">
 						<div class="form-group">
-							<label class="control-label" for="{$vistype_field}">Visualization</label>
-							{$select}
+							<label class="control-label" for="$vistype_field">$str_viz_label</label>
+							$select
 						</div>
 						<div class='viz-options form-group'>
-							{$settings}
+							$settings
 						</div>
 					</div>
 				</div>
@@ -368,19 +366,24 @@ STR;
 			$post_data = json_encode((object) $post_data);
 			$title = json_encode(safehash($_POST, 'storedquery-title'));
 			$description = json_encode(safehash($_POST, 'storedquery-description'));
-			$save_label = $this->is_stored_query() ? 'Save as New' : 'Save';
-			$replace_existing = $this->is_stored_query() ? '<button type="button" id="viz-share-replace" class="btn btn-primary">Update Existing</button>' : '';
+			$save_label = $this->is_stored_query() ? l10n('querypage.store-button-new') : l10n('querypage.store-button-save');
+			$replace_existing = $this->is_stored_query() ? '<button type="button" id="viz-share-replace" class="btn btn-default">'.l10n('querypage.store-button-update').'</button>' : '';
 			$replace_id = json_encode($this->is_stored_query() ? $this->get_stored_query_id() : '');
 			$js_cache_enabled = json_encode($this->is_cache_enabled());
+			$str_descr_placeholder = l10n('querypage.store-description-placeholder');
+			$str_title_placeholder = l10n('querypage.store-title-placeholder');
+			$str_intro = l10n('querypage.store-intro');
+			$str_store_success = json_encode(l10n('querypage.store-success'));
+			$str_store_error = json_encode(l10n('querypage.store-error'));
 
 			$share_popup = <<<SHARE
 				<form>
-				<p>Please provide a title and a description for the stored query (optional):</p>
-				<p><input class="form-control" placeholder="Title" id="stored_query_title" /></p>
-				<p><textarea class="form-control vresize" placeholder="Description" id="stored_query_description"></textarea></p>
+				<p>$str_intro</p>
+				<p><input class="form-control" placeholder="$str_title_placeholder" id="stored_query_title" /></p>
+				<p><textarea class="form-control vresize" placeholder="$str_descr_placeholder" id="stored_query_description"></textarea></p>
 				{$this->get_cache_settings_html()}
 				<p class="nowrap">
-					<button type="button" id="viz-share" class="btn btn-primary">$save_label</button>
+					<button type="button" id="viz-share" class="btn btn-primary space-right">$save_label</button>
 					$replace_existing
 				</p>
 				</form>
@@ -413,10 +416,10 @@ STR;
 							button.hide();
 							var link = $('<a/>', {id: 'shared', target: '_blank', href: url_query});
 							link.text(document.location.origin + document.location.pathname + url_query);
-							$('.viz-share-url').html('Query stored successfully. The live visualization of this query is now available at:<br />').append(link).show();
+							$('.viz-share-url').html($str_store_success + '<br />').append(link).show();
 							button.popover('hide');
 						}).fail(function() {
-							$('.viz-share-url').text('Error: Could not generate a shareable URL.').show();
+							$('.viz-share-url').text($str_store_error).show();
 						});
 						return false;
 					}
@@ -428,10 +431,12 @@ SHARE;
 			$share_popup = json_encode($share_popup);
 			$js_title = json_encode($this->stored_title);
 			$js_desc = json_encode($this->stored_description);
+			$str_btn_label = html(l10n('querypage.store-button-label'));
+
 			$this->store_ui = <<<HTML
 				&nbsp;
 				<p>
-					<a class='btn btn-default' id='viz-share-popup' href='javascript:void(0)' data-purpose='help' data-toggle='popover' data-placement='bottom'><span title='Share this live query visualization' class='glyphicon glyphicon-link'></span> Save Query &amp; Get Live Visualization URL <span class='caret' /></a>
+					<a class='btn btn-default' id='viz-share-popup' href='javascript:void(0)' data-purpose='help' data-toggle='popover' data-placement='bottom'><span class='glyphicon glyphicon-link'></span> $str_btn_label <span class='caret' /></a>
 					<div class='viz-share-url'></div>
 				</p>
 				<script>
@@ -451,7 +456,7 @@ HTML;
 		//--------------------------------------------------------------------------------------
 			global $TABLES;
 			if(!isset($TABLES[$table_name]) || !isset($TABLES[$table_name]['fields'][$field_name])) {
-				proc_error('Invalid table or field in parameterized query');
+				proc_error(l10n('error.storedquery-invalid-params'));
 				return '';
 			}
 
@@ -541,9 +546,10 @@ HTML;
 					}
 
 					// render form for parameters:
+					$str_refresh = l10n('querypage.param-query-refresh');
 					$this->viz_ui .= <<<HTML
 					<p><form class='form-inline' method='get'>
-						{$param_fields} <button class='btn btn-default hidden-print' type='submit'>Refresh!</button>
+						{$param_fields} <button class='btn btn-default hidden-print' type='submit'><span class="glyphicon glyphicon-refresh"></span> $str_refresh</button>
 					</form></p>
 HTML;
 				}
@@ -555,7 +561,7 @@ HTML;
 
 			$this->viz_ui .= "<div class='col-sm-$size'>\n";
 			if($this->view != QUERY_VIEW_RESULT)
-				$this->viz_ui .= "  <label for='chart_div'>Result Visualization</label>{$this->store_ui}\n";
+				$this->viz_ui .= "  <label for='chart_div'>".l10n('querypage.results-head')."</label>{$this->store_ui}\n";
 			$this->viz_ui .= "  <div class='$css_class' id='chart_div'></div>\n";
 			$this->viz_ui .= "</div>\n";
 
@@ -571,10 +577,10 @@ HTML;
 			if($js === false) {
 				$stmt = $this->db->prepare($this->query_info['sql']);
 				if($stmt === false)
-					return proc_error('Failed to prepare statement', $this->db);
+					return proc_error(l10n('error.db-prepare'), $this->db);
 
 				if($stmt->execute($this->query_info['params']) === false)
-					return proc_error('Failed to execute statement', $this->db);
+					return proc_error(l10n('error.db-execute'), $this->db);
 
 				$js = $this->chart->get_js($stmt);
 

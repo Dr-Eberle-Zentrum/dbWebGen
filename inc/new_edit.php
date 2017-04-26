@@ -6,18 +6,18 @@
 
 		$table_name = $_GET['table'];
 		if(!isset($TABLES[$table_name]))
-			return proc_error('Invalid table name or table not configured.');
+			return proc_error(l10n('error.invalid-table', $table_name));
 		$table = $TABLES[$table_name];
 
 		if(!is_allowed($table, $_GET['mode']) && !is_own_user_record(true))
-			return proc_error('You are not allowed to perform this action.');
+			return proc_error(l10n('error.not-allowed'));
 
 		// get the unique form id (either from POST, or generate)
 		$form_id = isset($_POST['__form_id__']) ? $_POST['__form_id__'] : ($_POST['__form_id__'] = uniqid('__form_id__', true));
 		#debug_log("$form_id = ", $_SESSION[$form_id]);
 
 		if($_GET['mode'] == MODE_NEW) {
-			echo "<h1>New {$table['item_name']}</h1>\n";
+			echo "<h1>" . l10n('new-edit.heading-new', $table['item_name']) . "</h1>\n";
 
 			// fake pre filled fields
 			// all URL parameters that are prepended with PREFILL_PREFIX will get pre-filled
@@ -40,21 +40,18 @@
 
 			$parent_form = null;
 			if(is_inline()) {
-				$page_title = "Edit {$table['item_name']} Details";
+				$page_title = l10n('new-edit.heading-edit-inline', $table['item_name']);
 				if(!isset($_GET['parent_form']))
-					return proc_error('Parent form id not provided');
-
+					return proc_error(l10n('error.edit-inline-form-id-missing'));
 				$parent_form = $_GET['parent_form'];
 			}
 			else {
-				$page_title = "Edit {$table['item_name']}";
+				$page_title = l10n('new-edit.heading-edit', $table['item_name']);
 				if(count($edit_id) == 1)
 					$page_title .= ' <small>'. html($table['fields'][first(array_keys($edit_id))]['label']) . '<span class="smsp">=</span>' . html(first(array_values($edit_id))) .'</small>';
 			}
 
 			echo "<h1>$page_title</h1>\n";
-
-			#debug_log("POST = ", $_POST);
 			if(!isset($_POST['__item_id__'])) { // if not already posted (with errors obviously), then get from DB
 				if(!build_post_array_for_edit_mode($table_name, $table, $edit_id, $parent_form))
 					return false;
@@ -63,10 +60,10 @@
 
 		echo "<p>{$table['description']}</p>\n";
 
-		echo "<p>Fill the form fields and then press 'Save'. Fields indicated with <span class='required-indicator'>&#9733;</span> are required.</p>\n";
+		echo '<p>', l10n('new-edit.intro-help'), "</p>\n";
 
 		if(is_inline())
-			echo "<p>Note that your edits will only be stored in the database if the original form is also submitted</p>\n";
+			echo '<p>', l10n('new-edit.save-inline-hint'), "</p>\n";
 
 		echo "<form class='form-horizontal bg-gray' role='form' method='post' enctype='multipart/form-data' data-navigate-away-warning='true'><fieldset>\n";
 
@@ -79,7 +76,7 @@
 
 		$submit_button = "<div class='form-group'>\n".
 			"<div class='col-sm-offset-3 col-sm-9'>\n".
-			"<input type='submit' class='btn btn-primary' value='Save' />\n";
+			"<button type='submit' class='btn btn-primary'><span class='glyphicon glyphicon-floppy-disk space-right'></span>".l10n('new-edit.save-button')."</button>\n";
 
 		if($_GET['mode'] == MODE_EDIT && !is_inline())
 			echo $submit_button. '</div></div>';
@@ -103,7 +100,11 @@
 
 			$required_indicator = (is_field_required($field) ? '<span class="required-indicator">&#9733;</span>' : '');
 			echo "<div class='form-group'>\n";
-			echo "<label title='This field is ". (is_field_required($field) ? 'required' : 'optional') ."' class='control-label col-sm-3' for='{$field_name}'>";
+			echo sprintf(
+				"<label title='%s' class='control-label col-sm-3' for='%s'>",
+				l10n(is_field_required($field) ? 'new-edit.field-required-tooltip' : 'new-edit.field-optional-tooltip'),
+				$field_name
+			);
 			render_help($field);
 			echo "<span data-field='$field_name'>{$field['label']}</span>{$required_indicator}</label>\n";
 
@@ -118,8 +119,8 @@
 		echo $form_tabs->close();
 
 		echo $submit_button;
-		if($_GET['mode'] == MODE_NEW)
-			"<input type='reset' class='btn btn-default' value='Clear Form' />\n";
+		/*if($_GET['mode'] == MODE_NEW)
+			echo "<button type='reset' class='btn btn-default'>".l10n('new-edit.clear-button')."</button>\n";*/
         echo "</div>\n</div>\n</fieldset></form>\n";
 		echo "<div style='padding-bottom:4em'>&nbsp;</div>";
 
@@ -173,7 +174,6 @@ EOT;
 					if(!is_field_required($table['fields'][$col]))
 						$_POST["{$col}__null__"] = ($val === null ? 'true' : 'false');
 				}
-
 				return true;
 			}
 
@@ -187,19 +187,8 @@ EOT;
 		}
 
 		$query = build_query($table_name, $table, $edit_id, MODE_EDIT, NULL, $params);
-
-		$db = db_connect();
-		if($db === false)
-			return proc_error('Cannot connect to DB.');
-
-		$res = $db->prepare($query);
-
-		if($res === FALSE)
-			return proc_error('Query preparation went wrong.', $db);
-
-		if($res->execute($params) === FALSE)
-			return proc_error('Query execution went wrong.', $db);
-
+		if(!db_prep_exec($query, $params, $res))
+			return false;
 		if($res->rowCount() != 1) {
 			if(is_inline() && $res->rowCount() == 0) {
 				// here we have both foreign keys set, but the association was added in the form and not saved yet.
@@ -208,8 +197,7 @@ EOT;
 				// we don't have to do anything actually, all fields will be put to default value.
 				return true;
 			}
-
-			return proc_error("Requested object not found.");
+			return proc_error(l10n('error.edit-obj-not-found'));
 		}
 
 		foreach($res->fetch(PDO::FETCH_ASSOC) as $col => $val) {
@@ -233,7 +221,7 @@ EOT;
 		if(!isset($field['help']) || $field['help'] == '')
 			return;
 
-		echo get_help_popup('Help', $field['help']);
+		echo get_help_popup(l10n('helper.help-popup-title'), $field['help']);
 	}
 
 	//------------------------------------------------------------------------------------------
@@ -311,16 +299,16 @@ EOT;
 			return proc_error(get_file_upload_error_msg($file['error']));
 
 		if(isset($field['max_size']) && $file['size'] > $field['max_size'])
-			return proc_error("Uploaded file exceeds size limitation of {$file['size']} bytes.");
+			return proc_error(l10n('error.upload-filesize', $file['size']));
 
 		if(isset($field['allowed_ext']) && is_array($field['allowed_ext'])) {
 			$ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
 			if(!in_array($ext, $field['allowed_ext']))
-				return proc_error("File extension '$ext' is not allowed. The following are allowed: " . implode(', ', $field['allowed_ext']));
+				return proc_error(l10n('error.upload-invalid-ext', $ext, implode(', ', $field['allowed_ext'])));
 		}
 
 		if(!isset($field['location']))
-			return proc_error("Target location for uploaded files not set. Contact your admin.");
+			return proc_error(l10n('error.upload-location'));
 
 		if($field['store'] & STORE_FOLDER) {
 			// make sure storage location ends with a slash /
@@ -330,12 +318,12 @@ EOT;
 			$store_folder = str_replace("\\", '/', $store_folder);
 
 			if(!is_dir($store_folder) && !mkdir($store_folder, 0777, true))
-				return proc_error('Could not create target directory.');
+				return proc_error(l10n('error.upload-create-dir'));
 
 			$target_filename = $store_folder . $file['name'];
 
 			if($_GET['mode'] == MODE_NEW && file_exists($target_filename))
-				return proc_error('Cannot upload file, because a file with the same name already exists at the storage location.');
+				return proc_error(l10n('error.upload-file-exists'));
 
 			// when editing, first we need to remove existing file if name is different
 			if($_GET['mode'] == MODE_EDIT) {
@@ -356,13 +344,13 @@ EOT;
 
 			$moved = move_uploaded_file($file['tmp_name'], $target_filename);
 			if(!$moved)
-				return proc_error('Could not store uploaded file.');
+				return proc_error(l10n('error.upload-move-file'));
 
 			$file['path'] = $target_filename;
 		}
 
 		if($field['store'] & STORE_DB)
-			return proc_error('Storing files in the DB is not supported yet.');
+			return proc_error(l10n('error.upload-store-db'));
 
 		return true;
 	}
@@ -434,16 +422,16 @@ EOT;
 			return false;
 
 		if($_GET['mode'] != MODE_NEW && $_GET['mode'] != MODE_EDIT)
-			return proc_error('Unknown mode.');
+			return proc_error(l10n('error.invalid-mode'));
 
 		$table_name = $_GET['table'];
 		if(!isset($TABLES[$table_name]))
-			return proc_error('Table name is missing or invalid.');
+			return proc_error(l10n('error.invalid-table', $table_name));
 
 		$table = $TABLES[$table_name];
 
 		if(!is_allowed($table, $_GET['mode']) && !is_own_user_record(true))
-			return proc_error('You are not allowed to perform this action.');
+			return proc_error(l10n('error.not-allowed'));
 
 		$columns = array();
 		$many2many_field_assocs = array();
@@ -484,7 +472,7 @@ EOT;
 				if(!$file_provided) {
 					if($_GET['mode'] == MODE_NEW) {
 						if(is_field_required($field_info))
-							return proc_error("No file provided for mandatory upload <b>{$field_info['label']}</b>.");
+							return proc_error(l10n('error.upload-no-file-provided', $field_info['label']));
 						else
 							continue;
 					}
@@ -493,7 +481,7 @@ EOT;
 						continue; //issue #20
 
 					// something's wrong here.
-					return proc_error('Invalid mode. Do not fiddle with the URL, please.');
+					return proc_error(l10n('error.invalid-mode'));
 				}
 
 				// from here on it holds $file_provided = true
@@ -512,7 +500,7 @@ EOT;
 			}
 
 			if(!isset($_POST[$field_name]))
-				return proc_error("Field {$field_info['label']} is missing.");
+				return proc_error(l10n('error.field-value-missing', $field_info['label']));
 
 			if(is_field_required($field_info) && $_POST[$field_name] === '' || $_POST[$field_name] === null) {
 				// only fk_self can be missing in mode inline
@@ -522,7 +510,7 @@ EOT;
 					continue;
 				}
 
-				return proc_error("Please fill in required field <b>{$field_info['label']}</b>");
+				return proc_error(l10n('error.field-required', $field_info['label']));
 			}
 
 			if(!is_field_required($field_info) && is_field_setnull($field_name, $field_info)) {
@@ -532,14 +520,14 @@ EOT;
 			else if($field_info['type'] == T_LOOKUP && $field_info['lookup']['cardinality'] == CARDINALITY_MULTIPLE) {
 				$many2many_field_assocs[$field_name] = get_linked_items($field_name);
 				if(is_field_required($field_info) && count($many2many_field_assocs[$field_name]) == 0)
-					return proc_error("Please provide at least one value for required field <b>{$field_info['label']}</b>");
+					return proc_error(l10n('error.field-multi-required', $field_info['label']));
 			}
 			else if($field_info['type'] == T_PASSWORD) {
 				if(isset($field_info['min_len']) && mb_strlen($_POST[$field_name]) < $field_info['min_len'])
-					return proc_error("Password is too short. Minimum length is {$field_info['min_len']}.");
+					return proc_error(l10n('error.password-too-short', $field_info['min_len']));
 
 				if(isset($LOGIN['password_hash_func']) && !function_exists($LOGIN['password_hash_func']))
-					return proc_error("Password hash function {$LOGIN['password_hash_func']} does not exist. Inform your admin.");
+					return proc_error(l10n('error.password-hash-missing', $LOGIN['password_hash_func']));
 
 				$columns[] = $field_name;
 				$values[] = isset($LOGIN['password_hash_func']) ? $LOGIN['password_hash_func']($_POST[$field_name]) : $_POST[$field_name];
@@ -551,7 +539,7 @@ EOT;
 		}
 
 		if(count($columns) == 0 && count($many2many_field_assocs) == 0)
-			return proc_error('No values to store in database.');
+			return proc_error(l10n('error.no-values'));
 
 		if($_GET['mode'] == MODE_NEW) {
 			// call 'before_insert' hook functions
@@ -583,16 +571,12 @@ EOT;
 		// FIRST INSERT OR UPDATE THE RECORD
 		$db = db_connect();
 		if($db === false)
-			return proc_error('Cannot connect to DB.');
-
+			return proc_error(l10n('error.db-connect'));
 		$stmt = $db->prepare($sql);
-		if($stmt === FALSE)
-			return proc_error('SQL statement preparation failed.', $db);
-
-		#debug_log($sql, "\nvalues := ", $values);
-
-		if(FALSE === $stmt->execute($values))
-			return proc_error('SQL statement execution failed.', $db);
+		if($stmt === false)
+			return proc_error(l10n('error.db-prepare'), $db);
+		if(false === $stmt->execute($values))
+			return proc_error(l10n('error.db-execute'), $db);
 
 		$form_id = get_form_id();
 
@@ -603,7 +587,7 @@ EOT;
 			if($table['primary_key']['auto']) { // CURRENTLY WORKS ONLY WITH ONE PRIMARY KEY COLUMN (NO COMPOSITE KEYS!)
 				$new_id = $db->lastInsertId($table['primary_key']['sequence_name']);
 				if($new_id === null || $new_id == 0 || $new_id == '')
-					return proc_error('Setting id_sequence_name appears invalid');
+					return proc_error(l10n('error.sequence-name'));
 
 				$primary_keys[$table['primary_key']['columns'][0]] = $new_id;
 			}
@@ -668,9 +652,9 @@ EOT;
 					// first check which ones will be deleted
 					$select_stmt = $db->prepare('SELECT * ' . $from_where);
 					if($select_stmt === false)
-						return proc_error("Preparing of updating of relationships failed for field {$field_name} (step 0).", $db);
+						return proc_error(l10n('error.edit-update-rels-prep', $field_name, 0), $db);
 					if($select_stmt->execute(array_merge(array_values($primary_keys), $values)) === false)
-						return proc_error("Executing the updating of relationships failed for field {$field_name} (step 0).", $db);
+						return proc_error(l10n('error.edit-update-rels-exec', $field_name, 0), $db);
 
 					while($record = $select_stmt->fetch(PDO::FETCH_ASSOC)) {
 						$pk_hash = array(
@@ -688,9 +672,9 @@ EOT;
 				// ACTUAL DELETION >>
 				$delete_stmt = $db->prepare('DELETE ' . $from_where);
 				if($delete_stmt === false)
-					return proc_error("Preparing of updating of relationships failed for field {$field_name} (step 1).", $db);
+					return proc_error(l10n('error.edit-update-rels-prep', $field_name, 1), $db);
 				if($delete_stmt->execute(array_merge(array_values($primary_keys), $values)) === false)
-					return proc_error("Executing the updating of relationships failed for field {$field_name} (step 1).", $db);
+					return proc_error(l10n('error.edit-update-rels-exec', $field_name, 1), $db);
 				// << ACTUAL DELETION
 
 				// AFTER_DELETE hook >>
@@ -713,10 +697,9 @@ EOT;
 
 					$stmt = $db->prepare($sql);
 					if($stmt === false)
-						return proc_error("Preparing of updating of relationships failed for field {$field_name} (step 2).", $db);
-
+						return proc_error(l10n('error.edit-update-rels-prep', $field_name, 2), $db);
 					if($stmt->execute(array_merge(array_values($primary_keys), array($values[$i]))) === false)
-						return proc_error("Executing the updating of relationships failed for field {$field_name} (step 2).", $db);
+						return proc_error(l10n('error.edit-update-rels-exec', $field_name, 2), $db);
 
 					$cunt = $stmt->fetchColumn();
 					if($cunt > 0) {
@@ -740,9 +723,9 @@ EOT;
 							// prep & exec
 							$details_upd = $db->prepare($sql_update);
 							if($details_upd === false)
-								proc_info("Failed to prepare update of details of relation to record {$values[$i]} in field {$table['fields'][$field_name]['label']}", $db);
+								proc_info(l10n('info.new-edit-update-rels-prep-problems', $values[$i], $table['fields'][$field_name]['label']), $db);
 							else if($details_upd->execute($inline_params) === false)
-								proc_info("Failed to execute update of details of relation to record {$values[$i]} in field {$table['fields'][$field_name]['label']}", $db);
+								proc_info(l10n('info.new-edit-update-rels-exec-problems', $values[$i], $table['fields'][$field_name]['label']), $db);
 						}
 
 						// already exists, needs to be removed from values
@@ -795,7 +778,7 @@ EOT;
 
 			$default_stmt = $db->prepare($default_sql);
 			if($default_stmt === false)
-				return proc_error('SQL linkage statement with default values preparation failed.', $db);
+				return proc_error(l10n('error.sql-linkage-defaults'), $db);
 
 			foreach($values as $value) { //TODO UPDATE FOR COMPOSITE FK_SELF & FK_OTHER
 				// see whether inline linkage details are available
@@ -808,7 +791,7 @@ EOT;
 
 					#debug_log("Default linkage: $default_sql", $default_params);
 					if($default_stmt->execute($default_params) === false)
-						proc_info("Record was stored, but could not set related record $value for '$field_name'", $db);
+						proc_info(l10n('info.new-edit-update-rels-inline-defaults', $value, $field_name), $db);
 				}
 				else {
 					// we do have additional info, so we need to prepare and exec a different SQL statement
@@ -822,9 +805,9 @@ EOT;
 					// execute the SQL
 					$details_stmt = $db->prepare($sql_insert);
 					if($details_stmt === false)
-						proc_info("Preparation of updating of association details in field {$table['fields'][$field]['label']} with record #{$value} failed", $db);
+						proc_info(l10n('info.new-edit-update-rels-inline-prep', $table['fields'][$field]['label'], $value), $db);
 					else if($details_stmt->execute($inline_details['params']) === false)
-						proc_info("Updating of association details in field {$table['fields'][$field]['label']} with record #{$value} failed", $db);
+						proc_info(l10n('info.new-edit-update-rels-inline-exec', $table['fields'][$field]['label'], $value), $db);
 				}
 			}
 		}
@@ -858,7 +841,7 @@ EOT;
 				db_esc(first(array_keys($primary_keys)))
 			);
 			if(!db_get_single_val($raw_label_sql, array($pk_val), $raw_label))
-				return proc_error('Something went wrong when retrieving the updated record. It may have been deleted in the meantime.');
+				return proc_error(l10n('error.update-record-gone'));
 			$label_html = "'" . str_replace("'", "\\'", format_lookup_item_label($raw_label, $lookup_settings, $pk_val, 'html', true)) . "'";
 			echo <<<JS
 			<script>
@@ -877,8 +860,7 @@ JS;
 			return true;
 		}
 
-		proc_success(sprintf('Record %s in the database.',
-			$_GET['mode'] == MODE_NEW ? 'stored' : 'updated')); // success
+		proc_success(l10n($_GET['mode'] == MODE_NEW ? 'new-edit.success-new' : 'new-edit.success-edit'));
 
 		if(!isset($_SESSION['redirect'])) {
 			$new_keys = array();

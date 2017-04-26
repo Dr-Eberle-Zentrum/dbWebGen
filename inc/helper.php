@@ -252,7 +252,7 @@
 		if(isset($APP['search_string_transformation']) && $APP['search_string_transformation'] != '') {
 			$string_trafo = $APP['search_string_transformation'];
 			if(substr_count($string_trafo, '%s') !== 1)
-				proc_error('$APP[search_string_transformation] does not include a placeholder for the value, i.e. %s');
+				proc_error(l10n('search.transformation-invalid'));
 		}
 
 		// for sprintf() we need to escape any %
@@ -497,8 +497,8 @@
 			$popup_title = unquote($TABLES[$linkage['table']]['item_name'] . ' Details');
 
 			$detail_data_span = sprintf(
-				"<a role='button' onclick='linkage_details_click(this)' class='space-left multiple-select-details-edit' data-id-other='%s' data-details-title='%s' data-details-url='%s' id='%s_details_%s' title='Edit The Details Of This Association'><span class='glyphicon glyphicon-th-list'></span></a>",
-				$fk_other_value, $popup_title, $inline_url, $field_name, $fk_other_value
+				"<a role='button' onclick='linkage_details_click(this)' class='space-left multiple-select-details-edit' data-id-other='%s' data-details-title='%s' data-details-url='%s' id='%s_details_%s' title='%s'><span class='glyphicon glyphicon-th-list'></span></a>",
+				$fk_other_value, $popup_title, $inline_url, $field_name, $fk_other_value, l10n('lookup-field.linkage-details-edit-tooltip')
 			);
 		}
 
@@ -522,19 +522,19 @@
 			));
 
 			$edit_other_span = sprintf(
-				"<a role='button' onclick='lookup_edit_other(this)' class='space-left multiple-select-lookup-edit' data-id-other='%s' data-edit-url='%s' id='%s_lookup_edit_%s' title='Edit The Associated %s'><span class='glyphicon glyphicon-edit'></span></a>",
+				"<a role='button' onclick='lookup_edit_other(this)' class='space-left multiple-select-lookup-edit' data-id-other='%s' data-edit-url='%s' id='%s_lookup_edit_%s' title='%s'><span class='glyphicon glyphicon-edit'></span></a>",
 				$fk_other_value,
 				$edit_url,
 				$field_name,
 				$fk_other_value,
-				unquote($lookup_table_item_name)
+				l10n('lookup-field.linkage-assoc-edit-tooltip', unquote($lookup_table_item_name))
 			);
 		}
 
 		$item_div_format = <<<STR
 			<div class='table multiple-select-item' data-field='%s' data-id-other='%s'>
 				<div class='tr'>
-					<div class='td nowrap'><a role='button' onclick='remove_linked_item(this)' data-field='%s' data-id='%s' data-role='remove' title='Remove The Association With This %s'><span class='glyphicon glyphicon-remove-circle'></span></a>%s%s</div>
+					<div class='td nowrap'><a role='button' onclick='remove_linked_item(this)' data-field='%s' data-id='%s' data-role='remove' title='%s'><span class='glyphicon glyphicon-remove-circle'></span></a>%s%s</div>
 					<div class='td full-width multiple-select-text'>%s</div>
 				</div>
 			</div>
@@ -544,7 +544,7 @@ STR;
 			unquote($fk_other_value),
 			unquote($field_name),
 			unquote($fk_other_value),
-			unquote($lookup_table_item_name),
+			l10n('lookup-field.linkage-assoc-delete-tooltip', unquote($lookup_table_item_name)),
 			$detail_data_span,
 			$edit_other_span,
 			format_lookup_item_label($fk_other_text, $field['lookup'], $fk_other_value, 'html', true)
@@ -574,8 +574,11 @@ STR;
 				&& $raw_len > $max_chars // the length exceeds the configured maximum
 				&& $i < $cunt - 1 // we're not at the last record
 			) {
-				$rest = $cunt - $i;
-				$html .= "<a role='button' title='Text clipped due to length. Click to show clipped text' class='clipped_text'>[$rest more]</a><span class='clipped_text'>";
+				$html .= sprintf(
+					"<a role='button' title='%s' class='clipped_text'>[%s more]</a><span class='clipped_text'>",
+					l10n('lookup-field.linked-records-clipped-tooltip'),
+					$cunt - $i
+				);
 				$clip_opened = true;
 			}
 
@@ -613,9 +616,11 @@ STR;
 			$ret = $highlighter->highlight(htmlspecialchars(mb_substr($text, 0, $max_chars), ENT_COMPAT | ENT_HTML401));
 
 			if($expandable)
-				$ret .= "<a role='button' title='Text clipped due to length. Click to show clipped text' class='clipped_text'>[...]</a><span class='clipped_text'>" .
-				$highlighter->highlight(htmlspecialchars(mb_substr($text, $max_chars), ENT_COMPAT | ENT_HTML401)) .
-				"</span>";
+				$ret .= sprintf(
+					"<a role='button' title='%s' class='clipped_text'>[...]</a><span class='clipped_text'>%s</span>",
+					l10n('helper.html-text-clipped'),
+					$highlighter->highlight(htmlspecialchars(mb_substr($text, $max_chars), ENT_COMPAT | ENT_HTML401))
+				);
 			else
 				$ret .= '...';
 		}
@@ -759,7 +764,7 @@ STR;
 			$html_val = html($val);
 			$title = ''; $class = '';
 			if($html_val == '') {
-				$title = 'There is no display value for this referenced record, so its identifier is displayed here';
+				$title = l10n('lookup-field.linked-record-no-display-value');
 				$html_val = html($record[db_postfix_fieldname($col, FK_FIELD_POSTFIX, false)]);
 				$class = 'dotted';
 			}
@@ -811,7 +816,7 @@ STR;
 					$linked_rec['title'] = '';
 					$linked_rec['class'] = '';
 					if($linked_rec['html_val'] == '') {
-						$linked_rec['title'] = 'There is no display value for this referenced record, so its identifier is displayed here';
+						$linked_rec['title'] = l10n('lookup-field.linked-record-no-display-value');
 						$linked_rec['html_val'] = $highlighter->highlight(html($linked_rec['raw_val'] = $id_val));
 						$linked_rec['class'] = 'dotted';
 					}
@@ -834,7 +839,7 @@ STR;
 					$field_obj = FieldFactory::create($_GET['table'], $col);
 					if($field_obj->has_map_picker()) {
 						$val = $field_obj->render_map_picker_button(
-							$val, 'map-marker', 'Click to show this location on a popup map', true, 'btn-link', $record[$col]
+							$val, 'map-marker', l10n('geom-field.map-picker-view-tooltip'), true, 'btn-link', $record[$col]
 						);
 					}
 				}
@@ -963,36 +968,33 @@ STR;
 		if($clear_msg_buffer)
 			$_SESSION['msg'] = array();
 
-		$msg = '<div class="alert alert-danger"><b>Error</b>: ' . $txt;
+		$msg = '<div class="alert alert-danger"><b>'. l10n('info-box.error-head') .'</b>: ' . $txt;
 		if(is_object($db)) {
 			$e = $db->errorInfo();
 			$msg .= "<ul>\n<li>". str_replace("\n", '</li><li>', html($e[2])) . "</li>\n";
-			$msg .= "<li>Error Codes: SQLSTATE {$e[0]}, Driver {$e[1]}</li>\n";
+			$msg .= "<li>". l10n('info-box.sql-codes') .": SQLSTATE {$e[0]}, Driver {$e[1]}</li>\n";
 			$msg .= "</ul>\n";
 		}
 		$msg .= "</div>\n";
 		$_SESSION['msg'][] = $msg;
-
-		#debug_log(debug_backtrace());
-
 		return false;
 	}
 
 	//------------------------------------------------------------------------------------------
 	function proc_success($txt) {
 	//------------------------------------------------------------------------------------------
-		$_SESSION['msg'][] = '<div class="alert alert-success"><b>Success</b>: ' . html($txt) . "</div>\n";
+		$_SESSION['msg'][] = '<div class="alert alert-success"><b>'.l10n('info-box.success-head').'</b>: ' . html($txt) . "</div>\n";
 		return true;
 	}
 
 	//------------------------------------------------------------------------------------------
 	function proc_info($txt, $db = null) {
 	//------------------------------------------------------------------------------------------
-		$msg = '<div class="alert alert-info"><b>Information</b>: ' . $txt;
+		$msg = '<div class="alert alert-info"><b>'.l10n('info-box.info-head').'</b>: ' . $txt;
 		if(is_object($db)) {
 			$e = $db->errorInfo();
 			$msg .= "<ul>\n<li>". str_replace("\n", '</li><li>', html($e[2])) . "</li>\n";
-			$msg .= "<li>Error Codes: SQLSTATE {$e[0]}, Driver {$e[1]}</li>\n";
+			$msg .= "<li>". l10n('info-box.sql-codes') .": SQLSTATE {$e[0]}, Driver {$e[1]}</li>\n";
 			$msg .= "</ul>\n";
 		}
 		$msg .= "</div>\n";
@@ -1146,7 +1148,7 @@ STR;
 
 		foreach($table['primary_key']['columns'] as $pk) {
 			if(!isset($_GET[$pk]))
-				return proc_error("Key '$pk' of object to edit not provided");
+				return proc_error(l10n('error.missing-pk-value', $pk));
 
 			$pk_vals[$pk] = $_GET[$pk];
 		}
@@ -1166,7 +1168,7 @@ STR;
 				break;
 
 			default:
-				return proc_error('Invalid database type specified in config/settings.php');
+				return proc_error(l10n('error.invalid-dbtype', $DB['type']));
 		}
 
 		if($name[0] == $escape_char)
@@ -1192,7 +1194,7 @@ STR;
 				break;
 
 			default:
-				return proc_error('Invalid database type specified in config/settings.php');
+				return proc_error(l10n('error.invalid-dbtype', $DB['type']));
 		}
 
 		$fieldname_unescaped = trim($fieldname, $escape_char);
@@ -1211,14 +1213,14 @@ STR;
 		if($db === false)
 			$db = db_connect();
 		if($db === false)
-			return proc_error('Cannot connect to DB.');
+			return proc_error(l10n('error.db-connect'));
 
 		$stmt = $db->prepare($sql);
 		if($stmt === false)
-			return proc_error('Preparing SQL statement failed', $db);
+			return proc_error(l10n('error.db-prepare'), $db);
 
 		if(false === $stmt->execute($params))
-			return proc_error('Executing SQL statement failed', $db);
+			return proc_error(l10n('error.db-execute'), $db);
 
 		$retrieved_value = $stmt->fetchColumn();
 		return true;
@@ -1230,48 +1232,46 @@ STR;
 		if($db === false)
 			$db = db_connect();
 		if($db === false)
-			return proc_error('Cannot connect to DB.');
+			return proc_error(l10n('error.db-connect'));
 
 		$stmt = $db->prepare($sql);
 		if($stmt === false)
-			return proc_error('Preparing SQL statement failed', $db);
+			return proc_error(l10n('error.db-prepare'), $db);
 
 		if(false === $stmt->execute($params))
-			return proc_error('Executing SQL statement failed', $db);
+			return proc_error(l10n('error.db-execute'), $db);
 
 		$row = $stmt->fetch(PDO::FETCH_ASSOC);
 		return true;
 	}
 
 	//------------------------------------------------------------------------------------------
+	function db_prep_exec($sql, $params, &$stmt, $db = false) {
+	//------------------------------------------------------------------------------------------
+		if($db === false)
+			$db = db_connect();
+		if($db === false)
+			return proc_error(l10n('error.db-connect'));
+		$stmt = $db->prepare($sql);
+		if($stmt === false)
+			return proc_error(l10n('error.db-prepare'), $db);
+		if(false === $stmt->execute($params))
+			return proc_error(l10n('error.db-execute'), $db);
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------
 	function get_file_upload_error_msg($code) {
 	//------------------------------------------------------------------------------------------
-
         switch ($code) {
-            case UPLOAD_ERR_INI_SIZE:
-                $message = "The uploaded file exceeds the upload_max_filesize directive in php.ini";
-                break;
-            case UPLOAD_ERR_FORM_SIZE:
-                $message = "The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form";
-                break;
-            case UPLOAD_ERR_PARTIAL:
-                $message = "The uploaded file was only partially uploaded";
-                break;
-            case UPLOAD_ERR_NO_FILE:
-                $message = "No file was uploaded";
-                break;
-            case UPLOAD_ERR_NO_TMP_DIR:
-                $message = "Missing a temporary folder";
-                break;
-            case UPLOAD_ERR_CANT_WRITE:
-                $message = "Failed to write file to disk";
-                break;
-            case UPLOAD_ERR_EXTENSION:
-                $message = "File upload stopped by extension";
-                break;
-            default:
-                $message = "Unknown upload error";
-                break;
+            case UPLOAD_ERR_INI_SIZE: $message = l10n('error.upload-err-ini-size'); break;
+            case UPLOAD_ERR_FORM_SIZE: $message = l10n('error.upload-err-form-size'); break;
+            case UPLOAD_ERR_PARTIAL: $message = l10n('error.upload-err-partial'); break;
+            case UPLOAD_ERR_NO_FILE: $message = l10n('error.upload-err-no-file'); break;
+            case UPLOAD_ERR_NO_TMP_DIR: $message = l10n('error.upload-err-no-tmp-dir'); break;
+            case UPLOAD_ERR_CANT_WRITE: $message = l10n('error.upload-err-cant-write'); break;
+            case UPLOAD_ERR_EXTENSION: $message = l10n('error.upload-err-extension'); break;
+            default: $message = l10n('error.upload-err-unknown'); break;
         }
         return $message;
     }
@@ -1282,7 +1282,7 @@ STR;
 		if($table_qualifier != '')
 			$table_qualifier = db_esc($table_qualifier) . '.';
 		else
-			proc_error('Query without table qualifier'); // some cases absolutely require table qualifiers
+			proc_error(l10n('error.query-withouth-qualifier')); // some cases absolutely require table qualifiers
 
 		if(!is_array($display)) // simple field name string
 			return $table_qualifier . db_esc($display);
@@ -1290,7 +1290,7 @@ STR;
 		// here we have something like
 		// 'display' => [ 'columns' => ['firstname', 'lastname'], 'expression' => "concat_ws(' ', %1 %2)" ]
 		if(!isset($display['columns']) || !is_array($display['columns']) || !isset($display['expression']))
-			proc_error('Invalid display expression');
+			proc_error(l10n('error.invalid-display-expression'));
 
 		$expr = $display['expression'];
 		$num_cols = count($display['columns']);
@@ -1308,7 +1308,7 @@ STR;
 		$out_params = array();
 
 		if($mode != MODE_EDIT && $mode != MODE_LIST && $mode != MODE_VIEW)
-			return proc_error('Unknown page mode.');
+			return proc_error(l10n('error.invalid-mode', $mode));
 
 		$q = 'SELECT ';
 
@@ -1457,19 +1457,23 @@ STR;
 	//------------------------------------------------------------------------------------------
 	function enable_delete() {
 	//------------------------------------------------------------------------------------------
-	echo <<<END
+		$box_head = l10n('delete.confirm-head');
+		$box_msg = l10n('delete.confirm-msg');
+		$button_cancel = l10n('delete.button-cancel');
+		$button_delete = l10n('delete.button-delete');
+		echo <<<END
 			<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog">
 				<div class="modal-dialog">
 					<div class="modal-content">
 						<!--<div class="modal-header">
 						</div>-->
 						<div class="modal-body">
-							<h4>Confirm Delete</h4>
-							Please confirm that you want to delete this record. This action cannot be undone. Note the deletion will only work if the record is not referenced by some other record.
+							<h4>$box_head</h4>
+							$box_msg
 						</div>
 						<div class="modal-footer">
-							<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-							<a class="btn btn-danger btn-ok">Delete</a>
+							<button type="button" class="btn btn-default" data-dismiss="modal">$button_cancel</button>
+							<a class="btn btn-danger btn-ok">$button_delete</a>
 						</div>
 					</div>
 				</div>
