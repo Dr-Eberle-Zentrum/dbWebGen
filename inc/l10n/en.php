@@ -171,6 +171,7 @@ HTML
             </div>
         </div>
 HTML
+        ,
         'delete.success' => 'Record successfully deleted.',
         'delete.confirm-head' => 'Confirm Delete',
         'delete.confirm-msg' => 'Please confirm that you want to delete this record. This action cannot be undone. Note the deletion will only work if the record is not referenced by some other record.',
