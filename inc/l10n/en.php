@@ -287,6 +287,77 @@ HTML
             </div>
 HTML
         ,
-        'chart.leaflet.no-data' => '<b>Note:</b> Your query did not return any records.'
+        'chart.leaflet.no-data' => '<b>Note:</b> Your query did not return any records.',
+        'chart.network-visjs.options-help' => 'Adjust this JSON object to reflect your custom network options (see the <a target="_blank" href="http://visjs.org/docs/network/#options">documentation</a>).',
+        'chart.network-visjs.nodequery-help' => <<<HTML
+            <p>Optionally use this field to provide an SQL query that provides information about nodes. The query should have named columns as follows:</p>
+            <ol class='columns'>
+                <li><code>id</code>Node ID (string or integer)</li>
+                <li><code>label</code>Node label (string)</li>
+                <li><code>options</code>: <a target="_blank" href="http://visjs.org/docs/network/nodes.html">Node options</a> (JSON string) - optional; define individual options for each node in JSON notation. Individual options override node options provided in the <i>Custom Options</i> box below.</li>
+            </ol>
+HTML
+        ,
+        'chart.network-visjs.settings' => <<<HTML
+            <p>Displays the query result as a network graph. The query result must be an edge list with the following named columns:</p>
+            <ol class='columns'>
+                <li><code>source</code>: Source node ID (string or integer)</li>
+                <li><code>target</code>: Target node ID (string or integer)</li>
+                <li><code>weight</code>: Edge weight controlling the width in pixels of the edge (number) - optional, default = 1</li>
+                <li><code>label</code>: Edge label (string) - optional</li>
+                <li><code>options</code>: <a target="_blank" href="http://visjs.org/docs/network/edges.html">Edge options</a> (JSON string) - optional; define individual options for each edge in JSON notation. Individual options override edge options provided in the <i>Custom Options</i> box below.</li>
+            </ol>
+            <p><a target="_blank" href="http://ionicons.com/">ionicons</a> are supported as node icons.</p>
+            <label class='control-label'>Node Query $1</label>
+            <p>$2</p>
+            <div class='checkbox top-margin-zero'>
+                <label>$3 Remove nodes missing in the Node Query result</label>
+            </div>
+            <label class='control-label'>Custom Options $4</label>
+            <p>$5</p>
+HTML
+        ,
+        'chart.network-visjs.node-query-invalid' => 'Invalid Node Query. Only SELECT statements are allowed. Query is ignored.',
+        'chart.network-visjs.node-query-prep' => 'Node Query produces error during preparation.',
+        'chart.network-visjs.node-query-exec' => 'Node Query produces error during execution.',
+        'chart.network-visjs.stabilizing-info' => 'Network is still stabilizing, but ready to explore.',
+        'chart.network-visjs.stabilizing-stop' => 'Click here to freeze network.',
+        'chart.sankey.settings' => <<<HTML
+            <p>A sankey diagram is a visualization used to depict a flow (links) from one set of values (nodes) to another. Sankeys are best used when you want to show a many-to-many mapping between two domains or multiple paths through a set of stages.</p>
+            <p><a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/sankey#data-format">Required columns</a>:
+            <ul class='columns'>
+                <li>1. Source node (string)</li>
+                <li>2. Target node (string)</li>
+                <li>3. Weight (number)</li>
+            </ul>
+            </p>
+
+HTML
+        ,
+        'chart.table.settings' => <<<HTML
+            <p>The query result will be visualized as a table.</p>
+            <div class="form-group">
+                <label class="control-label">Options</label>
+                <div class='checkbox top-margin-zero'>
+                    <label>$1 Allow HTML inside cells</label>
+                </div>
+            </div>
+HTML
+        ,
+        'chart.timeline.settings' => <<<HTML
+        <p>Plots date and time ranges as bars on a scrollable timeline. The query result columns must comply with the <a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/timeline#data-format">specified data format</a>.</p>
+        <div class="form-group">
+            <label class="control-label">Options</label>
+            <div class='checkbox top-margin-zero'>
+                <label>$1 Show row labels</label>
+            </div>
+            <div class='checkbox'>
+                <label>$2 Single color for all bars: $3</label>
+            </div>
+            <div class='checkbox'>
+                <label>$4 Show tooltips</label>
+            </div>
+        </div>
+HTML
     );
 ?>

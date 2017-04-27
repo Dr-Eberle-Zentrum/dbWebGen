@@ -8,21 +8,13 @@
 		// form field @name must be prefixed with exact charttype followed by dash
 		public function settings_html() {
 		//--------------------------------------------------------------------------------------
-			return <<<HTML
-			<p>Plots date and time ranges as bars on a scrollable timeline. The query result columns must comply with the <a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/timeline#data-format">specified data format</a>.</p>
-			<div class="form-group">
-				<label class="control-label">Options</label>
-				<div class='checkbox top-margin-zero'>
-					<label>{$this->page->render_checkbox($this->ctrlname('showRowLabels'), 'ON', true)}Show row labels</label>
-				</div>
-				<div class='checkbox'>
-					<label>{$this->page->render_checkbox($this->ctrlname('has-singleColor'), 'ON', false)}Single color for all bars: {$this->page->render_textbox($this->ctrlname('singleColor'), 'darkgreen')}</label>
-				</div>
-				<div class='checkbox'>
-					<label>{$this->page->render_checkbox($this->ctrlname('tooltips'), 'ON', true)}Show tooltips</label>
-				</div>
-			</div>
-HTML;
+			return l10n(
+				'chart.timeline.settings',
+				$this->page->render_checkbox($this->ctrlname('showRowLabels'), 'ON', true),
+				$this->page->render_checkbox($this->ctrlname('has-singleColor'), 'ON', false),
+				$this->page->render_textbox($this->ctrlname('singleColor'), 'darkgreen'),
+				$this->page->render_checkbox($this->ctrlname('tooltips'), 'ON', true)
+			);
 		}
 
 		//--------------------------------------------------------------------------------------
