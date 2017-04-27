@@ -10,15 +10,10 @@
 		// form field @name must be prefixed with exact charttype followed by dash
 		public function settings_html() {
 		//--------------------------------------------------------------------------------------
-			return <<<HTML
-			<p>Allows producing an interactive time series line chart with annotations. The first column must be a date, all subsequent columns numeric (<a href="https://developers.google.com/chart/interactive/docs/gallery/annotationchart#data-format" target="_blank">see here</a>).</p>
-			<div class="form-group">
-				<label class="control-label">Options</label>
-				<div class='checkbox top-margin-zero'>
-					<label>{$this->page->render_checkbox($this->ctrlname('scaleColumns'), 'ON', false)}Show separate scale for second data series</label>
-				</div>
-			</div>
-HTML;
+			return l10n(
+				'chart.annotated-timeline.settings',
+				$this->page->render_checkbox($this->ctrlname('scaleColumns'), 'ON', false)
+			);
 		}
 
 		//--------------------------------------------------------------------------------------

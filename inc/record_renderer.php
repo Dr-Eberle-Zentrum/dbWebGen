@@ -72,14 +72,31 @@
                 }
 
                 if(is_allowed($this->table, MODE_VIEW)) {
-                    $action_icons[] = "<a href='?table={$this->table_name}&amp;mode=".MODE_VIEW."{$id_str}' data-purpose='view'><span title='View this record' class='glyphicon glyphicon-zoom-in'></span></a>";
+                    $action_icons[] = sprintf(
+                        "<a href='?%s%s' data-purpose='view'><span title='%s' class='glyphicon glyphicon-zoom-in'></span></a>",
+                        http_build_query(array('table' => $this->table_name, 'mode' => MODE_VIEW)),
+                        $id_str,
+                        unquote(l10n('record-renderer.view-icon', $this->table['item_name']))
+                    );
                 }
 
-                if(is_allowed($this->table, MODE_EDIT))
-                    $action_icons[] = "<a href='?table={$this->table_name}&amp;mode=".MODE_EDIT."{$id_str}'><span title='Edit this record' class='glyphicon glyphicon-edit'></span></a>";
+                if(is_allowed($this->table, MODE_EDIT)) {
+                    $action_icons[] = sprintf(
+                        "<a href='?%s%s'><span title='%s' class='glyphicon glyphicon-edit'></span></a>",
+                        http_build_query(array('table' => $this->table_name, 'mode' => MODE_EDIT)),
+                        $id_str,
+                        unquote(l10n('record-renderer.edit-icon', $this->table['item_name']))
+                    );
+                }
 
-                if($this->allow_delete && is_allowed($this->table, MODE_DELETE))
-                    $action_icons[] = "<a role='button' data-href='?table={$this->table_name}{$id_str}&amp;mode=".MODE_DELETE."' data-toggle='modal' data-target='#confirm-delete'><span title='Delete this record' class='glyphicon glyphicon-trash'></span></a>";
+                if($this->allow_delete && is_allowed($this->table, MODE_DELETE)) {
+                    $action_icons[] = sprintf(
+                        "<a role='button' data-href='?%s%s' data-toggle='modal' data-target='#confirm-delete'><span title='%s' class='glyphicon glyphicon-trash'></span></a>",
+                        http_build_query(array('table' => $this->table_name, 'mode' => MODE_DELETE)),
+                        $id_str,
+                        unquote(l10n('record-renderer.delete-icon', $this->table['item_name']))
+                    );
+                }
 
                 if(isset($this->table['custom_actions'])) {
                     foreach($this->table['custom_actions'] as $custom_action) {
@@ -163,18 +180,29 @@ TABLE;
     		if($field_name == $sort_field && $sort_dir == 'asc')
     			$t .= "<span class='glyphicon glyphicon-arrow-up'></span>";
     		else
-    			$t .= "<a href='". build_get_params(array('sort'=>$field_name,'dir'=>'asc')) ."' title='Sort Ascending'><span class='glyphicon glyphicon-arrow-up'></span></a>";
+    			$t .= sprintf(
+                    "<a href='%s' title='%s'><span class='glyphicon glyphicon-arrow-up'></span></a>",
+                    build_get_params(array('sort' => $field_name, 'dir' => 'asc')),
+                    l10n('record-renderer.sort-asc')
+                );
 
     		if($field_name == $sort_field && $sort_dir == 'desc')
     			$t .= "<span class='glyphicon glyphicon-arrow-down'></span>";
     		else
-    			$t .= "<a href='". build_get_params(array('sort'=>$field_name,'dir'=>'desc')) ."' title='Sort Descending'><span class='glyphicon glyphicon-arrow-down'></span></a>";
+                $t .= sprintf(
+                    "<a href='%s' title='%s'><span class='glyphicon glyphicon-arrow-down'></span></a>",
+                    build_get_params(array('sort' => $field_name, 'dir' => 'desc')),
+                    l10n('record-renderer.sort-desc')
+                );
 
     		$search_val = (isset($_GET[SEARCH_PARAM_QUERY]) && isset($_GET[SEARCH_PARAM_FIELD]) && $_GET[SEARCH_PARAM_FIELD] == $field_name ? unquote($_GET[SEARCH_PARAM_QUERY]) : '');
 
     		$search_option = isset($_GET[SEARCH_PARAM_OPTION]) ? $_GET[SEARCH_PARAM_OPTION] : SEARCH_ANY;
 
-    		$t .= " <a href='javascript:void(0)' title='Search' data-value='{$search_val}' data-field='{$field_name}' data-option='{$search_option}' data-purpose='search' data-toggle='popover' data-container='body' data-placement='top'><span class='glyphicon glyphicon-search'></span></a>";
+    		$t .= sprintf(
+                " <a href='javascript:void(0)' data-value='%s' data-field='%s' data-option='%s' data-purpose='search' data-toggle='popover' data-container='body' data-placement='top'><span class='glyphicon glyphicon-search' title='%s'></span></a>",
+                $search_val, $field_name, $search_option, l10n('record-renderer.search-icon')
+            );
 
     		$t .= "</div>";
 

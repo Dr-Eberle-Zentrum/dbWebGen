@@ -65,6 +65,7 @@
         'error.storedquery-exec-params' => 'Failed to execute query with $1',
         'error.storedquery-invalid-sql' => 'Invalid SQL query. Only SELECT statements are allowed!',
         'error.storedquery-invalid-params' => 'Invalid table or field in parameterized query',
+        'error.chart-duplicate-cols' => 'There is a problem with your query, most likely you have duplicate column names in your query result. Please use aliases in your query to disambiguate column names.',
         'geom-field.map-picker-button-tooltip' => 'Assign the location from a popup map',
         'geom-field.map-picker-view-tooltip' => 'Click to show this location on a popup map',
         'global-search.cache-notice' => '<b>Note:</b> The search results for this search term were retrieved from the cache. Fresh results for this search term will be available after the cache expires in $1 minutes.',
@@ -160,9 +161,132 @@
         'new-edit.field-required-tooltip' => 'This field is required',
         'new-edit.success-new' => 'Record stored in the database.',
         'new-edit.success-edit' => 'Record updated in the database.',
+        'record-renderer.view-icon' => 'View This $1',
+        'record-renderer.edit-icon' => 'Edit This $1',
+        'record-renderer.delete-icon' => 'Delete This $1',
+        'record-renderer.sort-asc' => 'Sort Ascending',
+        'record-renderer.sort-desc' => 'Sort Descending',
+        'record-renderer.search-icon' => 'Search',
         'upload-field.browse' => 'Browse',
         'upload-field.hint-empty' => 'Note: If you don\'t want to replace the existing file on the server, you may leave this field empty',
         'helper.html-text-clipped' => 'Text clipped due to length. Click to show clipped text.',
         'helper.help-popup-title' => 'Help',
+        'view.invalid-record' => 'This record cannot be viewed. It might have been deleted.',
+        'view.add-related-data-button' => 'Add Related Data',
+        'view.edit-icon' => 'Edit This $1',
+        'view.edit-button' => 'Edit',
+        'view.delete-icon' => 'Delete This $1',
+        'view.delete-button' => 'Delete',
+        'view.list-icon' => 'List All $1',
+        'view.list-button' => 'List All',
+        'view.new-icon' => 'Create New $1',
+        'view.new-button' => 'Create New',
+        'view.related-icon' => 'List Related Records (Click For Dropdown Menu)',
+        'view.related-button' => 'List Related',
+        'view.related-menu-item' => '$1 (via $2)',
+        'view.hidden-fields-hint-1' => 'This $1 has one emtpy field.',
+        'view.hidden-fields-hint-N' => 'This $1 has $2 emtpy fields.',
+        'view.show-hidden-field-1' => 'Show This Field',
+        'view.show-hidden-field-N' => 'Show These Fields',
+        'chart.annotated-timeline.settings' => <<<HTML
+            <p>Allows producing an interactive time series line chart with annotations. The first column must be a date, all subsequent columns numeric (<a href="https://developers.google.com/chart/interactive/docs/gallery/annotationchart#data-format" target="_blank">see here</a>).</p>
+            <div class="form-group">
+                <label class="control-label">Options</label>
+                <div class='checkbox top-margin-zero'>
+                    <label>$1 Show separate scale for second data series</label>
+                </div>
+            </div>
+HTML
+        ,
+        'chart.bar.settings' => <<<HTML
+            <p>Renders data as a bar chart. Put group labels in the 1st column, followed by one column per group listing the data (<a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/barchart#data-format">see details</a>).</p>
+            <div class="form-group">
+                <label class="control-label">Bar Direction</label>
+                <div>
+                    <label class="radio-inline">$1 Horizontal</label>
+                    <label class="radio-inline">$2 Vertical</label>
+                </div>
+            </div>
+            <!-- STACKED DOES NOT WORK !
+            <div class="form-group">
+                <label class="control-label">Stacking of Values</label>
+                <div>$3</div>
+            </div>-->
+HTML
+        ,
+        'chart.candlestick.settings' => <<<HTML
+            <p>A candlestick chart is used to show an opening and closing value overlaid on top of a total variance. It requires <a target=_blank href="https://developers.google.com/chart/interactive/docs/gallery/candlestickchart#data-format">four columns</a> in the query result.</p>
+HTML
+        ,
+        'chart.geo.region_helptext' => <<<HELPTEXT
+            Can be one of the following:<ul style="padding-left:1.25em">
+                <li><code>world</code> - A geochart of the entire world.</li>
+                <li>
+                  A continent or a sub-continent, specified by its
+                  <a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/geochart#Continent_Hierarchy">3-digit code</a>, e.g., <code>011</code> for Western Africa.
+                </li>
+                <li>
+                  A country, specified by its
+                  <a target="_blank" href="http://en.wikipedia.org/wiki/ISO_3166-1_alpha-2">ISO 3166-1 alpha-2</a> code,
+                  e.g., <code>AU</code> for Australia.
+                </li>
+                <li>
+                  A state in the United States, specified by its
+                  <a target="_blank" href="http://en.wikipedia.org/wiki/ISO_3166-2:US">ISO 3166-2:US</a> code, e.g.,
+                  <code>US-AL</code> for Alabama.
+                </li>
+            </ul>
+HELPTEXT
+        ,
+        'chart.geo.settings' => <<<HTML
+            <p>Renders a map of a country, a continent, or a region with markers or colored areas depending on the display mode.</p>
+            <div class="form-group">
+            <label class="control-label">Display Mode</label>
+                <div class="radio"  style="margin-top:0">
+                    <label class="">$1 <i>Markers</i> &mdash; uses circles to designate regions that are scaled according to a specified value (<a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/geochart#markers-mode-format">required columns</a>)</label>
+                </div>
+                <div class="radio">
+                    <label class="">$2 <i>Regions</i> &mdash; colors whole regions, such as countries, provinces, or states (<a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/geochart#regions-mode-format">required columns</a>)</label>
+                </div>
+                <div class="radio">
+                    <label class="">$3 <i>Text</i> &mdash; labels the regions with identifiers (e.g., "Russia" or "Asia") (<a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/geochart#text-mode-format">required columns</a>)</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="$4" class="control-label">Displayed Region $5</label> $6
+            </div>
+HTML
+        ,
+        'chart.leaflet.settings' => <<<HTML
+            <p><a target="_blank" href="http://leafletjs.com/">Leaflet</a> offers mobile-friendly interactive maps.</p>
+            <div class='form-group'>
+                <label class="control-label">Data Format</label>
+                <div class="radio"  style="margin-top:0">
+                    <label class="">$1 <i>Point Coordinates</i> &mdash; the first two columns in the query result are latitude (<i>y</i>) and longitude (<i>x</i>) of each record</label>
+                </div>
+                <div class="radio"  style="margin-top:0">
+                    <label class="">$2 <i>Well-Known-Text</i> &mdash; the first column in the query result is the <a target="_blank" href="https://en.wikipedia.org/wiki/Well-known_text">WKT representation</a> of each record (this allows arbitrary shapes like polygons, multilines, etc. in addition to points)</label>
+                </div>
+                <p>All additional columns will be put in the marker popups as a table. Only records with non-<code>NULL</code> geometries are included in the result visualization.</p>
+            </div>
+            <div class='form-group'>
+                <label class="control-label">Base Map Tiles Provider</label>
+                <p>$3</p>
+                <div>Custom URL template (optional; overrides the above selection):</div>
+                <div>$4</div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Display Options</label>
+                <div class='checkbox top-margin-zero'><label>$5 Show Scale</label></div>
+                <div class='checkbox'><label>$6 Show Overview Map</label></div>
+                <div class='checkbox'>Maximum Zoom Level (leave empty to tile provider&apos;s default): $7</div>
+                <div class='checkbox'>Attribution (HTML) to display in bottom-right corner: $8</div>
+                <label class="control-label">Spatial Reference System</label>
+                <p>Select the coordinate system that Leaflet should use. The source data needs to be transformed to this projection.</p>
+                <div class='form-group'>$9</div>
+            </div>
+HTML
+        ,
+        'chart.leaflet.no-data' => '<b>Note:</b> Your query did not return any records.'
     );
 ?>
