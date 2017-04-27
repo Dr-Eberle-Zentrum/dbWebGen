@@ -92,7 +92,7 @@
 				'<span class="glyphicon glyphicon-user"></span> '.
 				(isset($LOGIN['name_field']) ? $_SESSION['user_data'][$LOGIN['name_field']] : '') .
 				'</a></li>'.
-				'<li><a href="#" id="logout"><span class="glyphicon glyphicon-log-out"></span> '.l10n('navbar.logout').'</a></li></ul>';
+				'<li><a href="#" id="logout"><span class="glyphicon glyphicon-log-out"></span> '.l10n('login.logout-navbar-label').'</a></li></ul>';
 			}
 		}
 
