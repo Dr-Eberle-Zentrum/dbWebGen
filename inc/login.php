@@ -49,7 +49,7 @@ END;
 		global $LOGIN;
 
 		if(!isset($_POST['username']) || !isset($_POST['password']))
-			return proc_error(l10n('error.user-or-password-missing'));
+			return proc_error(l10n('error.missing-login-data', $LOGIN['form']['username'], $LOGIN['form']['password']));
 
 		$error_msg = l10n('error.invalid-login', $LOGIN['form']['username'], $LOGIN['form']['password']);
 

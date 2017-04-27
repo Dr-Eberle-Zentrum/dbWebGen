@@ -21,15 +21,15 @@
 
 		//--------------------------------------------------------------------------------------
 		public static $chart_types = array(
-			'table' => 'Table',
-			'annotated_timeline' => 'Annotated Timeline',
-			'bar' => 'Bar Chart',
-			'candlestick' => 'Candlestick Chart',
-			'geo' => 'Geo Chart',
-			'leaflet' => 'Leaflet Map',
-			'network_visjs' => 'Network (vis.js)',
-			'sankey' => 'Sankey Chart',
-			'timeline' => 'Timeline'
+			'table' => 'chart-type.table',
+			'annotated_timeline' => 'chart-type.annotated-timeline',
+			'bar' => 'chart-type.bar',
+			'candlestick' => 'chart-type.candlestick',
+			'geo' => 'chart-type.geo',
+			'leaflet' => 'chart-type.leaflet',
+			'network_visjs' => 'chart-type.network-visjs',
+			'sankey' => 'chart-type.sankey',
+			'timeline' => 'chart-type.timeline'
 		);
 
 		//--------------------------------------------------------------------------------------
@@ -304,10 +304,11 @@ HTML;
 		protected function build_settings_part() {
 		//--------------------------------------------------------------------------------------
 			$vistype_field = QUERYPAGE_FIELD_VISTYPE;
-
-			$select = $this->render_select($vistype_field, first(array_keys(QueryPage::$chart_types)), QueryPage::$chart_types);
+			$chart_types_sorted = l10n_values(QueryPage::$chart_types);
+			asort($chart_types_sorted);
+			$select = $this->render_select($vistype_field, /*default*/ 'table', $chart_types_sorted);
 			$settings = '';
-			foreach(QueryPage::$chart_types as $type => $name) {
+			foreach(array_keys($chart_types_sorted) as $type) {
 				$chart = dbWebGenChart::create($type, $this);
 				$settings .= sprintf('<div id="viz-option-%s">%s</div>', $type, $chart->settings_html());
 			}

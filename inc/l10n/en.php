@@ -1,5 +1,15 @@
 <?
     $_L10N = array(
+        'chart-type.annotated-timeline' => 'Annotated Timeline',
+        'chart-type.bar' => 'Bar Chart',
+        'chart-type.candlestick' => 'Candlestick Chart',
+        'chart-type.geo' => 'Geo Chart',
+        'chart-type.leaflet' => 'Leaflet Map',
+        'chart-type.network-visjs' => 'Network (vis.js)',
+        'chart-type.sankey' => 'Sankey Chart',
+        'chart-type.table' => 'Table',
+        'chart-type.timeline' => 'Timeline',
+
         'chart.annotated-timeline.settings' => <<<HTML
             <p>Allows producing an interactive time series line chart with annotations. The first column must be a date, all subsequent columns numeric (<a href="https://developers.google.com/chart/interactive/docs/gallery/annotationchart#data-format" target="_blank">see here</a>).</p>
             <div class="form-group">
@@ -30,7 +40,7 @@ HTML
             <p>A candlestick chart is used to show an opening and closing value overlaid on top of a total variance. It requires <a target=_blank href="https://developers.google.com/chart/interactive/docs/gallery/candlestickchart#data-format">four columns</a> in the query result.</p>
 HTML
         ,
-        'chart.geo.region_helptext' => <<<HELPTEXT
+        'chart.geo.region-helptext' => <<<HELPTEXT
             Can be one of the following:<ul style="padding-left:1.25em">
                 <li><code>world</code> - A geochart of the entire world.</li>
                 <li>
@@ -223,7 +233,7 @@ HTML
         'error.no-values' => 'No values to store in database.',
         'error.not-allowed' => 'You are not allowed to perform this action.',
         'error.query-withouth-qualifier' => 'Query without table qualifier',
-        'error.user-or-password-missing' => 'Please provide username and password.',
+        'error.missing-login-data' => 'Please provide $1 and $2.',
         'error.map-picker-wkt' => '<b>Error:</b> The current value <code>$1</code> is invalid and cannot be displayed.',
         'error.map-picker-single-marker' => 'You need to make sure you have exactly one marker placed on the map.',
         'error.edit-inline-form-id-missing' => 'Parent form identifier not provided.',
