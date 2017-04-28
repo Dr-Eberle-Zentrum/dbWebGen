@@ -9,11 +9,30 @@
 	// append scripts using add_javascript() and add_stylesheet()
 	$META_INCLUDES = array();
 
+	// DEFINE LOCAL AND SERVED PATHS
 	if(!defined('ENGINE_PATH'))
 		die('This is the engine, you put your app into another directory and define ENGINE_PATH to point here. Note: ENGINE_PATH must end with a slash. See the README file for details.');
 	if(!defined('ENGINE_PATH_LOCAL')) define('ENGINE_PATH_LOCAL', ENGINE_PATH);
 	define('ENGINE_PATH_HTTP', ENGINE_PATH);
 
+	// SET CUSTOM TIMEZONE
+	if(isset($APP['timezone']))
+		date_default_timezone_set($APP['timezone']);
+
+	// INITIALIZE SESSION
+	// to prevent session issues if multiple dbWebGen instances on same domain
+	session_name(preg_replace('/[^a-zA-Z0-9]+/', '', 'dbWebGen' . dirname($_SERVER['PHP_SELF'])));
+	session_start();
+	if(isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 3600)) {
+		session_unset();
+		session_destroy();
+		session_start();
+	}
+	$_SESSION['LAST_ACTIVITY'] = time();
+	if(!isset($_SESSION['msg']))
+		$_SESSION['msg'] = array();
+
+	// CORE INCLUDES
 	require_once ENGINE_PATH_LOCAL . 'inc/l10n.php';
 	require_once ENGINE_PATH_LOCAL . 'inc/constants.php';
 	require_once ENGINE_PATH_LOCAL . 'inc/helper.php';
@@ -22,37 +41,16 @@
 	require_once ENGINE_PATH_LOCAL . 'inc/page.php';
 	require_once 'settings.php';
 
-	// initialize session and plugins and stuff
-	{
-		if(isset($APP['timezone']))
-			date_default_timezone_set($APP['timezone']);
+	// LOAD PLUGINS
+	if(isset($APP['plugins']))
+		foreach(array_values($APP['plugins']) as $plugin)
+			require_once $plugin; // we want to load plugins in global scope
+	if(isset($APP['preprocess_func']) && function_exists($APP['preprocess_func']))
+		$APP['preprocess_func'](); // allow the app to do some initialization
+	if(isset($LOGIN['initializer_proc']) && function_exists($LOGIN['initializer_proc']))
+		call_user_func($LOGIN['initializer_proc']); // allow the app to do some initialization (legacy)
 
-		if(isset($APP['plugins']))
-			foreach(array_values($APP['plugins']) as $plugin)
-				require_once $plugin; // we want to load plugins in global scope
-
-		if(isset($APP['preprocess_func']) && function_exists($APP['preprocess_func']))
-			$APP['preprocess_func'](); // allow the app to do some initialization
-
-		// to prevent session issues if multiple dbWebGen instances on same domain
-		session_name(preg_replace('/[^a-zA-Z0-9]+/', '', 'dbWebGen' . dirname($_SERVER['PHP_SELF'])));
-		session_start();
-
-		if(isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 3600)) {
-			session_unset();
-			session_destroy();
-			session_start();
-		}
-		$_SESSION['LAST_ACTIVITY'] = time();
-
-		if(!isset($_SESSION['msg']))
-			$_SESSION['msg'] = array();
-
-		if(isset($LOGIN['initializer_proc']) && function_exists($LOGIN['initializer_proc']))
-			call_user_func($LOGIN['initializer_proc']); // allow the app to do some initialization
-	}
-
-	// any special processing?
+	// SPECIAL MODES PROCESSING
 	if(is_logged_in()) switch(safehash($_GET, 'mode', '')) {
 		case MODE_DELETE:
 			require_once ENGINE_PATH_LOCAL . 'inc/delete.php';
