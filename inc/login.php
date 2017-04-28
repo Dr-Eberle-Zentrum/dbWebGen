@@ -3,9 +3,11 @@
 	function render_login() {
 	//------------------------------------------------------------------------------------------
 		global $LOGIN;
+		$heading = l10n('login.head');
+		$btn = l10n('login.button');
 
 		echo <<<END
-		<h1>Login</h1>
+		<h1>$heading</h1>
 		<form class="form-horizontal" role="form" method="post">
 		  <div class="form-group">
 			<label class="control-label col-sm-2" for="username">{$LOGIN['form']['username']}:</label>
@@ -21,7 +23,7 @@
 		  </div>
 		  <div class="form-group">
 			<div class="col-sm-offset-2 col-sm-10">
-			  <input type="submit" class="btn btn-primary" value="Submit">
+			  <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-log-in space-right"></span> $btn</button>
 			</div>
 		  </div>
 		</form>
@@ -47,9 +49,9 @@ END;
 		global $LOGIN;
 
 		if(!isset($_POST['username']) || !isset($_POST['password']))
-			return proc_error('Please provide username and password.');
+			return proc_error(l10n('error.missing-login-data', $LOGIN['form']['username'], $LOGIN['form']['password']));
 
-		$error_msg = "Invalid {$LOGIN['form']['username']} and/or {$LOGIN['form']['password']}.";
+		$error_msg = l10n('error.invalid-login', $LOGIN['form']['username'], $LOGIN['form']['password']);
 
 		if(is_array($LOGIN['users_table'])) {
 			// assoc array based authentication
@@ -69,18 +71,9 @@ END;
 				db_esc($LOGIN['users_table']),
 				db_esc($LOGIN['username_field']));
 
-			$db = db_connect();
-			if($db === false)
-				return proc_error("Invalid database configuration.");
-
-			$stmt = $db->prepare($sql);
-			if($stmt === false)
-				return proc_error("Invalid login parameters.", $db);
-
-			if($stmt->execute(array($_POST['username'])) === false)
-				return proc_error("Invalid login parameters.", $db);
-
-			if(($user = $stmt->fetch(PDO::FETCH_ASSOC)) === false)
+			if(!db_get_single_row($sql, array($_POST['username']), $user))
+				return false;
+			if($user === false)
 				return proc_error($error_msg);
 		}
 
@@ -114,7 +107,7 @@ END;
 		// allow the app to do some initialization
 		if(isset($LOGIN['login_success_proc']) && $LOGIN['login_success_proc'] != '') {
 			if(!function_exists($LOGIN['login_success_proc']))
-				proc_error("Provided plugin function for 'login_success_proc' does not exist");
+				proc_error(l10n('error.invalid-function', $LOGIN['login_success_proc']));
 			else
 				call_user_func($LOGIN['login_success_proc']);
 		}

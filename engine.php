@@ -14,6 +14,7 @@
 	if(!defined('ENGINE_PATH_LOCAL')) define('ENGINE_PATH_LOCAL', ENGINE_PATH);
 	define('ENGINE_PATH_HTTP', ENGINE_PATH);
 
+	require_once ENGINE_PATH_LOCAL . 'inc/l10n.php';
 	require_once ENGINE_PATH_LOCAL . 'inc/constants.php';
 	require_once ENGINE_PATH_LOCAL . 'inc/helper.php';
 	require_once ENGINE_PATH_LOCAL . 'inc/container.php';

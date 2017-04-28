@@ -7,15 +7,10 @@
 		// form field @name must be prefixed with exact charttype followed by dash
 		public function settings_html() {
 		//--------------------------------------------------------------------------------------
-			return <<<HTML
-				<p>The query result will be visualized as a table.</p>
-				<div class="form-group">
-					<label class="control-label">Options</label>
-					<div class='checkbox top-margin-zero'>
-						<label>{$this->page->render_checkbox($this->ctrlname('allowHtml'), 'ON', false)}Allow HTML inside cells</label>
-					</div>
-				</div>
-HTML;
+			return l10n(
+				'chart.table.settings',
+				$this->page->render_checkbox($this->ctrlname('allowHtml'), 'ON', false)
+			);
 		}
 
 		//--------------------------------------------------------------------------------------

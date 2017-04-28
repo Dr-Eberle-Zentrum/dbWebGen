@@ -164,7 +164,7 @@
 			while($row = $query_result->fetch(PDO::FETCH_ASSOC)) {
 				// check for duplicate column names, because this will cause "invisible" error in the browser
 				if($row_nr == 0 && count($row) != count($columns))
-					proc_error('There is a problem with your query, most likely you have duplicate column names in your query result. Please use aliases in your query to disambiguate column names.');
+					proc_error(l10n('error.chart-duplicate-cols'));
 				// <<
 
 				$data_array .= ($row_nr == 0 ? '' : ",\n") . $this->data_to_js($row, $row_nr++);

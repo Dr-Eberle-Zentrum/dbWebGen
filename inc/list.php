@@ -58,22 +58,32 @@
 	//------------------------------------------------------------------------------------------
 	function initialize_search_popover() {
 	//------------------------------------------------------------------------------------------
-		echo "<script>var search_popover_template = \"<form class='form-inline' action='".build_get_params()."' method='get'><div class='form-group'>" .
-			"<select id='searchoption' class='form-control input-sm space-right' name='".SEARCH_PARAM_OPTION."'>".
-			"<option value='".SEARCH_ANY."'>Field contains</option>".
-			"<option value='".SEARCH_WORD."'>Field contains word</option>".
-			"<option value='".SEARCH_EXACT."'>Field is exactly</option>".
-			"<option value='".SEARCH_START."'>Field starts with</option>".
-			"<option value='".SEARCH_END."'>Field ends with</option>".
+		echo sprintf(
+			"<script>var search_popover_template = \"<form class='form-inline' action='%s' method='get'><div class='form-group'>" .
+			"<select id='searchoption' class='form-control input-sm space-right' name='%s'>".
+			"<option value='%s'>%s</option>".
+			"<option value='%s'>%s</option>".
+			"<option value='%s'>%s</option>".
+			"<option value='%s'>%s</option>".
+			"<option value='%s'>%s</option>".
 			"</select>".
-			"<input id='searchtext' type='text' class='form-control input-sm space-right' name='".SEARCH_PARAM_QUERY."' placeholder='Enter search text' autofocus>".
-			"<input type='hidden' name='table' value='{$_GET['table']}'>".
+			"<input id='searchtext' type='text' class='form-control input-sm space-right' name='%s' placeholder='%s' autofocus>".
+			"<input type='hidden' name='table' value='%s'>".
 			"<input type='hidden' name='mode' value='list'>".
-			"<input type='hidden' name='".SEARCH_PARAM_FIELD."' value='%FIELDNAME%'>". // the %FIELDNAME% is replaced during runtime in dbweb.js
-			//"<input class='btn btn-sm btn-primary' type='submit' value='Search'/></div></form>\";</script>\n";
-			"<button class='btn btn-sm btn-primary' type='submit'><span class='glyphicon glyphicon-search'></span></button></div></form>\";</script>\n";
+			"<input type='hidden' name='%s' value='%%FIELDNAME%%'>". // the %FIELDNAME% is replaced during runtime in dbweb.js
+			"<button class='btn btn-sm btn-primary' type='submit'><span class='glyphicon glyphicon-search'></span></button></div></form>\";</script>\n<div id='search-popover'></div>\n",
 
-		echo "<div id='search-popover'></div>\n"; //needed for CSS styling of the popover
+			build_get_params(),
+			SEARCH_PARAM_OPTION,
+			SEARCH_ANY, l10n('search.popover-option-any'),
+			SEARCH_WORD, l10n('search.popover-option-word'),
+			SEARCH_EXACT, l10n('search.popover-option-exact'),
+			SEARCH_START, l10n('search.popover-option-start'),
+			SEARCH_END, l10n('search.popover-option-end'),
+			SEARCH_PARAM_QUERY,	l10n('search.popover-placeholder'),
+			$_GET['table'],
+			SEARCH_PARAM_FIELD
+		);
 	}
 
 	//------------------------------------------------------------------------------------------
@@ -84,12 +94,12 @@
 
 		$table_name = $_GET['table'];
 		if(!isset($TABLES[$table_name]))
-			return proc_error('Invalid table name or table not configured.');
+			return proc_error(l10n('error.invalid-table', $table_name));
 
 		$table = $TABLES[$table_name];
 
 		if(!is_allowed($table, $_GET['mode']))
-			return proc_error('You are not allowed to perform this action.');
+			return proc_error(l10n('error.not-allowed'));
 
 		$fields = $table['fields'];
 
@@ -100,7 +110,7 @@
 
 		$db = db_connect();
 		if($db === false)
-			return proc_error('Cannot connect to DB.');
+			return proc_error(l10n('error.db-connect'));
 
 		$sql = 'SELECT COUNT(*) FROM ' . db_esc($table_name) . ' d' . ($search !== null ? " WHERE {$search['sql']}" : '');
 		#debug_log($sql);
@@ -127,39 +137,44 @@
 		echo "<div class='col-sm-12'>\n";
 
 		if(is_allowed($table, MODE_NEW))
-			echo "<p class='hidden-print'><a href='?table={$table_name}&amp;mode=".MODE_NEW."' class='btn btn-default'><span class='glyphicon glyphicon-plus'></span> New {$table['item_name']}</a></p>\n";
+			echo sprintf(
+				"<p class='hidden-print'><a href='?%s' class='btn btn-default'><span class='glyphicon glyphicon-plus'></span> %s</a></p>\n",
+				http_build_query(array('table' => $table_name, 'mode' => MODE_NEW)),
+				l10n('list.button-new', $table['item_name'])
+			);
 
 		if($search !== null) {
-			$search_type = 'contains';
+			$info_l10n = 'search.infotext-any';
 			if(isset($_GET[SEARCH_PARAM_OPTION])) switch($_GET[SEARCH_PARAM_OPTION]) {
-				case SEARCH_END: $search_type = 'ends with'; break;
-				case SEARCH_START: $search_type = 'starts with'; break;
-				case SEARCH_EXACT: $search_type = 'matches'; break;
-				case SEARCH_WORD: $search_type = 'contains word'; break;
+				case SEARCH_END: $info_l10n = 'search.infotext-end'; break;
+				case SEARCH_START: $info_l10n = 'search.infotext-start'; break;
+				case SEARCH_EXACT: $info_l10n = 'search.infotext-exact'; break;
+				case SEARCH_WORD: $info_l10n = 'search.infotext-word'; break;
 			}
-			echo "<p class='text-info'>Searching all records where <b>".html($fields[$_GET[SEARCH_PARAM_FIELD]]['label'])."</b> {$search_type} <span class='bg-success'><strong>".html($_GET[SEARCH_PARAM_QUERY])."</strong></span> ".
-			"<a class='btn btn-default space-left hidden-print' href='?".http_build_query(array('table'=>$table_name, 'mode'=>MODE_LIST))."'><span class='glyphicon glyphicon-remove-circle'></span> Clear search</a></p>\n";
+			echo sprintf(
+				"<p class='text-info'>%s <a class='btn btn-default space-left hidden-print' href='?%s'><span class='glyphicon glyphicon-remove-circle'></span> %s</a></p>\n",
+				l10n($info_l10n, html($fields[$_GET[SEARCH_PARAM_FIELD]]['label']), html($_GET[SEARCH_PARAM_QUERY])),
+				http_build_query(array('table' => $table_name, 'mode' => MODE_LIST)),
+				l10n('search.button-clear')
+			);
 		}
 
 		if($num_records == 0) {
-			echo "<p class='text-info'>No records found.</p>";
+			echo "<p class='text-info'>". l10n('search.no-results') ."</p>";
 		}
 		else {
-			$what = ($search !== null ? 'search results' : 'records');
-			$total_ind = ($total_in_table > 0 ? "  (total in table: <b>$total_in_table</b>)" : '');
+			$what = l10n($search !== null ? 'search.num-indicator' : 'list.num-indicator', $start_record, $end_record, $num_records);
+			$total_ind = ($total_in_table > 0 ? "<span class='space-left'>(" . l10n('list.total-indicator', $total_in_table) . ")</span>" : '');
+			echo "<p class='text-info'>{$what}{$total_ind}</p>";
 
-			echo "<p class='text-info'>Displaying {$what} <b>{$start_record}</b>&ndash;<b>{$end_record}</b> of <b>{$num_records}</b>{$total_ind}</p>";
 			$query = build_query($table_name, $table, $offset, MODE_LIST, null, $params_arr);
-
 			#debug_log($query);
 			#debug_log($params_arr);
-
 			$res = $db->prepare($query);
-			if($res === FALSE)
-				return proc_error('List query preparation went wrong.', $db);
-
-			if($res->execute($params_arr) === FALSE)
-				return proc_error('List query execution went wrong.', $db);
+			if($res === false)
+				return proc_error(l10n('error.db-prepare', $db));
+			if($res->execute($params_arr) === false)
+				return proc_error(l10n('error.db-execute', $db));
 
 			echo $pag;
 
@@ -167,6 +182,7 @@
 			foreach($fields as $field_name => &$field)
 				if(!is_field_hidden_in_list($field))
 					$relevant_fields[$field_name] = $field;
+
 			require_once 'record_renderer.php';
 			$rr = new RecordRenderer($table_name, $table, $relevant_fields, $res, true, true, null);
 			echo $rr->html();

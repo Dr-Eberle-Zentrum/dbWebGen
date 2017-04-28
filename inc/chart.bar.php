@@ -10,27 +10,17 @@
 		// form field @name must be prefixed with exact charttype followed by dash
 		public function settings_html() {
 		//--------------------------------------------------------------------------------------
-			return <<<HTML
-			<p>Renders data as a bar chart. Put group labels in the 1st column, followed by one column per group listing the data (<a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/barchart#data-format">see details</a>).</p>
-			<div class="form-group">
-				<label class="control-label">Bar Direction</label>
-				<div>
-					<label class="radio-inline">{$this->page->render_radio($this->ctrlname('direction'), 'horizontal', true)}Horizontal</label>
-					<label class="radio-inline">{$this->page->render_radio($this->ctrlname('direction'), 'vertical')}Vertical</label>
-				</div>
-			</div>
-			<!-- STACKED DOES NOT WORK !<div class="form-group">
-				<label class="control-label">Stacking of Values</label>
-				<div>
-					{$this->page->render_select($this->ctrlname('stacking'), 0, array(
-						0 => 'None',
-						'absolute' => 'Absolute values',
-						'percent' => 'Relative values as a percentage of 100%',
-						'relative' => 'Relative values as a fraction of 1'
-					))}
-				</div>
-			</div>-->
-HTML;
+			return l10n(
+				'chart.bar.settings',
+				$this->page->render_radio($this->ctrlname('direction'), 'horizontal', true),
+				$this->page->render_radio($this->ctrlname('direction'), 'vertical'),
+				$this->page->render_select($this->ctrlname('stacking'), 0, array(
+					0 => 'None',
+					'absolute' => 'Absolute values',
+					'percent' => 'Relative values as a percentage of 100%',
+					'relative' => 'Relative values as a fraction of 1'
+				))
+			);
 		}
 
 		//--------------------------------------------------------------------------------------

@@ -25,21 +25,6 @@
 		// returns html form for chart settings
 		public /*string*/ function settings_html() {
 		//--------------------------------------------------------------------------------------
-			$options_help = <<<HELP
-				Adjust this JSON object to reflect your custom network options (see the <a target="_blank" href="http://visjs.org/docs/network/#options">documentation</a>).
-HELP;
-
-			$nodequery_help = <<<HELPTEXT
-				<p>Optionally use this field to provide an SQL query that provides information about nodes. The query should have named columns as follows:</p>
-				<ol class='columns'>
-					<li><code>id</code>Node ID (string or integer)</li>
-					<li><code>label</code>Node label (string)</li>
-					<li><code>options</code>: <a target="_blank" href="http://visjs.org/docs/network/nodes.html">Node options</a> (JSON string) - optional; define individual options for each node in JSON notation. Individual options override node options provided in the <i>Custom Options</i> box below.</li>
-				</ol>
-HELPTEXT;
-			$nodequery_help = get_help_popup('Node Query', $nodequery_help);
-			$options_help = get_help_popup('Custom Options', $options_help);
-
 			$visjs_options = <<<OPTIONS
 {
   "layout": {
@@ -84,24 +69,14 @@ HELPTEXT;
   }
 }
 OPTIONS;
-			return <<<SETTINGS
-				<p>Displays the query result as a network graph. The query result must be an edge list with the following named columns:</p>
-				<ol class='columns'>
-					<li><code>source</code>: Source node ID (string or integer)</li>
-					<li><code>target</code>: Target node ID (string or integer)</li>
-					<li><code>weight</code>: Edge weight controlling the width in pixels of the edge (number) - optional, default = 1</li>
-					<li><code>label</code>: Edge label (string) - optional</li>
-					<li><code>options</code>: <a target="_blank" href="http://visjs.org/docs/network/edges.html">Edge options</a> (JSON string) - optional; define individual options for each edge in JSON notation. Individual options override edge options provided in the <i>Custom Options</i> box below.</li>
-				</ol>
-				<p><a target="_blank" href="http://ionicons.com/">ionicons</a> are supported as node icons.</p>
-				<label class='control-label'>Node Query {$nodequery_help}</label>
-				<p>{$this->page->render_textarea($this->ctrlname('nodequery'), '', 'monospace vresize')}</p>
-				<div class='checkbox top-margin-zero'>
-					<label>{$this->page->render_checkbox($this->ctrlname('hidenodes'), 'ON', false)}Remove nodes missing in the Node Query result</label>
-				</div>
-				<label class='control-label'>Custom Options {$options_help}</label>
-				<p>{$this->page->render_textarea($this->ctrlname('options'), $visjs_options, 'monospace vresize')}</p>
-SETTINGS;
+			return l10n(
+				'chart.network-visjs.settings',
+				get_help_popup('Node Query', l10n('chart.network-visjs.nodequery-help')),
+				$this->page->render_textarea($this->ctrlname('nodequery'), '', 'monospace vresize'),
+				$this->page->render_checkbox($this->ctrlname('hidenodes'), 'ON', false),
+				get_help_popup('Custom Options', l10n('chart.network-visjs.options-help')),
+				$this->page->render_textarea($this->ctrlname('options'), $visjs_options, 'monospace vresize')
+			);
 		}
 
 		//--------------------------------------------------------------------------------------
@@ -214,7 +189,7 @@ SETTINGS;
 			do { // check nodes query to define nodes list
 				$nodes_sql = trim($this->page->get_post($this->ctrlname('nodequery'), ''));
 				if($nodes_sql != '' && mb_substr(mb_strtolower($nodes_sql), 0, 6) !== 'select') {
-					proc_error('Invalid Node Query. Only SELECT statements are allowed. Query is ignored.');
+					proc_error(l10n('chart.network-visjs.node-query-invalid'));
 					break;
 				}
 
@@ -223,12 +198,12 @@ SETTINGS;
 
 				$nodes_stmt = $this->page->db()->prepare($nodes_sql);
 				if($nodes_stmt === false) {
-					proc_error('Node Query produces error during preparation.', $this->page->db());
+					proc_error(l10n('chart.network-visjs.node-query-prep'), $this->page->db());
 					break;
 				}
 
 				if($nodes_stmt->execute() === false) {
-					proc_error('Node Query produces error during execution.', $this->page->db());
+					proc_error(l10n('chart.network-visjs.node-query-exec'), $this->page->db());
 					break;
 				}
 
@@ -316,6 +291,8 @@ SETTINGS;
 POS_JS;
 			}
 
+			$stab_info_js = json_encode(l10n('chart.network-visjs.stabilizing-info'));
+			$stab_stop_js = json_encode(l10n('chart.network-visjs.stabilizing-stop'));
 
 			$js = <<<EOT
 			</script>
@@ -326,8 +303,7 @@ POS_JS;
 			var network;
 			var stabilization_cancelled = false;
 
-			document.addEventListener('DOMContentLoaded', function()
-			{
+			document.addEventListener('DOMContentLoaded', function() {
 				var container = document.getElementById('chart_div');
 
 				var data = {
@@ -368,10 +344,8 @@ POS_JS;
 						progress_bar.find('div')
 							.attr('aria-valuenow', $iterations)
 							.css('width', '100%')
-							.html('Network is still stabilizing, but ready to explore. <a style="" id="stop_simu" href="javascript:void(0)">Click here to freeze network</a>');
-
+							.html($stab_info_js + ' <a style="" id="stop_simu" href="javascript:void(0)">' + $stab_stop_js + '</a>');
 						network.fit();
-
 						$('#stop_simu').on('click', function() {
 							network.stopSimulation();
 							stabilization_cancelled = true;
@@ -390,12 +364,9 @@ POS_JS;
 						window.open(clicked_item.href_view).focus();
 				});
 
-
 				network.on('stabilized', function(arg) {
 					progress_bar.hide();
-
 					$positions_js
-
 					network.setOptions({ physics: false });
 				});
 

@@ -6,8 +6,7 @@
 			App title as displayed in header menu. If page_title is not set, this is also used as HTML <title> for the page
 		- page_title: string (optional)
 			What to put in the HTML title element. If not provided, the 'title' setting is used.
-		- lang: string (optional) (default: 'en')
-			Localization (where applicable)
+		- lang: DEPRECATED, DO NOT USE
 		- bootstrap_css: string (optional) (default: https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css)
 			Specify a bootstrap CSS theme, if you do not want to use the default theme.
 		- page_icon: string (optional)

@@ -142,14 +142,20 @@
 
 			$popup_title = html('New ' . $this->get_label());
 
-			$html .= sprintf("<div class='col-sm-2'><button type='button' class='btn btn-default multiple-select-add' data-create-title='%s' data-create-url='%s' id='%s_add' formnovalidate><span title='Remove this association' class='glyphicon glyphicon-plus'></span> %s</button></div>\n", $popup_title, $popup_url, $this->field_name, $this->get_create_new_label());
+			$html .= sprintf(
+				"<div class='col-sm-2'><button type='button' title='%s' class='btn btn-default multiple-select-add' data-create-title='%s' data-create-url='%s' id='%s_add' formnovalidate><span class='glyphicon glyphicon-plus'></span> %s</button></div>\n",
+				l10n('lookup-field.create-new-tooltip'),
+				$popup_title,
+				$popup_url,
+				$this->field_name,
+				$this->get_create_new_label());
 		}
 
 		//--------------------------------------------------------------------------------------
 		protected function render_cardinality_single(&$output_buf) {
 		//--------------------------------------------------------------------------------------
 			$output_buf .= sprintf(
-				"<select %s %s class='form-control %s' id='%s_dropdown' name='%s' data-table='%s' data-fieldname='%s' data-placeholder='Click to select' data-thistable='%s' %s %s %s data-lookuptype='single' %s %s>\n",
+				"<select %s %s class='form-control %s' id='%s_dropdown' name='%s' data-table='%s' data-fieldname='%s' data-placeholder='%s' data-thistable='%s' %s %s %s data-lookuptype='single' %s %s>\n",
 
 				$this->get_disabled_attr(),
 				$this->get_required_attr(),
@@ -158,6 +164,7 @@
 				$this->get_control_name(),
 				$this->get_lookup_table_name(),
 				$this->field_name,
+				l10n('lookup-field.placeholder'),
 				$this->table_name,
 				$this->is_lookup_async() ? sprintf("data-language='%s'", get_app_lang()) : '',
 				$this->is_lookup_async() ? sprintf("data-minimum-input-length='%s'", $this->get_async_min_input_len()) : '',
@@ -168,7 +175,7 @@
 
 			$db = db_connect();
 			if($db === false)
-				return proc_error('Cannot connect to DB.');
+				return proc_error(l10n('error.db-connect'));
 
 			$where_clause = '';
 			if($this->is_lookup_async() && $this->has_submitted_value() && $this->get_submitted_value() != NULL_OPTION)
@@ -179,10 +186,10 @@
 
 			$stmt = $db->prepare($sql);
 			if(false === $stmt)
-				return proc_error('Could not prepare query', $db);
+				return proc_error(l10n('error.db-prepare'), $db);
 
 			if(false === $stmt->execute($where_clause != '' ? array($this->get_submitted_value()) : array()))
-				return proc_error("Could not retrieve data.", $db);
+				return proc_error(l10n('error.db-execute'), $db);
 
 			if(!$this->is_required())
 				$output_buf .= sprintf("<option value='%s'>&nbsp;</option>\n", NULL_OPTION);
@@ -223,7 +230,7 @@
 			);
 
 			$output_buf .= sprintf(
-				"<select %s %s class='form-control multiple-select-dropdown %s' id='%s_dropdown' data-table='%s' data-thistable='%s' data-fieldname='%s' data-placeholder='Click to select' %s %s %s data-lookuptype='multiple' data-allow-clear='true' %s>\n",
+				"<select %s %s class='form-control multiple-select-dropdown %s' id='%s_dropdown' data-table='%s' data-thistable='%s' data-fieldname='%s' data-placeholder='%s' %s %s %s data-lookuptype='multiple' data-allow-clear='true' %s>\n",
 
 				$this->get_disabled_attr(),
 				$this->get_required_attr(),
@@ -232,6 +239,7 @@
 				$this->get_lookup_table_name(),
 				$this->table_name,
 				$this->field_name,
+				l10n('lookup-field.placeholder'),
 				$this->is_lookup_async() ? sprintf("data-language='%s'", get_app_lang()) : '',
 				$this->is_lookup_async() ? sprintf("data-minimum-input-length='%s'", $this->get_async_min_input_len()) : '',
 				$this->is_lookup_async() && $this->has_async_delay() ? sprintf("data-asyncdelay='%s'", $this->get_async_delay()) : '',
@@ -249,7 +257,7 @@
 
 			$db = db_connect();
 			if($db === false)
-				return proc_error('Could not connect to database.');
+				return proc_error(l10n('error.db-connect'));
 
 			if($this->is_lookup_async()) {
 				// just prepare the list of already existing linked items
@@ -262,7 +270,7 @@
 
 				$stmt = $db->prepare($sql);
 				if($stmt === false)
-					return proc_error('Could not prepare statement', $db);
+					return proc_error(l10n('error.db-prepare'), $db);
 
 				foreach($linked_items as $linked_item_val) {
 					if(false === $stmt->execute(array($linked_item_val)))

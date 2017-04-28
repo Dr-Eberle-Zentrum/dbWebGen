@@ -36,8 +36,8 @@
 			if($html === false)
             	return false;
             $html = sprintf(
-                '<div class="alert alert-warning"><b>Note:</b> The search results for this search term were retrieved from the cache. Fresh results for this search term will be available after the cache expires in %s minutes.</div>',
-                intval((self::get_cache_ttl() - (time() - $t)) / 60)
+                '<div class="alert alert-warning">%s</div>',
+                l10n('global-search.cache-notice', intval((self::get_cache_ttl() - (time() - $t)) / 60))
             ) . $html;
             return true;
         }
@@ -142,12 +142,12 @@
             self::sanitize_search_term();
             $mode = MODE_GLOBALSEARCH;
             $q = isset($_GET['mode']) && $_GET['mode'] == MODE_GLOBALSEARCH && isset($_GET['q']) ? unquote($_GET['q']) : '';
-
+            $search_placeholder = l10n('global-search.input-placeholder');
             return <<<HTML
             <form class="navbar-form" method="GET">
                 <input type="hidden" name="mode" value="$mode" />
             	<div class="input-group">
-                    <input id="global-search-box" type="text" class="form-control" placeholder="Search" name="q" value="$q" />
+                    <input id="global-search-box" type="text" class="form-control" placeholder="$search_placeholder" name="q" value="$q" />
             		<div class="input-group-btn">
             			<button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span></button>
             		</div>
@@ -162,21 +162,21 @@ HTML;
             global $TABLES;
 
             self::sanitize_search_term();
-            $head = sprintf('<h1>Search Results for <code>%s</code></h1>', html($_GET['q']));
+            $head = sprintf('<h1>%s <code>%s</code></h1>', l10n('global-search.results-for'), html($_GET['q']));
 
             $is_from_cache = self::read_cache($html);
             if($is_from_cache)
                 return $html;
 
             if(mb_strlen($_GET['q']) < self::min_search_len())
-                return $head . sprintf('<p>This search term is too short, it must contain at least %s characters.</p>', self::min_search_len());
+                return $head . l10n('global-search.term-too-short', self::min_search_len());
 
             // to speed up, retrieve transformed query term once from database
             db_get_single_val('select ' . sprintf(self::search_string_transformation(), '?'), array($_GET['q']), $transformed_search_term);
 
             if(!self::is_preview()) {
                 if(!isset($TABLES[$_GET['table']]))
-                    return $head . proc_error('Invalid table');
+                    return $head . proc_error(l10n('error.invalid-table', $_GET['table']));
                 return $head . self::render_table_results($_GET['table'], $TABLES[$_GET['table']], $transformed_search_term, $num_results);
             }
 
@@ -199,11 +199,11 @@ HTML;
             else if($total_results == 1)
                 $msg = 'One search result found.';
             else {
-                $msg = sprintf(
-                    'Found search results in %s table%s. %s',
-                    $total_tables == 1 ? 'one' : $total_tables,
-                    $total_tables == 1 ? '' : 's',
-                    $total_tables > 3 ? 'Click to jump to table: ' . implode(' | ', $anchors) : ''
+                $msg = l10n(
+                    'global-search.results-info',
+                    $total_tables == 1 ? l10n('global-search.results-one') : $total_tables,
+                    $total_tables == 1 ? l10n('global-search.results-table-singular') : l10n('global-search.results-table-plural'),
+                    $total_tables > 3 ? l10n('global-search.results-jump'). ': ' . implode(' | ', $anchors) : ''
                 );
             }
             $html = $head . $msg . $body;
@@ -254,13 +254,12 @@ HTML;
 
             $db = db_connect();
             if($db === false)
-                return proc_error('Cannot connect to database.');
+                return proc_error(l10n('error.db-connect'));
             $stmt = $db->prepare($sql);
             if($stmt === false)
-                return proc_error('Failed to prepare search query.', $db);
-
+                return proc_error(l10n('error.db-prepare'), $db);
             if(false === $stmt->execute(array($param_name => $transformed_search_term)))
-    			return proc_error('Executing SQL statement failed', $db);
+    			return proc_error(l10n('error.db-execute'), $db);
 
             $highlighter = new SearchResultHighlighter($transformed_search_term, self::transliterator_rules());
             $rr = new RecordRenderer($table_name, $table, $relevant_fields, $stmt, false, false, $highlighter);
@@ -269,18 +268,20 @@ HTML;
                 return ''; // don't render anything
 
             if($num_results < self::max_results_to_display())
-                $num_msg = self::is_preview() ? '' : "$num_results search results found.";
+                $num_msg = self::is_preview() ? '' : l10n('global-search.results-found-detail', $num_results);
             else {
                 $show_more = self::is_preview() ?
-                    sprintf('<a class="btn btn-default" href="?%s"><span class="glyphicon glyphicon-hand-right"></span> Display All Results</a>', http_build_query(array('mode' => MODE_GLOBALSEARCH, 'table' => $table_name, 'q' => $_GET['q']))) :
-                    'To narrow down search results please adapt your search term.';
-                $num_msg = sprintf('Only the first %s search results are shown here. %s', self::max_results_to_display(), $show_more);
+                    sprintf('<a class="btn btn-default" href="?%s"><span class="glyphicon glyphicon-hand-right"></span> '.l10n('global-search.show-more-preview').'</a>', http_build_query(array('mode' => MODE_GLOBALSEARCH, 'table' => $table_name, 'q' => $_GET['q'])))
+                    :
+                    l10n('global-search.show-more-detail');
+                $num_msg = l10n('global-search.limited-results-hint', self::max_results_to_display()) . " $show_more";
             }
 
             $is_preview = self::is_preview() ? 'true' : 'false';
+            $goto_top = l10n('global-search.goto-top');
             return <<<HTML
                 <h2 id="$table_name">
-                    {$table['display_name']}<sup class="scroll-top"><a title="Go to Top" style="font-size:10px" href="#top"><span class="glyphicon glyphicon-arrow-up"></span></a></sup>
+                    {$table['display_name']}<sup class="scroll-top"><a title="$goto_top" style="font-size:10px" href="#top"><span class="glyphicon glyphicon-arrow-up"></span></a></sup>
                 </h2>
                 <p>$num_msg</p>
                 <div class="col-sm-12">

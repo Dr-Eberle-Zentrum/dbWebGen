@@ -21,7 +21,8 @@
 		// render_settings: form_method, name_attr, id_attr
 		//--------------------------------------------------------------------------------------
 			$output_buf .= sprintf(
-				"<span class='btn btn-default btn-file file-input'>Browse <input %s %s data-text='%s_text' type='file' id='%s' name='%s' /></span><span class='filename' id='%s_text'></span>",
+				"<span class='btn btn-default btn-file file-input'><span class='glyphicon glyphicon-search'></span> %s <input %s %s data-text='%s_text' type='file' id='%s' name='%s' /></span><span class='filename' id='%s_text'></span>",
+				l10n('upload-field.browse'),
 				$this->get_disabled_attr(),
 				$this->get_required_attr(),
 				$this->get_control_name(),
@@ -30,7 +31,7 @@
 				$this->get_control_name()
 			);
 			if($_GET['mode'] == MODE_EDIT)
-				$output_buf .= '<span class="help-block">Note: If you don\'t want to replace the existing file on the server, you may leave this field empty.</span>';
+				$output_buf .= '<span class="help-block">' . l10n('upload-field.hint-empty') . '</span>';
 			return $output_buf;
 		}
 

@@ -29,7 +29,7 @@
                 }
                 catch(e) {
                     $('#infos').prepend($('<div/>').addClass('alert alert-danger').html(
-                        '<b>Error!</b> The current value <code>$val_html</code> is invalid and cannot be displayed.'
+                        '". l10n('error.map-picker-wkt', $val_html) ."'
                     ));
                 }
             ";
@@ -48,12 +48,16 @@
         $is_readonly_js = json_encode($is_readonly);
         $edit_info = '';
         if(!$is_readonly) {
+            $instr = l10n('map-picker.edit-instructions');
             $edit_info = <<<HTML
                 <div id="infos" class="col-sm-12">
-                    <div class="alert alert-info">Place the shape at the desired location. To create a shape, click any of the shape icons (e.g. the <span class='glyphicon glyphicon-map-marker'></span> marker icon) and then draw the shape on the map. To edit an existing shape, click the <span class='glyphicon glyphicon-edit'></span> icon and follow the instructions. When you're done, click the <span class="glyphicon glyphicon-check"></span> Done button. Double click to move an overlay image to the front.</div>
+                    <div class="alert alert-info">$instr</div>
                 </div>
 HTML;
         }
+
+        $msg_single_marker = json_encode(l10n('error.map-picker-single-marker'));
+        $done_button = l10n('map-picker.done-button');
 
         echo <<<HTML
             <div class="container-fluid" style="margin-top: .5em; 0">
@@ -81,7 +85,7 @@ HTML;
                 function finish_map_picker() {
                     var layers;
                     if(!drawnItems || (layers = drawnItems.getLayers()).length != 1) {
-                        alert('You need to make sure you have exactly one marker placed on the map.');
+                        alert($msg_single_marker);
                         return;
                     }
                     var wkt = Terraformer.WKT.convert(layers[0].toGeoJSON().geometry);
@@ -109,7 +113,7 @@ HTML;
                         L.Control.DoneButton = L.Control.extend({
                             onAdd: function(map) {
                                 var container = L.DomUtil.create('div', 'leaflet-bar');
-                                container.innerHTML = '<button class="btn btn-primary" onclick="finish_map_picker()"><span class="glyphicon glyphicon-check"></span> Done</button>';
+                                container.innerHTML = '<button class="btn btn-primary" onclick="finish_map_picker()"><span class="glyphicon glyphicon-check space-right"></span> {$done_button}</button>';
                                 return container;
                             }
                         });
