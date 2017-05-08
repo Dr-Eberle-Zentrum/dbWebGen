@@ -172,9 +172,9 @@
 			#debug_log($params_arr);
 			$res = $db->prepare($query);
 			if($res === false)
-				return proc_error(l10n('error.db-prepare', $db));
+				return proc_error(l10n('error.db-prepare'), $db);
 			if($res->execute($params_arr) === false)
-				return proc_error(l10n('error.db-execute', $db));
+				return proc_error(l10n('error.db-execute'), $db);
 
 			echo $pag;
 
