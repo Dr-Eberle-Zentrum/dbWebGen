@@ -360,7 +360,7 @@
 					Any of the MODE_* modes to which this action applies (currently only MODE_LIST implemented)
 				- handler: string
 					Name of a handler function that will be called for the current record. Arguments: (1) name of the current table (2) table info from this settings file (3) the record retrieved from the database using PDO::FETCH_ASSOC and (4) this very custom action hash, which means that any additional key/value pairs you add to this array will get passed to the handler function.
-		- list_in_related: bool (optional) (default: true)
+		- show_in_related: bool (optional) (default: true)
 			In MODE_VIEW, there is a dropdown linking to tables where the current record is linked through a foreign key (T_LOOKUP). If you do not want this table to appear in this list at all, set this to true.
 		- render_links: array (optional)
 			If MODE_LINK and MODE_LIST are allowed in this table, then there will be an extra icon in the table in MODE_LIST for each record that allows to view the actual object represented by the record. An associative array has to be provided for each entry in this array:

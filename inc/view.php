@@ -91,7 +91,9 @@
 		foreach($TABLES as $tn => $ti) {
 			if($table_name == $tn
 			 || !in_array(MODE_LIST, $ti['actions'])
-			 || (isset($ti['show_in_related']) && $ti['show_in_related'] === false))
+			 || (isset($ti['show_in_related']) && $ti['show_in_related'] === false)
+			 || (isset($ti['list_in_related']) && $ti['list_in_related'] === false) // in settings.template.php this was wrongly listed, so we keep it working
+			 )
 			{
 				continue;
 			}
