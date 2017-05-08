@@ -369,7 +369,7 @@ function set_map_picker_handler() {
 function set_create_new_handler() {
 //------------------------------------------------------------------------------------------
     $('button[data-create-url]').click(function() {
-        var popup = get_popup_position(this, 500, 700);
+        var popup = get_popup_position(this, 770, 700);
         window.open(
             $(this).data('create-url'),
             /*$(this).data('create-title')*/ '_blank',
