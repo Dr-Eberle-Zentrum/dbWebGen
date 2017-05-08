@@ -225,15 +225,18 @@
 		//--------------------------------------------------------------------------------------
 			global $TABLES;
 			$output_buf .= sprintf(
-				"<input class='multiple-select-hidden' id='%s' name='%s' type='hidden' value='%s' />\n",
-				$this->get_control_id(), $this->get_control_name(), trim($this->get_submitted_value(''))
+				"<input class='multiple-select-hidden' id='%s' name='%s' type='hidden' value='%s' %s />\n",
+				$this->get_control_id(), 
+				$this->get_control_name(), 
+				trim($this->get_submitted_value('')),
+				$this->get_required_attr()
 			);
 
 			$output_buf .= sprintf(
-				"<select %s %s class='form-control multiple-select-dropdown %s' id='%s_dropdown' data-table='%s' data-thistable='%s' data-fieldname='%s' data-placeholder='%s' %s %s %s data-lookuptype='multiple' data-allow-clear='true' %s>\n",
+				"<select %s class='form-control multiple-select-dropdown %s' id='%s_dropdown' data-table='%s' data-thistable='%s' data-fieldname='%s' data-placeholder='%s' %s %s %s data-lookuptype='multiple' data-allow-clear='true' %s>\n",
 
 				$this->get_disabled_attr(),
-				$this->get_required_attr(),
+				//$this->get_required_attr(),
 				$this->is_lookup_async() ? 'lookup-async' : '',
 				$this->get_control_id(),
 				$this->get_lookup_table_name(),
