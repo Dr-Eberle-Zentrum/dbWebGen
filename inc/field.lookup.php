@@ -67,7 +67,7 @@
 		//--------------------------------------------------------------------------------------
 		public function get_create_new_label() { // default: Create New
 		//--------------------------------------------------------------------------------------
-			return isset($this->field['lookup']['create_new_label']) ? $this->field['lookup']['create_new_label'] : 'Create New';
+			return isset($this->field['lookup']['create_new_label']) ? $this->field['lookup']['create_new_label'] : l10n('lookup-field.create-new-button');
 		}
 		//--------------------------------------------------------------------------------------
 		public function get_async_min_input_len() {

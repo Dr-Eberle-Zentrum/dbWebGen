@@ -292,6 +292,7 @@ HTML
         'login.head' => 'Login',
         'login.logout-navbar-label' => 'Logout',
 
+		'lookup-field.create-new-button' => 'Create New',
         'lookup-field.create-new-tooltip' => 'If you cannot find the record in the dropdown box, click this button to create a new record.',
         'lookup-field.placeholder' => 'Click to select',
         'lookup-field.linkage-details-edit-tooltip' => 'Edit The Details Of This Association',

@@ -303,14 +303,15 @@ HTML
         'login.head' => 'Anmelden',
         'login.logout-navbar-label' => 'Abmelden',
 
-        'lookup-field.create-new-tooltip' => 'Wenn Sie den gewünschten Datensatz nicht in der Dropdown-Liste finden, klicken Sie diesen Knopf, um einen neuen Datensatz anzulegen.',
+		'lookup-field.create-new-button' => 'Neu',
+		'lookup-field.create-new-tooltip' => 'Wenn Sie den gewünschten Datensatz nicht in der Dropdown-Liste finden, klicken Sie diesen Knopf, um einen neuen Datensatz anzulegen.',
         'lookup-field.placeholder' => 'Klicken zum Auswählen',
         'lookup-field.linkage-details-edit-tooltip' => 'Beziehungsdetails bearbeiten',
         'lookup-field.linkage-assoc-edit-tooltip' => 'Referenzierten $1-Datensatz bearbeiten',
         'lookup-field.linkage-assoc-delete-tooltip' => 'Beziehung zu diesem/r $1 entfernen',
         'lookup-field.linked-records-clipped-tooltip' => 'Text wegen Überlänge abgeschnitten. Klicke um gesamten Text einzublenden.',
         'lookup-field.linked-record-no-display-value' => 'Für diesen refernzierten Datensatz konnte keine Anzeigewert ermittelt werden, daher wird sein Identifikationswert dargestellt',
-
+		
         'main-page.html' => '<p>Wählen Sie eine Aktion aus dem Menü aus.</p>',
 
         'map-picker.done-button' => 'Fertig',
