@@ -260,6 +260,29 @@
 					Label for the button next to the dropdown box, which allows users to add new records to the linked table
 				- allow_edit: boolean (optional) (default: see $APP/lookup_allow_edit_default)
 					Whether to allow the user to edit the associated record from the lookup table. Note that setting this to true will only have an effect if the lookup table is configured in $TABLES, and MODE_EDIT is an allowed action there.
+				- prefined_values: array (optional)
+					Array mapping fieldnames (array keys) to their predefined values (array values), which will be used when the user creates a new record using the Create New button.
+					Example:
+					 	'predefined_values' => array(
+							'name' => 'Barles Chronson',	// string value
+							'height' => 1.78,				// numeric value
+							'enemies' => '[3,77]'			// foreign keys for T_LOOKUP/CARDINALITY multiple field
+						)
+				- field_settings_override: array (optional)
+					Array mapping fieldnames (array keys) to settings that override those in settings.php or the current context. This array will be used when the user creates a new record using the Create New button. Use this with caution, since it may contractict the constraints in the DB or the dbWebGen logic.
+					Each value is either
+						h ... hide the control
+					Or any combination of
+						e ... enable the control
+						d ... disable the control
+						r ... make field required
+						o ... make field optional
+						s ... show the control if hidden
+					Example:
+					 	'field_settings_override' => array(
+							'name' => 'h',		// hide field
+							'height' => 'e',	// enable field (useful in conjunction with predefined_values)
+						)
 			- linkage: array
 				If cardinality=CARDINALITY_MULTIPLE, we need to define here the m:n relationship table that links records from this table (via fk_self) with records of the other table (via fk_other)
 				- table: string

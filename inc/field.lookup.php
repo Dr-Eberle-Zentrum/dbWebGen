@@ -127,17 +127,45 @@
 			return json_decode($v);
 		}
 
+		//------------------------------------------------------------------------------------------
+		protected function get_predefined_values_for_create_new() {
+		//------------------------------------------------------------------------------------------
+			return isset($this->field['lookup']['predefined_values'])
+				&& is_array($this->field['lookup']['predefined_values'])
+				? $this->field['lookup']['predefined_values'] : array();
+		}
+
+		//------------------------------------------------------------------------------------------
+		protected function get_settings_overrides_for_create_new() {
+		//------------------------------------------------------------------------------------------
+			return isset($this->field['lookup']['field_settings_override'])
+				&& is_array($this->field['lookup']['field_settings_override'])
+				? $this->field['lookup']['field_settings_override'] : array();
+		}
+
 		//--------------------------------------------------------------------------------------
 		public function render_create_new_button_html(/*in+out*/ &$html) {
 		//--------------------------------------------------------------------------------------
 			if($this->is_disabled() || !$this->is_allowed_create_new())
 				return;
 
-			$popup_url = '?' . http_build_query(array(
-				'popup' 		=> $this->table_name,
-				'lookup_field' 	=> $this->field_name,
-				'table' 		=> $this->get_lookup_table_name(),
-				'mode'			=> MODE_NEW
+			$predef_fields = array();
+			foreach($this->get_predefined_values_for_create_new() as $field => $val)
+				$predef_fields[PREFILL_PREFIX . $field] = $val;
+
+			$field_settings_overrides = array();
+			foreach($this->get_settings_overrides_for_create_new() as $field => $val)
+				$field_settings_overrides[FIELD_SETTINGS_PREFIX . $field] = $val;
+
+			$popup_url = '?' . http_build_query(array_merge(
+				array(
+					'popup' 		=> $this->table_name,
+					'lookup_field' 	=> $this->field_name,
+					'table' 		=> $this->get_lookup_table_name(),
+					'mode'			=> MODE_NEW
+				),
+				$predef_fields,
+				$field_settings_overrides
 			));
 
 			$popup_title = html('New ' . $this->get_label());
@@ -226,8 +254,8 @@
 			global $TABLES;
 			$output_buf .= sprintf(
 				"<input class='multiple-select-hidden' id='%s' name='%s' type='hidden' value='%s' %s />\n",
-				$this->get_control_id(), 
-				$this->get_control_name(), 
+				$this->get_control_id(),
+				$this->get_control_name(),
 				trim($this->get_submitted_value('')),
 				$this->get_required_attr()
 			);

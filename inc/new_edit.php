@@ -16,6 +16,32 @@
 		$form_id = isset($_POST['__form_id__']) ? $_POST['__form_id__'] : ($_POST['__form_id__'] = uniqid('__form_id__', true));
 		#debug_log("$form_id = ", $_SESSION[$form_id]);
 
+		// override field display settings? >>
+		foreach($_GET as $param => $val) {
+			if(substr($param, 0, strlen(FIELD_SETTINGS_PREFIX)) == FIELD_SETTINGS_PREFIX
+				&& strlen($field = substr($param, strlen(FIELD_SETTINGS_PREFIX))) > 0
+				&& isset($table['fields'][$field]))
+			{
+				if(strpos($val, 'h') !== false)
+					$table['fields'][$field]['editable'] = false;
+				else {
+					$table['fields'][$field]['render_settings'] = array();
+					if(strpos($val, 's') !== false)
+						$table['fields'][$field]['editable'] = true;
+
+					if(strpos($val, 'e') !== false)
+						$table['fields'][$field]['render_settings']['disabled'] = false;
+					else if(strpos($val, 'd') !== false)
+						$table['fields'][$field]['render_settings']['disabled'] = true;
+
+					if(strpos($val, 'o') !== false)
+						$table['fields'][$field]['required'] = false;
+					else if(strpos($val, 'r') !== false)
+						$table['fields'][$field]['required'] = true;
+				}
+			}
+		} // <<
+
 		if($_GET['mode'] == MODE_NEW) {
 			echo "<h1>" . l10n('new-edit.heading-new', $table['item_name']) . "</h1>\n";
 
@@ -96,8 +122,7 @@
 				continue;
 			}
 
-			$prefilled = isset($_GET[PREFILL_PREFIX . $field_name]);// ? 'prefilled' : '';
-
+			$prefilled = isset($_GET[PREFILL_PREFIX . $field_name]);
 			$required_indicator = (is_field_required($field) ? '<span class="required-indicator">&#9733;</span>' : '');
 			echo "<div class='form-group'>\n";
 			echo sprintf(
@@ -235,7 +260,7 @@ EOT;
 		if(!is_allowed($table, $_GET['mode']) && is_own_user_record(true))
 			$disabled = ($field_name != $LOGIN['password_field']);
 		else
-			$disabled = $prefilled;
+			$disabled = isset($field['render_settings']) && isset($field['render_settings']['disabled']) ? $field['render_settings']['disabled'] : $prefilled;
 
 		$field_obj = FieldFactory::create($table_name, $field_name, $field);
 		$render_settings = array(

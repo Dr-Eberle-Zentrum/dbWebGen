@@ -86,6 +86,9 @@
 	// prefix for url parameters that should be used as prefill values in MODE_NEW
 	define('PREFILL_PREFIX', 'pre:');
 
+	// field settings override in MODE_NEW & MODE_EDIT. See settings.template.php at field/lookup/field_settings_override for possible values
+	define('FIELD_SETTINGS_PREFIX', 'settings:');
+
 	// separator character(s) for inline display of multiple records
 	define('MULTIPLE_RECORDS_SEPARATOR', ' ● ');
 
