@@ -95,6 +95,10 @@ a.clipped_text {
 	padding-top: .5em;
 }
 
+.space-top {
+	margin-top: .5em;
+}
+
 .space-left {
 	margin-left: .5em;
 }

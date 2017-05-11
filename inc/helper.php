@@ -1498,6 +1498,103 @@ STR;
 END;
 	}
 
+
+	//------------------------------------------------------------------------------------------
+	class FieldGrouper {
+	//------------------------------------------------------------------------------------------
+		private
+			$groups = null,
+			$table = null,
+			$cur_field_name = null,
+			$cur_group = null,
+			$is_start = null,
+			$is_last = null,
+			$width = null,
+			$cumul_width = null;
+
+		public function __construct(&$table) {
+			$this->table = $table;
+			$this->groups = isset($table['field_groups']) && is_array($table['field_groups']) ? $table['field_groups'] : array();
+		}
+
+		public function set_current_field($field_name) {
+			$this->cur_field_name = $field_name;
+			$this->is_start = false;
+			$this->is_last = false;
+			$this->cur_group = null;
+			$this->width = null;
+			
+			foreach($this->groups as $group) {
+				if($this->cur_group === null && isset($group['fields'][$this->cur_field_name]))
+					$this->cur_group = $group;
+				$i = 0;
+				foreach($group['fields'] as $fn => $width) {
+					if($fn == $this->cur_field_name) {
+						if($i == 0) {
+							$this->is_start = true;
+							$this->cur_group = $group;
+							$this->cumul_width = 0;
+						}
+						if($i == count(array_keys($group['fields'])) - 1) {
+							$this->is_last = true;
+						}
+						$this->width = $width;
+						$this->cumul_width += $width;
+					}
+					$i++;
+				}
+			}
+		}
+
+		public function is_group_start() {
+			return $this->is_start;
+		}
+
+		public function is_last_in_group() {
+			return $this->is_in_group() && $this->is_last;
+		}
+
+		public function is_in_group() {
+			return null !== $this->cur_group;
+		}
+
+		public function get_help_text() {
+			return $this->is_in_group() ? $this->cur_group['help'] : '';
+		}
+
+		public function get_width() {
+			return $this->width;
+		}
+
+		public function get_label() {
+			return $this->cur_group['label'];
+		}
+
+		public function is_required() {
+			return $this->cur_group['required'] === true;
+		}
+
+		public function get_label_tooltip() {
+			return $this->cur_group['label_tooltip'];
+		}
+
+		public function has_space_top() {
+			return $this->cumul_width > 12;
+		}
+
+		public function debug() {
+			debug_log(sprintf(
+				"%s: w=%s %s %s %s %s",
+				$this->cur_field_name,
+				$this->get_width(),
+				$this->has_space_top() ? 'space-top' : '',
+				$this->is_in_group() ? 'in group' : '',
+				$this->is_start ? 'start' : '',
+				$this->is_last ? 'end' : ''
+			));
+		}
+	}
+
 	//------------------------------------------------------------------------------------------
 	class FormTabs {
 	//------------------------------------------------------------------------------------------
