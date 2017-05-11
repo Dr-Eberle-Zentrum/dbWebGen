@@ -206,7 +206,7 @@
 				return proc_error(l10n('error.db-connect'));
 
 			$where_clause = '';
-			if($this->is_lookup_async() && $this->has_submitted_value() && $this->get_submitted_value() != NULL_OPTION)
+			if($this->is_lookup_async() && $this->has_submitted_value() && $this->get_submitted_value() != '') // NULL_OPTION
 				$where_clause = sprintf('where %s = ?', db_esc($this->get_lookup_field_name()));
 
 			$sql = sprintf('select %s val, %s txt from %s t %s order by txt',
@@ -219,10 +219,7 @@
 			if(false === $stmt->execute($where_clause != '' ? array($this->get_submitted_value()) : array()))
 				return proc_error(l10n('error.db-execute'), $db);
 
-			if(!$this->is_required())
-				$output_buf .= sprintf("<option value='%s'>&nbsp;</option>\n", NULL_OPTION);
-			else if($_GET['mode'] == MODE_NEW)
-				$output_buf .= "<option value=''></option>\n";
+			$output_buf .= "<option value=''></option>\n";
 
 			$selection_done = '';
 			while($obj = $stmt->fetch(PDO::FETCH_OBJ)) {
@@ -261,7 +258,7 @@
 			);
 
 			$output_buf .= sprintf(
-				"<select %s class='form-control multiple-select-dropdown %s' id='%s_dropdown' data-table='%s' data-thistable='%s' data-fieldname='%s' data-placeholder='%s' %s %s %s data-lookuptype='multiple' data-allow-clear='true' %s>\n",
+				"<select %s class='form-control multiple-select-dropdown %s' id='%s_dropdown' data-table='%s' data-thistable='%s' data-fieldname='%s' data-placeholder='%s' %s %s %s data-lookuptype='multiple' %s>\n",
 
 				$this->get_disabled_attr(),
 				//$this->get_required_attr(),

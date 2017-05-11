@@ -1125,8 +1125,9 @@ STR;
 
 			||
 
-			(isset($_POST[$field_name]) && $_POST[$field_name] === NULL_OPTION &&
-			 ($field_info['type'] == T_ENUM || $field_info['type'] == T_LOOKUP));
+			(isset($_POST[$field_name]) && $_POST[$field_name] == '' &&
+			 ($field_info['type'] == T_ENUM || ($field_info['type'] == T_LOOKUP && $field_info['lookup']['cardinality'] == CARDINALITY_SINGLE))
+			 && !is_field_required($field_info)); // NULL_OPTION
 	}
 
 	//------------------------------------------------------------------------------------------

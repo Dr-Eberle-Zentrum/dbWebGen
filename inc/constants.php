@@ -23,9 +23,6 @@
 	define('CARDINALITY_SINGLE', 'CARDINALITY_SINGLE');
 	define('CARDINALITY_MULTIPLE', 'CARDINALITY_MULTIPLE');
 
-	// null value indicator for non-required dropdowns
-	define('NULL_OPTION', '__NULL__');
-
 	// field name postfix for raw foreign key values (should create reasonably unique field name, i.e. no human assigned field should end with the same string)
 	define('FK_FIELD_POSTFIX', '__3ffz3h_k031n');
 

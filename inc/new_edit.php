@@ -538,7 +538,7 @@ EOT;
 				return proc_error(l10n('error.field-required', $field_info['label']));
 			}
 
-			if(!is_field_required($field_info) && is_field_setnull($field_name, $field_info)) {
+			if(!is_field_required($field_info) && is_field_setnull($field_name, $field_info) && ($field_info['type'] != T_LOOKUP || $field_info['lookup']['cardinality'] == CARDINALITY_SINGLE)) {
 				$columns[] = $field_name;
 				$values[] = NULL;
 			}
