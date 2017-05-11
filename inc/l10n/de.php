@@ -261,6 +261,8 @@ HTML
         'error.storedquery-invalid-params' => 'Ungültige Tabelle und/oder Feld in parametrisierter Abfrage.',
         'error.chart-duplicate-cols' => 'Die Abfrageergebnisse können nicht dargestellt werden. Vermutlich haben Sie mehrere Spalten mit dem gleichen Namen im Abfrageergebnis. Bitte verwenden Sie Aliase für Spalten, um dieses Problem zu lösen.',
 
+        'geom-field.placeholder' => 'WKT-Wert eingeben oder über "$1" auswählen',
+        'geom-field.map-picker-button-label' => 'Karte',
         'geom-field.map-picker-button-tooltip' => 'Zuweisen von Koordinaten über eine Karte',
         'geom-field.map-picker-view-tooltip' => 'Zeige diese Geometrie auf einer Karte',
 
@@ -311,7 +313,7 @@ HTML
         'lookup-field.linkage-assoc-delete-tooltip' => 'Beziehung zu diesem/r $1 entfernen',
         'lookup-field.linked-records-clipped-tooltip' => 'Text wegen Überlänge abgeschnitten. Klicke um gesamten Text einzublenden.',
         'lookup-field.linked-record-no-display-value' => 'Für diesen refernzierten Datensatz konnte keine Anzeigewert ermittelt werden, daher wird sein Identifikationswert dargestellt',
-		
+
         'main-page.html' => '<p>Wählen Sie eine Aktion aus dem Menü aus.</p>',
 
         'map-picker.done-button' => 'Fertig',

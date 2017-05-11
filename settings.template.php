@@ -357,6 +357,8 @@
 						* map (L.Map) - the Leaflet map
 						* curPointLayer (L.Layer) - the Leaflet layer that contains the pre-existing point
 						* drawnItems (L.FeatureGroup) - the feature group object that Leaflet.Draw uses to capture the user-drawn layers
+			- placeholder: string (optional)
+				Force a particular placeholder text to be displayed in the respective form control for MODE_NEW and MODE_EDIT. By default, no placeholders are displayed, except for T_ENUM and T_LOOKUP fields, which will display a hint to click the dropdown.
 		- sort: array (optional)
 			Used for default sorting of tables in MODE_LIST. Associative array with key := fieldname (or SQL expression) and value := {'asc', 'desc'}
 			e.g. [ 'lastname' => 'asc, 'firstname' => 'asc' ]

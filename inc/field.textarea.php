@@ -26,7 +26,7 @@
 		// render_settings: form_method, name_attr, id_attr
 		//--------------------------------------------------------------------------------------
 			$output_buf .= sprintf(
-				"<textarea %s %s class='form-control %s' id='%s' name='%s' rows='%s' %s>%s</textarea>\n",
+				"<textarea %s %s class='form-control %s' id='%s' name='%s' rows='%s' %s placeholder='%s'>%s</textarea>\n",
 				$this->get_disabled_attr(),
 				$this->get_required_attr(),
 				$this->get_resize_classname(),
@@ -34,6 +34,7 @@
 				$this->get_control_name(),
 				$this->get_num_rows(),
 				$this->get_focus_attr(),
+				unquote($this->get_custom_placeholder('')),
 				html($this->get_submitted_value(''))
 			);
 			return $output_buf;

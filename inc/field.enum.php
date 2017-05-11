@@ -33,7 +33,7 @@
 				$this->get_control_id(),
 				$this->get_control_name(),
 				$this->is_required() ? '' : 'data-allow-clear=true',
-				l10n('lookup-field.placeholder')
+				unquote($this->get_custom_placeholder(l10n('lookup-field.placeholder')))
 			);
 
 			$output_buf .= "<option value=''></option>\n";
