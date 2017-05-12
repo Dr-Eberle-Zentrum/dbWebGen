@@ -360,3 +360,7 @@ span.hl {
 #show_null_fields {
 	margin-top: 10px;
 }
+
+.field-group-rowset .row:not(:first-child) {
+	margin-top: .5em;
+}

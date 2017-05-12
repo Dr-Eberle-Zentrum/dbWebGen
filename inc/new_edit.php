@@ -145,10 +145,17 @@
 					$field_grouper->get_label(),
 					$field_grouper->is_required() ? $required_indicator : ''
 				);
-				echo "<div class='input-group col-sm-7'>\n";
+				echo "<div class='field-group-rowset col-sm-7'>\n";
 			}
 
-			if(!$field_grouper->is_in_group()) {
+			if($field_grouper->is_in_group()) {
+				if($field_grouper->is_new_row($row_no)) {
+					if($row_no > 1)
+						echo "</div>\n";
+					echo "<div class='row'>\n";
+				}
+			}
+			else {
 				echo "<div class='form-group'>\n";
 
 				echo sprintf(
@@ -171,7 +178,7 @@
 				echo "</div>\n";
 
 			if($field_grouper->is_last_in_group())
-				echo "</div></div>\n";
+				echo "</div></div></div>\n";
 
 			if(isset($field['conditional_form_label']))
 				$conditional_label_scripts[] = get_conditional_label_script($table, $field_name, $field['conditional_form_label']);
@@ -312,7 +319,7 @@ EOT;
 					"<div class='%s col-sm-%s %s'>%s</div>\n",
 					$field_obj->is_dropdown_hidden() ? 'invisible' : '',
 					$field_grouper->is_in_group() ? $field_grouper->get_width() : $field_obj->get_width(),
-					$field_grouper->is_in_group() && $field_grouper->has_space_top() ? 'space-top' : '',
+					$field_grouper->is_in_group() && $field_grouper->has_space_top() ? '' : '',
 					$field_obj->render_control($render_settings)
 				);
 				$field_obj->render_create_new_button_html($html);
@@ -325,7 +332,7 @@ EOT;
 				echo sprintf(
 					"<div class='col-sm-%s %s'>%s</div>\n",
 					$field_grouper->is_in_group() ? $field_grouper->get_width() : $field_obj->get_width(),
-					$field_grouper->is_in_group() && $field_grouper->has_space_top() ? 'space-top' : '',
+					$field_grouper->is_in_group() && $field_grouper->has_space_top() ? '' : '',
 					$field_obj->render_control($render_settings)
 				);
 				break;

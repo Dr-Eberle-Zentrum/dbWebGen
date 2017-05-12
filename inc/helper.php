@@ -1523,7 +1523,7 @@ END;
 			$this->is_last = false;
 			$this->cur_group = null;
 			$this->width = null;
-			
+
 			foreach($this->groups as $group) {
 				if($this->cur_group === null && isset($group['fields'][$this->cur_field_name]))
 					$this->cur_group = $group;
@@ -1538,12 +1538,20 @@ END;
 						if($i == count(array_keys($group['fields'])) - 1) {
 							$this->is_last = true;
 						}
+						
 						$this->width = $width;
 						$this->cumul_width += $width;
 					}
 					$i++;
 				}
 			}
+		}
+
+		public function is_new_row(&$row_no) {
+			$row_no = intval($this->cumul_width / 12) + 1;
+
+			return $this->cumul_width === 0
+				|| ($this->cumul_width - $this->width) % 12 === 0;
 		}
 
 		public function is_group_start() {
