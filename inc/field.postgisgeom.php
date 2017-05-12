@@ -56,7 +56,7 @@
 			}
 
 			$output_buf .= sprintf(
-				"<input %s %s type='text' class='form-control' id='%s' name='%s' %s value='%s' %s placeholder='%s' />%s",
+				"<input %s %s type='text' class='form-control' id='%s' name='%s' %s value='%s' %s placeholder='%s' title='%s' />%s",
 				$this->get_disabled_attr(),
 				$this->get_required_attr(),
 				$this->get_control_id(),
@@ -65,6 +65,7 @@
 				unquote($this->get_submitted_value('')),
 				$this->get_focus_attr(),
 				unquote($this->get_custom_placeholder(l10n('geom-field.placeholder', l10n('geom-field.map-picker-button-label')))),
+				unquote($this->get_label()),
 				$map_picker
 			);
 			return $output_buf;

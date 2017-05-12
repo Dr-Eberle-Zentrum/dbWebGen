@@ -64,7 +64,7 @@
 		// render_settings: form_method, name_attr, id_attr
 		//--------------------------------------------------------------------------------------
 			$output_buf .= sprintf(
-				"<input %s %s %s %s %s type='number' class='form-control' id='%s' name='%s' value='%s' %s placeholder='%s' />\n",
+				"<input %s %s %s %s %s type='number' class='form-control' id='%s' name='%s' value='%s' %s placeholder='%s' title='%s' />\n",
 				$this->get_disabled_attr(),
 				$this->get_required_attr(),
 				$this->get_minimum_value_attr(),
@@ -74,7 +74,8 @@
 				$this->get_control_name(),
 				unquote($this->get_submitted_value('')),
 				$this->get_focus_attr(),
-				unquote($this->get_custom_placeholder(''))
+				unquote($this->get_custom_placeholder('')),
+				unquote($this->get_label())
 			);
 			return $output_buf;
 		}

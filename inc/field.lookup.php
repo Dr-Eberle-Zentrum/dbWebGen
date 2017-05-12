@@ -183,7 +183,7 @@
 		protected function render_cardinality_single(&$output_buf) {
 		//--------------------------------------------------------------------------------------
 			$output_buf .= sprintf(
-				"<select %s %s class='form-control %s' id='%s_dropdown' name='%s' data-table='%s' data-fieldname='%s' data-placeholder='%s' data-thistable='%s' %s %s %s data-lookuptype='single' %s %s>\n",
+				"<select %s %s class='form-control %s' id='%s_dropdown' name='%s' data-table='%s' data-fieldname='%s' data-placeholder='%s' data-thistable='%s' %s %s %s data-lookuptype='single' %s %s title='%s'>\n",
 
 				$this->get_disabled_attr(),
 				$this->get_required_attr(),
@@ -198,7 +198,8 @@
 				$this->is_lookup_async() ? sprintf("data-minimum-input-length='%s'", $this->get_async_min_input_len()) : '',
 				$this->is_lookup_async() && $this->has_async_delay() ? sprintf("data-asyncdelay='%s'", $this->get_async_delay()) : '',
 				$this->is_required() ? '' : 'data-allow-clear=true',
-				$this->get_focus_attr()
+				$this->get_focus_attr(),
+				unquote($this->get_label())
 			);
 
 			$db = db_connect();
@@ -258,7 +259,7 @@
 			);
 
 			$output_buf .= sprintf(
-				"<select %s class='form-control multiple-select-dropdown %s' id='%s_dropdown' data-table='%s' data-thistable='%s' data-fieldname='%s' data-placeholder='%s' %s %s %s data-lookuptype='multiple' %s>\n",
+				"<select %s class='form-control multiple-select-dropdown %s' id='%s_dropdown' data-table='%s' data-thistable='%s' data-fieldname='%s' data-placeholder='%s' %s %s %s data-lookuptype='multiple' %s title='%s'>\n",
 
 				$this->get_disabled_attr(),
 				//$this->get_required_attr(),
@@ -271,7 +272,8 @@
 				$this->is_lookup_async() ? sprintf("data-language='%s'", get_app_lang()) : '',
 				$this->is_lookup_async() ? sprintf("data-minimum-input-length='%s'", $this->get_async_min_input_len()) : '',
 				$this->is_lookup_async() && $this->has_async_delay() ? sprintf("data-asyncdelay='%s'", $this->get_async_delay()) : '',
-				$this->get_focus_attr()
+				$this->get_focus_attr(),
+				unquote($this->get_label())
 			);
 
 			// we look which ones are already connected

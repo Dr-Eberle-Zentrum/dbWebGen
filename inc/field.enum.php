@@ -26,14 +26,15 @@
 		protected function /*string*/ render_internal(&$output_buf) {
 		// render_settings: form_method, name_attr, id_attr, disabled, focus
 		//--------------------------------------------------------------------------------------
-			$output_buf .= sprintf("<select %s %s %s class='form-control' id='%s' name='%s' %s data-placeholder='%s'>\n",
+			$output_buf .= sprintf("<select %s %s %s class='form-control' id='%s' name='%s' %s data-placeholder='%s' title='%s'>\n",
 				$this->get_disabled_attr(),
 				$this->get_required_attr(),
 				$this->get_focus_attr(),
 				$this->get_control_id(),
 				$this->get_control_name(),
 				$this->is_required() ? '' : 'data-allow-clear=true',
-				unquote($this->get_custom_placeholder(l10n('lookup-field.placeholder')))
+				unquote($this->get_custom_placeholder(l10n('lookup-field.placeholder'))),
+				unquote($this->get_label())
 			);
 
 			$output_buf .= "<option value=''></option>\n";
