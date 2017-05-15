@@ -95,6 +95,10 @@ a.clipped_text {
 	padding-top: .5em;
 }
 
+.space-top {
+	margin-top: .5em;
+}
+
 .space-left {
 	margin-left: .5em;
 }
@@ -355,4 +359,8 @@ span.hl {
 
 #show_null_fields {
 	margin-top: 10px;
+}
+
+.field-group-rowset .row:not(:first-child) {
+	margin-top: .5em;
 }

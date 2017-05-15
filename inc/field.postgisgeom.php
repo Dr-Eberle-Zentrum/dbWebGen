@@ -51,12 +51,12 @@
 			$map_picker = '';
 			if($this->has_map_picker()) {
 				$map_picker = "</div><div class='col-sm-2'>" . $this->render_map_picker_button(
-					'Map', 'map-marker', l10n('geom-field.map-picker-button-tooltip'), false, 'btn btn-default'
+					l10n('geom-field.map-picker-button-label'), 'map-marker', l10n('geom-field.map-picker-button-tooltip'), false, 'btn btn-default'
 				);
 			}
 
 			$output_buf .= sprintf(
-				"<input %s %s type='text' class='form-control' id='%s' name='%s' %s value='%s' %s />%s",
+				"<input %s %s type='text' class='form-control' id='%s' name='%s' %s value='%s' %s placeholder='%s' title='%s' />%s",
 				$this->get_disabled_attr(),
 				$this->get_required_attr(),
 				$this->get_control_id(),
@@ -64,6 +64,8 @@
 				$this->get_maxlen_attr(),
 				unquote($this->get_submitted_value('')),
 				$this->get_focus_attr(),
+				unquote($this->get_custom_placeholder(l10n('geom-field.placeholder', l10n('geom-field.map-picker-button-label')))),
+				unquote($this->get_label()),
 				$map_picker
 			);
 			return $output_buf;
@@ -85,7 +87,7 @@
 			$param_name,
 			$search_string_transformation,
 			$table_qualifier = null) {
-		//--------------------------------------------------------------------------------------		
+		//--------------------------------------------------------------------------------------
 			return sprintf(
 				"lower(st_astext(%s)) like '%%' || :%s || '%%'",
 				db_esc($this->field_name, $table_qualifier),

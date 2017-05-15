@@ -250,6 +250,8 @@ HTML
         'error.storedquery-invalid-params' => 'Invalid table or field in parameterized query',
         'error.chart-duplicate-cols' => 'There is a problem with your query, most likely you have duplicate column names in your query result. Please use aliases in your query to disambiguate column names.',
 
+        'geom-field.placeholder' => 'Enter WKT value or click "$1"',
+        'geom-field.map-picker-button-label' => 'Map',
         'geom-field.map-picker-button-tooltip' => 'Assign the location from a popup map',
         'geom-field.map-picker-view-tooltip' => 'Click to show this location on a popup map',
 

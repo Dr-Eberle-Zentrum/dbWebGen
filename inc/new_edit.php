@@ -109,10 +109,15 @@
 
 		$i = 0;
 		$conditional_label_scripts = array();
+		$field_grouper = new FieldGrouper($table);
 
 		foreach($table['fields'] as $field_name => $field) {
 			if(!is_field_editable($field))
 				continue;
+
+			$field_grouper->set_current_field($field_name);
+			//if($field_grouper->is_in_group())
+			//	$field_grouper->debug();
 
 			echo $form_tabs->new_tab_if_needed($field_name);
 
@@ -123,19 +128,57 @@
 			}
 
 			$prefilled = isset($_GET[PREFILL_PREFIX . $field_name]);
-			$required_indicator = (is_field_required($field) ? '<span class="required-indicator">&#9733;</span>' : '');
-			echo "<div class='form-group'>\n";
-			echo sprintf(
-				"<label title='%s' class='control-label col-sm-3' for='%s'>",
-				l10n(is_field_required($field) ? 'new-edit.field-required-tooltip' : 'new-edit.field-optional-tooltip'),
-				$field_name
-			);
-			render_help($field);
-			echo "<span data-field='$field_name'>{$field['label']}</span>{$required_indicator}</label>\n";
+			$required_indicator = '<span class="required-indicator">&#9733;</span>';
 
-			render_control($form_id, $field_name, $field, $i++ == 0, isset($_GET[PREFILL_PREFIX . $field_name]));
+			if($field_grouper->is_group_start()) {
+				echo "<div class='form-group'>\n";
+				echo sprintf(
+					"<label title='%s' class='control-label col-sm-3' for='%s'>",
+					$field_grouper->get_label_tooltip(),
+					$field_name
+				);
+				$field['help'] = $field_grouper->get_help_text();
+				render_help($field);
+				echo sprintf(
+					"<span data-field='%s'>%s</span>%s</label>\n",
+					$field_name,
+					$field_grouper->get_label(),
+					$field_grouper->is_required() ? $required_indicator : ''
+				);
+				echo "<div class='field-group-rowset col-sm-7'>\n";
+			}
 
-			echo "</div>\n";
+			if($field_grouper->is_in_group()) {
+				if($field_grouper->is_new_row($row_no)) {
+					if($row_no > 1)
+						echo "</div>\n";
+					echo "<div class='row'>\n";
+				}
+			}
+			else {
+				echo "<div class='form-group'>\n";
+
+				echo sprintf(
+					"<label title='%s' class='control-label col-sm-3' for='%s'>",
+					l10n(is_field_required($field) ? 'new-edit.field-required-tooltip' : 'new-edit.field-optional-tooltip'),
+					$field_name
+				);
+				render_help($field);
+				echo sprintf(
+					"<span data-field='%s'>%s</span>%s</label>\n",
+					$field_name,
+					$field['label'],
+					is_field_required($field) ? $required_indicator : ''
+				);
+			}
+
+			render_control($form_id, $field_name, $field, $i++ == 0, isset($_GET[PREFILL_PREFIX . $field_name]), $field_grouper);
+
+			if(!$field_grouper->is_in_group())
+				echo "</div>\n";
+
+			if($field_grouper->is_last_in_group())
+				echo "</div></div></div>\n";
 
 			if(isset($field['conditional_form_label']))
 				$conditional_label_scripts[] = get_conditional_label_script($table, $field_name, $field['conditional_form_label']);
@@ -146,6 +189,7 @@
 		echo $submit_button;
 		/*if($_GET['mode'] == MODE_NEW)
 			echo "<button type='reset' class='btn btn-default'>".l10n('new-edit.clear-button')."</button>\n";*/
+
         echo "</div>\n</div>\n</fieldset></form>\n";
 		echo "<div style='padding-bottom:4em'>&nbsp;</div>";
 
@@ -250,7 +294,7 @@ EOT;
 	}
 
 	//------------------------------------------------------------------------------------------
-	function render_control($form_id, $field_name, $field, $focus, $prefilled) {
+	function render_control($form_id, $field_name, $field, $focus, $prefilled, $field_grouper) {
 	//------------------------------------------------------------------------------------------
 		global $TABLES;
 		global $LOGIN;
@@ -272,9 +316,10 @@ EOT;
 			case T_LOOKUP:
 				$render_settings['form_id'] = $form_id;
 				$html = sprintf(
-					"<div class='%s col-sm-%s'>%s</div>\n",
+					"<div class='%s col-sm-%s %s'>%s</div>\n",
 					$field_obj->is_dropdown_hidden() ? 'invisible' : '',
-					$field_obj->get_width(),
+					$field_grouper->is_in_group() ? $field_grouper->get_width() : $field_obj->get_width(),
+					$field_grouper->is_in_group() && $field_grouper->has_space_top() ? '' : '',
 					$field_obj->render_control($render_settings)
 				);
 				$field_obj->render_create_new_button_html($html);
@@ -285,8 +330,10 @@ EOT;
 
 			default:
 				echo sprintf(
-					"<div class='col-sm-%s'>%s</div>\n",
-					$field_obj->get_width(), $field_obj->render_control($render_settings)
+					"<div class='col-sm-%s %s'>%s</div>\n",
+					$field_grouper->is_in_group() ? $field_grouper->get_width() : $field_obj->get_width(),
+					$field_grouper->is_in_group() && $field_grouper->has_space_top() ? '' : '',
+					$field_obj->render_control($render_settings)
 				);
 				break;
 		}
@@ -538,7 +585,7 @@ EOT;
 				return proc_error(l10n('error.field-required', $field_info['label']));
 			}
 
-			if(!is_field_required($field_info) && is_field_setnull($field_name, $field_info)) {
+			if(!is_field_required($field_info) && is_field_setnull($field_name, $field_info) && ($field_info['type'] != T_LOOKUP || $field_info['lookup']['cardinality'] == CARDINALITY_SINGLE)) {
 				$columns[] = $field_name;
 				$values[] = NULL;
 			}

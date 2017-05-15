@@ -167,6 +167,16 @@
 			global $APP;
 			return isset($APP['null_label']) ? $APP['null_label'] : 'NULL';
 		}
+		//--------------------------------------------------------------------------------------
+		public function has_custom_placeholder() {
+		//--------------------------------------------------------------------------------------
+			return isset($this->field['placeholder']) && is_string($this->field['placeholder']);
+		}
+		//--------------------------------------------------------------------------------------
+		public function get_custom_placeholder($default = '') {
+		//--------------------------------------------------------------------------------------
+			return $this->has_custom_placeholder() ? $this->field['placeholder'] : $default;
+		}
 
 		//--------------------------------------------------------------------------------------
 		public function /*string*/ render_control(
