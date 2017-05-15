@@ -1510,7 +1510,8 @@ END;
 			$is_start = null,
 			$is_last = null,
 			$width = null,
-			$cumul_width = null;
+			$cumul_width = null,
+			$is_required = false;
 
 		public function __construct(&$table) {
 			$this->table = $table;
@@ -1523,10 +1524,13 @@ END;
 			$this->is_last = false;
 			$this->cur_group = null;
 			$this->width = null;
+			$this->is_required = false;
 
 			foreach($this->groups as $group) {
-				if($this->cur_group === null && isset($group['fields'][$this->cur_field_name]))
-					$this->cur_group = $group;
+				if($this->cur_group !== null || !isset($group['fields'][$this->cur_field_name]))
+				 	continue;
+
+				$this->cur_group = $group;
 				$i = 0;
 				foreach($group['fields'] as $fn => $width) {
 					if($fn == $this->cur_field_name) {
@@ -1535,13 +1539,17 @@ END;
 							$this->cur_group = $group;
 							$this->cumul_width = 0;
 						}
-						if($i == count(array_keys($group['fields'])) - 1) {
+
+						if($i == count(array_keys($group['fields'])) - 1)
 							$this->is_last = true;
-						}
-						
+
 						$this->width = $width;
 						$this->cumul_width += $width;
 					}
+
+					if($this->is_required === false && is_field_required($this->table['fields'][$fn]))
+						$this->is_required = true;
+
 					$i++;
 				}
 			}
@@ -1579,11 +1587,11 @@ END;
 		}
 
 		public function is_required() {
-			return $this->cur_group['required'] === true;
+			return $this->is_required;
 		}
 
 		public function get_label_tooltip() {
-			return $this->cur_group['label_tooltip'];
+			return isset($this->cur_group['label_tooltip']) ? $this->cur_group['label_tooltip'] : '';
 		}
 
 		public function has_space_top() {

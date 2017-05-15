@@ -358,7 +358,30 @@
 						* curPointLayer (L.Layer) - the Leaflet layer that contains the pre-existing point
 						* drawnItems (L.FeatureGroup) - the feature group object that Leaflet.Draw uses to capture the user-drawn layers
 			- placeholder: string (optional)
-				Force a particular placeholder text to be displayed in the respective form control for MODE_NEW and MODE_EDIT. By default, no placeholders are displayed, except for T_ENUM and T_LOOKUP fields, which will display a hint to click the dropdown.
+				Force a particular placeholder text to be displayed in the respective form control for MODE_NEW and MODE_EDIT. By default, no placeholders are displayed, except for T_ENUM and T_LOOKUP fields, which will display a hint to click the dropdown. Setting a placeholder is particularly useful when the form control is part of a group of fields (see setting field_groups).
+			- field_groups: array (optional)
+				Allows to define a number of field groups for the form. A field group has a label (like any normal field), but the field group can have multiple form controls. Each field group is defined by an array as follows:
+					- label: string
+						The label to display on the form, similar to the field/label setting
+					- help: string (optional)
+					 	The help popup text, similar to the field/help setting
+					- label_tooltip: string (optional)
+						Tooltip text to display when the mouse hovers over the field group label
+					- fields: array
+						An ordered hash array mapping the field name (each must be present in fields) to the number of columns which the field's form control shall occupy in the form. This value must be an integer between 1 and 12. One row in the form consists if 12 columns. When the 12 columns are exceeded, a new row will begin automatically.
+				Example:
+					'field_groups' => array(
+						array(
+							'label' => 'Birth date',
+							'help' => 'Enter the person\'s birthday.',
+							'label_tooltip' => 'Only the year is mandatory, but try to enter all date available components.'
+							'fields' => array(
+								'dob_year' => 6,
+								'dob_month' => 3,
+								'dob_day' => 3
+							)
+						)
+					)
 		- sort: array (optional)
 			Used for default sorting of tables in MODE_LIST. Associative array with key := fieldname (or SQL expression) and value := {'asc', 'desc'}
 			e.g. [ 'lastname' => 'asc, 'firstname' => 'asc' ]
