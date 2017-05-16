@@ -489,7 +489,8 @@ function insert_option_sorted(dropdown_id, value, label, text, selected) {
 	else
 		opt.insertBefore($('#' + dropdown_id + ' option[value="' + insert_before + '"]'));
 
-	$dropdown.val(selected ? value : '').change();
+    if(selected) // select, if this is the box where Create New was clicked
+	   $dropdown.val(value).change();
 }
 
 //------------------------------------------------------------------------------------------
