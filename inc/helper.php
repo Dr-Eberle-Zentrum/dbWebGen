@@ -720,6 +720,12 @@ STR;
 	}
 
 	//------------------------------------------------------------------------------------------
+	function is_lookup_hyperlink_suppressed(&$field) {
+	//------------------------------------------------------------------------------------------
+		return isset($field['lookup']['no_link']) && $field['lookup']['no_link'] === true;
+	}
+
+	//------------------------------------------------------------------------------------------
 	function prepare_field_display_val(&$table, &$record, &$field, $col, $val, $highlighter = null) {
 	//------------------------------------------------------------------------------------------
 		global $TABLES;
@@ -753,7 +759,7 @@ STR;
 			$val = "<a href='". get_file_url($val, $field) ."'>" . $highlighter->highlight(html($val)). '</a>';
 		}
 		else if($field['type'] == T_LOOKUP && $field['lookup']['cardinality'] == CARDINALITY_SINGLE) {
-			$href = isset($TABLES[$field['lookup']['table']]) && in_array(MODE_VIEW, $TABLES[$field['lookup']['table']]['actions']) ?
+			$href = isset($TABLES[$field['lookup']['table']]) && in_array(MODE_VIEW, $TABLES[$field['lookup']['table']]['actions']) && !is_lookup_hyperlink_suppressed($field) ?
 			http_build_query(array(
 				'table' => $field['lookup']['table'],
 				'mode' => MODE_VIEW,
@@ -810,7 +816,7 @@ STR;
 						$params[$TABLES[$field['lookup']['table']]['primary_key']['columns'][0]] = $id_val;
 					}
 
-					$linked_rec['href'] = isset($TABLES[$params['table']]) && in_array(MODE_VIEW, $TABLES[$params['table']]['actions']) ? http_build_query($params) : null;
+					$linked_rec['href'] = isset($TABLES[$params['table']]) && in_array(MODE_VIEW, $TABLES[$params['table']]['actions']) && !is_lookup_hyperlink_suppressed($field) ? http_build_query($params) : null;
 					$linked_rec['html_val'] = $highlighter->highlight(html($display_val));
 					$linked_rec['title'] = '';
 					$linked_rec['class'] = '';

@@ -283,6 +283,8 @@
 							'name' => 'h',		// hide field
 							'height' => 'e',	// enable field (useful in conjunction with predefined_values)
 						)
+				- no_link: boolean (optional) (default: false)
+					Suppress the rendering of a hyperlink to the linked item in MODE_VIEW and MODE_LIST.
 			- linkage: array
 				If cardinality=CARDINALITY_MULTIPLE, we need to define here the m:n relationship table that links records from this table (via fk_self) with records of the other table (via fk_other)
 				- table: string
