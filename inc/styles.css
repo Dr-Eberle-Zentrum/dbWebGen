@@ -51,8 +51,11 @@ div.td {
 }
 
 div.multiple-select-ul {
-	margin-top: .5em;
 	padding-left: 1.5em;
+}
+
+div.multiple-select-item:first-child {
+	margin-top: .5em;
 }
 
 span.multiple-select-id {
