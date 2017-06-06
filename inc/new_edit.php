@@ -4,6 +4,7 @@
 	//------------------------------------------------------------------------------------------
 		global $TABLES;
 
+		$just_came_here = count($_POST) === 0;
 		$table_name = $_GET['table'];
 		if(!isset($TABLES[$table_name]))
 			return proc_error(l10n('error.invalid-table', $table_name));
@@ -14,7 +15,14 @@
 
 		// get the unique form id (either from POST, or generate)
 		$form_id = isset($_POST['__form_id__']) ? $_POST['__form_id__'] : ($_POST['__form_id__'] = uniqid('__form_id__', true));
-		#debug_log("$form_id = ", $_SESSION[$form_id]);
+		
+		if($_GET['mode'] == MODE_EDIT
+			&& $just_came_here
+			&& !isset($_SESSION["redirect-$form_id"])
+			&& isset($_SERVER['HTTP_REFERER']) && $_SERVER['HTTP_REFERER'] != '') {
+			// remember where we came from ...
+			$_SESSION["redirect-$form_id"] = $_SERVER['HTTP_REFERER'];
+		}
 
 		// override field display settings? >>
 		foreach($_GET as $param => $val) {
@@ -933,6 +941,9 @@ JS;
 		}
 
 		proc_success(l10n($_GET['mode'] == MODE_NEW ? 'new-edit.success-new' : 'new-edit.success-edit'));
+
+		if(isset($_POST['__form_id__']) && isset($_SESSION["redirect-{$_POST['__form_id__']}"]))
+			$_SESSION['redirect'] = $_SESSION["redirect-{$_POST['__form_id__']}"];
 
 		if(!isset($_SESSION['redirect'])) {
 			$new_keys = array();
