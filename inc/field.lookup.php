@@ -225,10 +225,10 @@
 			$selection_done = '';
 			while($obj = $stmt->fetch(PDO::FETCH_OBJ)) {
 				if($selection_done != 'done') {
-					$sel = ($this->has_submitted_value() && $this->get_submitted_value() == $obj->val ? ' selected="selected" ' : '');
+					$sel = ($this->has_submitted_value() && $this->get_submitted_value() == strval($obj->val) ? ' selected="selected" ' : '');
 					if($sel != '')
 						$selection_done = 'done';
-					else if($sel == '' && $this->is_required() && $this->has_lookup_default() && $this->get_lookup_default() == $obj->val) {
+					else if($sel == '' && $this->is_required() && $this->has_lookup_default() && strval($this->get_lookup_default()) === strval($obj->val)) {
 						$sel = ' selected="selected" ';
 						$selection_done = 'default';
 					}

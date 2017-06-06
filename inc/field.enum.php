@@ -42,11 +42,11 @@
 			$selection_done = '';
 			foreach($this->get_enum_values() as $val => $text) {
 				if($selection_done != 'done') {
-					$sel = ($this->has_submitted_value() && $this->get_submitted_value() == $val ? ' selected="selected" ' : '');
+					$sel = ($this->has_submitted_value() && $this->get_submitted_value() === strval($val) ? ' selected="selected" ' : '');
 
 					if($sel != '')
 						$selection_done = 'done';
-					elseif($sel == '' && $this->is_required() && $this->get_default_value() === strval($val)) {
+					elseif($sel == '' && $this->is_required() && strval($this->get_default_value()) === strval($val)) {
 						$sel = ' selected="selected" ';
 						$selection_done = 'default';
 					}
