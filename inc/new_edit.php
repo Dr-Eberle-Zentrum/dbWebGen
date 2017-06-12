@@ -15,7 +15,7 @@
 
 		// get the unique form id (either from POST, or generate)
 		$form_id = isset($_POST['__form_id__']) ? $_POST['__form_id__'] : ($_POST['__form_id__'] = uniqid('__form_id__', true));
-		
+
 		if($_GET['mode'] == MODE_EDIT
 			&& $just_came_here
 			&& !isset($_SESSION["redirect-$form_id"])
@@ -284,6 +284,9 @@ EOT;
 				$_POST[$col] = is_field_required($table['fields'][$col])? '' : NULL;
 			else
 				$_POST[$col] = $val;
+
+			if(is_bool($_POST[$col]))
+				$_POST[$col] = $_POST[$col] ? 1 : 0; // handles the unforunate shit that strval(false) === ''
 
 			if(!is_field_required($table['fields'][$col]))
 				$_POST["{$col}__null__"] = ($reset_field || $val === null ? 'true' : 'false');
