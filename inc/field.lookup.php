@@ -150,8 +150,15 @@
 				return;
 
 			$predef_fields = array();
-			foreach($this->get_predefined_values_for_create_new() as $field => $val)
-				$predef_fields[PREFILL_PREFIX . $field] = $val;
+			$predef_depend = array();
+			foreach($this->get_predefined_values_for_create_new() as $field => $val) {
+				if(is_array($val)) {
+					if(isset($val['field']))
+						$predef_depend[$field] = $val['field'];
+				}
+				else
+					$predef_fields[PREFILL_PREFIX . $field] = $val;
+			}
 
 			$field_settings_overrides = array();
 			foreach($this->get_settings_overrides_for_create_new() as $field => $val)
@@ -171,7 +178,8 @@
 			$popup_title = html('New ' . $this->get_label());
 
 			$html .= sprintf(
-				"<div class='col-sm-2'><button type='button' title='%s' class='btn btn-default multiple-select-add' data-create-title='%s' data-create-url='%s' id='%s_add' formnovalidate><span class='glyphicon glyphicon-plus'></span> %s</button></div>\n",
+				"<div class='col-sm-2'><button type='button' data-depend=\"%s\" title='%s' class='btn btn-default multiple-select-add' data-create-title='%s' data-create-url='%s' id='%s_add' formnovalidate><span class='glyphicon glyphicon-plus'></span> %s</button></div>\n",
+				htmlspecialchars(json_encode($predef_depend), ENT_QUOTES, 'UTF-8'),
 				l10n('lookup-field.create-new-tooltip'),
 				$popup_title,
 				$popup_url,

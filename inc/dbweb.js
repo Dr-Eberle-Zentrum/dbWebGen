@@ -370,8 +370,21 @@ function set_create_new_handler() {
 //------------------------------------------------------------------------------------------
     $('button[data-create-url]').click(function() {
         var popup = get_popup_position(this, 770, 700);
+        var predef_depend = $(this).data('depend');
+        var url_append = '';
+        if(typeof predef_depend === 'object') {
+            for(var f in predef_depend) {
+                if(!predef_depend.hasOwnProperty(f))
+                    continue;
+                var v = $('#' + predef_depend[f]).val(); // for normal fields
+                if(typeof v === 'undefined')
+                    v = $('#' + predef_depend[f] + '_dropdown').val(); // could be a dropdown
+                if(typeof v !== 'undefined' && String(v) != '')
+                    url_append += '&' + 'pre:' + encodeURIComponent(f) + '=' + encodeURIComponent(v);
+            }
+        }
         window.open(
-            $(this).data('create-url'),
+            $(this).data('create-url') + url_append,
             /*$(this).data('create-title')*/ '_blank',
             'location=0,menubar=0,resizable=1,scrollbars=1,toolbar=0,left='+popup.x+',top='+popup.y+',width='+popup.width+',height='+popup.height
         );

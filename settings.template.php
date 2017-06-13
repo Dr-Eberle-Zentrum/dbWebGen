@@ -260,13 +260,14 @@
 					Label for the button next to the dropdown box, which allows users to add new records to the linked table
 				- allow_edit: boolean (optional) (default: see $APP/lookup_allow_edit_default)
 					Whether to allow the user to edit the associated record from the lookup table. Note that setting this to true will only have an effect if the lookup table is configured in $TABLES, and MODE_EDIT is an allowed action there.
-				- prefined_values: array (optional)
+				- predefined_values: array (optional)
 					Array mapping fieldnames (array keys) to their predefined values (array values), which will be used when the user creates a new record using the Create New button.
 					Example:
 					 	'predefined_values' => array(
 							'name' => 'Barles Chronson',	// string value
 							'height' => 1.78,				// numeric value
 							'enemies' => '[3,77]'			// foreign keys for T_LOOKUP/CARDINALITY multiple field
+							'mother' => array('field' => 'name') // field 'mother' will be preset with the current form's value of field 'name'
 						)
 				- field_settings_override: array (optional)
 					Array mapping fieldnames (array keys) to settings that override those in settings.php or the current context. This array will be used when the user creates a new record using the Create New button. Use this with caution, since it may contractict the constraints in the DB or the dbWebGen logic.
