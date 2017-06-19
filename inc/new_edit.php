@@ -907,8 +907,13 @@ EOT;
 		if(is_popup()) {
 			$key = $table['primary_key']['columns'][0];
 
-			$_SESSION['redirect'] = sprintf('?mode=%s&table=%s&lookup_table=%s&lookup_field=%s&pk_value=%s',
-				MODE_CREATE_DONE, $table_name, $_GET['popup'], $_GET['lookup_field'], isset($_POST[$key]) ? $_POST[$key] : $primary_keys[$key]);
+			$_SESSION['redirect'] = '?' . http_build_query(array(
+				'mode' => MODE_CREATE_DONE,
+				'table' => $table_name,
+				'lookup_table' => $_GET['popup'],
+				'lookup_field' => $_GET['lookup_field'],
+				'pk_value' => isset($_POST[$key]) ? $_POST[$key] : $primary_keys[$key]
+			));
 
 			return true;
 		}
