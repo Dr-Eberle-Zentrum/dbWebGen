@@ -1065,7 +1065,7 @@ STR;
 	//------------------------------------------------------------------------------------------
 	function get_file_url($file_name, $field_info) {
 	//------------------------------------------------------------------------------------------
-		$url = $field_info['location'] . '/' . $file_name;
+		$url = $field_info['location'] . '/' . rawurlencode($file_name);
 		return str_replace('//', '/', $url);
 	}
 
