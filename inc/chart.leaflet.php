@@ -117,8 +117,8 @@ JS;
 		// override if additional scripts are needed for this type
 		public /*void*/ function add_required_scripts() {
 		//--------------------------------------------------------------------------------------
-			add_javascript('https://unpkg.com/leaflet@1.0.3/dist/leaflet.js');
-			add_stylesheet('https://unpkg.com/leaflet@1.0.3/dist/leaflet.css');
+			add_javascript('https://unpkg.com/leaflet@1.1.0/dist/leaflet.js');
+			add_stylesheet('https://unpkg.com/leaflet@1.1.0/dist/leaflet.css');
 			add_javascript('https://leaflet-extras.github.io/leaflet-providers/leaflet-providers.js');
 
 			if($this->page->get_post($this->ctrlname('data_format')) === 'wkt')
