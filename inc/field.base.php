@@ -241,7 +241,7 @@
 	}
 
 	//==========================================================================================
-	abstract class TextFieldWithLengthLimit extends Field
+	abstract class TextFieldBase extends Field
 	//==========================================================================================
 	{
 		//--------------------------------------------------------------------------------------
@@ -261,10 +261,26 @@
 		//--------------------------------------------------------------------------------------
 			return isset($this->field['len']) ? $this->field['len'] : $value_if_missing;
 		}
+
+		//--------------------------------------------------------------------------------------
+		public function get_remaining_chars_display() {
+		// note this is linked to init_remaining_chars_display() in dbweb.js and also css
+		//--------------------------------------------------------------------------------------
+			if(!$this->has_char_length() ||
+				!isset($this->field['display_remaining_chars']) ||
+				$this->field['display_remaining_chars'] !== true)
+				return '';
+
+			return sprintf(
+				"<span class='help-block remaining-chars'><span data-control-id='%s'></span> %s</span>\n",
+				$this->get_control_id(),
+				l10n('text-field.remaining-chars')
+			);
+		}
 	}
 
 	//==========================================================================================
-	abstract class SingleLineTextInputField extends TextFieldWithLengthLimit
+	abstract class SingleLineTextInputField extends TextFieldBase
 	//==========================================================================================
 	{
 		//------------------------------------------------------------------------------------------

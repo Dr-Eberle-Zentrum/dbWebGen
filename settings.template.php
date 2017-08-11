@@ -208,6 +208,8 @@
 				If type=T_ENUM, 'values' must be set (see below)
 			- len: int
 				Maximal number of characters that the input control can hold. Relevant only for T_TEXT_LINE, T_TEXT_AREA, and T_PASSWORD.
+			- display_remaining_chars: bool (default: false)
+				If the text box has a character limit (see len setting above), the remaining character count will be displayed once the user focuses on the control.
 			- required: bool (default: false)
 				Whether or not a value is required for this field (= NOT NULL)
 			- editable: bool (default: true)

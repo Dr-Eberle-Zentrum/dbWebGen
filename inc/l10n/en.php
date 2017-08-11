@@ -372,6 +372,8 @@ HTML
         'search.no-results' => 'No records found.',
         'search.num-indicator' => 'Displaying search results <b>$1</b>&ndash;<b>$2</b> of <b>$3</b>',
 
+        'text-field.remaining-chars' => 'character(s) remaining.',
+
         'upload-field.browse' => 'Browse',
         'upload-field.hint-empty' => 'Note: If you don\'t want to replace the existing file on the server, you may leave this field empty',
 

@@ -367,3 +367,7 @@ span.hl {
 .field-group-rowset .row:not(:first-child) {
 	margin-top: .5em;
 }
+
+.help-block.remaining-chars {
+	display: none;
+}

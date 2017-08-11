@@ -383,6 +383,8 @@ HTML
         'search.no-results' => 'Keine Suchergebnisse gefunden.',
         'search.num-indicator' => 'Zeige Suchergebnisse <b>$1</b>&ndash;<b>$2</b> von <b>$3</b>',
 
+        'text-field.remaining-chars' => 'Zeichen übrig.',
+
         'upload-field.browse' => 'Durchsuchen',
         'upload-field.hint-empty' => 'Hinweis: Wenn Sie die bestehende Datei am Server nicht überschreiben wollen, können Sie dieses Feld leer lassen.',
 

@@ -56,6 +56,7 @@ $(window).load(function() {
     set_dblclick_handler();
     set_map_picker_handler();
     prepare_navigate_away_warning();
+    init_remaining_chars_display();
 });
 
 //------------------------------------------------------------------------------------------
@@ -584,4 +585,23 @@ function prepare_navigate_away_warning() {
 function set_navigate_away_warning(/*bool*/ on) {
 //------------------------------------------------------------------------------------------
     window.onbeforeunload = (on? (function() { return true }) : null);
+}
+
+//------------------------------------------------------------------------------------------
+function init_remaining_chars_display() {
+//------------------------------------------------------------------------------------------
+    $('.remaining-chars span[data-control-id]').each(function () {
+        var label = $(this);
+        var ctrl = $('#' + label.data('control-id')).first();
+        var maxlen = parseInt(ctrl.attr('maxlength'));
+        label.text(maxlen - ctrl.val().length);
+        ctrl.bind('keydown focus', function() {
+            setTimeout(function() {
+                var remaining = maxlen - ctrl.val().length;
+                label.text(remaining);
+            }, 5);
+        }).bind('focusout focusin', function (e) {
+            e.type === 'focusin' ? label.parent().show() : label.parent().hide();
+        });
+    })
 }
