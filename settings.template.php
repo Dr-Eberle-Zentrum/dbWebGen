@@ -436,6 +436,8 @@
 						Identifier of the tab, to be used in the 'tab' setting of the table's fields.
 					- label: string
 						Label to display on the tab
+					- intro: string (optional)
+						If specified, any information (HTML encoded) that should be displayed at the top of the form tab.
 				- restrict_modes: array (optional)
 					If tabs are only desired in subset of {MODE_NEW, MODE_EDIT, MODE_VIEW}, specify this subset as an array here.
 

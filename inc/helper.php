@@ -1681,6 +1681,12 @@ END;
 				$this->last_tab = $this->form_tabs[$this->tab_index]['id'];
 				$html .= sprintf("</div>\n<div id='%s' class='tab-pane fade'>\n", $this->form_tabs[$this->tab_index]['anchor']);
 			}
+			if($html != ''
+				&& isset($this->form_tabs[$this->tab_index]['intro'])
+				&& trim($this->form_tabs[$this->tab_index]['intro']) != '')
+			{
+				$html .= '<p>' . $this->form_tabs[$this->tab_index]['intro'] . '</p>';
+			}
 			return $html;
 		}
 
