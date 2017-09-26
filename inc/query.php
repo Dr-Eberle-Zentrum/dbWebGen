@@ -461,10 +461,8 @@ HTML;
 				return '';
 			}
 
-			$field = $TABLES[$table_name]['fields'][$field_name];
 			$f = FieldFactory::create($table_name, $field_name);
-
-			switch($field['type']) {
+			switch($f->get_type()) {
 				case T_ENUM:
 				case T_LOOKUP:
 					if(!isset($_GET["p:$param_name"]))
@@ -549,7 +547,7 @@ HTML;
 					// render form for parameters:
 					$str_refresh = l10n('querypage.param-query-refresh');
 					$this->viz_ui .= <<<HTML
-					<p><form class='form-inline' method='get'>
+					<p><form class='form-inline param-query-form' method='get'>
 						{$param_fields} <button class='btn btn-default hidden-print' type='submit'><span class="glyphicon glyphicon-refresh"></span> $str_refresh</button>
 					</form></p>
 HTML;
@@ -593,6 +591,19 @@ HTML;
 			}
 
 			$this->viz_ui .= "<script>\n{$js}\n</script>\n";
+
+			$this->viz_ui .= <<<JS
+			<script>
+				$(document).ready(function() {
+					$('form.param-query-form select').change(function() {
+						// submit form, but only if selection different than initial
+						if($(this).find('option:selected').attr('selected') === 'selected')
+							return;
+						$(this).parents('form').first().submit();
+					})
+				});
+			</script>
+JS;
 		}
 
 		//--------------------------------------------------------------------------------------
