@@ -290,8 +290,12 @@
 
 			// for SEARCH_ANY & SEARCH_WORD queries (~ contains) we also want to look whether the provided query value matches any of the multiple foreign keys (not only the lookup values), expecting those key values to be integers (but also works with others)
 			if($search_option === SEARCH_ANY || $search_option === SEARCH_WORD) {
-				$field_trafo = sprintf("array_agg(%s)", $string_trafo);
+				/*$field_trafo = sprintf("array_agg(%s)", $string_trafo);
 				$or_term = sprintf("(select $field_trafo from %s link where link.%s = %s.%s) @> array[$query_trafo_without_ops]",
+					db_esc($field['linkage']['fk_other']), db_esc($field['linkage']['table']),
+					db_esc($field['linkage']['fk_self']), $table_alias, db_esc($table['primary_key']['columns'][0]));*/
+
+				$or_term = sprintf("($query_trafo_without_ops) in (select $string_trafo from %s link where link.%s = %s.%s)",
 					db_esc($field['linkage']['fk_other']), db_esc($field['linkage']['table']),
 					db_esc($field['linkage']['fk_self']), $table_alias, db_esc($table['primary_key']['columns'][0]));
 
@@ -303,7 +307,7 @@
 			if($fields[$search_field]['type'] == T_POSTGIS_GEOM)
 				$field_trafo = str_replace('%s', 'ST_AsText(%s)', $string_trafo);
 			else
-				$field_trafo = str_replace('%s', '%s::text', $string_trafo);
+				$field_trafo = str_replace('%s', db_cast_text('%s'), $string_trafo);
 
 			$term['sql'] = sprintf("$field_trafo %s $query_trafo", db_esc($search_field), $op);
 		}
