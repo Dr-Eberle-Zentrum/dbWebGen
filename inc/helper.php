@@ -1,4 +1,6 @@
 <?
+	require_once ENGINE_PATH_LOCAL . 'inc/db.php';
+
 	//------------------------------------------------------------------------------------------
 	function process_redirect($flush_ob = false) {
 	//------------------------------------------------------------------------------------------
@@ -266,7 +268,7 @@
 		if($APP['search_lookup_resolve'] && $fields[$search_field]['type'] == T_LOOKUP && $fields[$search_field]['lookup']['cardinality'] == CARDINALITY_SINGLE) {
 			$lookup = $fields[$search_field]['lookup'];
 
-			$field_trafo = str_replace('%s', '%s::text', $string_trafo);
+			$field_trafo = str_replace('%s', db_cast_text('%s'), $string_trafo);
 
 			$term['sql'] = sprintf("$field_trafo %s $query_trafo or (select $field_trafo from %s other where other.%s = %s.%s) %s $query_trafo",
 				db_esc($search_field), $op,
@@ -332,22 +334,6 @@
 	//------------------------------------------------------------------------------------------
 		 global $TABLES;
 		 return $TABLES[$table_name]['primary_key']['columns'][0];
-	}
-
-	//------------------------------------------------------------------------------------------
-	function db_connect() {
-	//------------------------------------------------------------------------------------------
-		global $DB;
-
-		try {
-			return new PDO(
-				"pgsql:dbname={$DB['db']};host={$DB['host']};port={$DB['port']};options='--client_encoding=UTF8'",
-				$DB['user'],
-				$DB['pass']);
-		}
-		catch(PDOException $e) {
-			return FALSE;
-		}
 	}
 
 	//------------------------------------------------------------------------------------------
@@ -1163,110 +1149,6 @@ STR;
 	}
 
 	//------------------------------------------------------------------------------------------
-	function db_esc($name, $qualifier = null) {
-	//------------------------------------------------------------------------------------------
-		global $DB;
-
-		switch($DB['type']) {
-			case DB_POSTGRESQL:
-				$escape_char = '"';
-				$separator_char = '.';
-				break;
-
-			default:
-				return proc_error(l10n('error.invalid-dbtype', $DB['type']));
-		}
-
-		if($name[0] == $escape_char)
-			return $name; // already escaped
-
-		if($qualifier !== null)
-			return $escape_char . $qualifier . $escape_char . $separator_char . $escape_char . $name . $escape_char;
-		else
-			return $escape_char . $name . $escape_char;
-	}
-
-	//------------------------------------------------------------------------------------------
-	// $return_escaped:
-	//   if NULL, it will return escaped only of $fieldname is already escaped, otherwise not
-	//   if TRUE/FALSE, it will/will not escape the postfixed fieldname
-	function db_postfix_fieldname($fieldname, $postfix, $return_escaped) {
-	//------------------------------------------------------------------------------------------
-		global $DB;
-
-		switch($DB['type']) {
-			case DB_POSTGRESQL:
-				$escape_char = '"';
-				break;
-
-			default:
-				return proc_error(l10n('error.invalid-dbtype', $DB['type']));
-		}
-
-		$fieldname_unescaped = trim($fieldname, $escape_char);
-		$was_escaped = ($fieldname_unescaped == $fieldname);
-		$do_escape = ($return_escaped === TRUE || ($return_escaped === NULL && $was_escaped === TRUE));
-
-		if(!$do_escape)
-			$escape_char = '';
-
-		return "{$escape_char}{$fieldname}{$postfix}{$escape_char}";
-	}
-
-	//------------------------------------------------------------------------------------------
-	function db_get_single_val($sql, $params, &$retrieved_value, $db = false) {
-	//------------------------------------------------------------------------------------------
-		if($db === false)
-			$db = db_connect();
-		if($db === false)
-			return proc_error(l10n('error.db-connect'));
-
-		$stmt = $db->prepare($sql);
-		if($stmt === false)
-			return proc_error(l10n('error.db-prepare'), $db);
-
-		if(false === $stmt->execute($params))
-			return proc_error(l10n('error.db-execute'), $db);
-
-		$retrieved_value = $stmt->fetchColumn();
-		return true;
-	}
-
-	//------------------------------------------------------------------------------------------
-	function db_get_single_row($sql, $params, &$row, $db = false) {
-	//------------------------------------------------------------------------------------------
-		if($db === false)
-			$db = db_connect();
-		if($db === false)
-			return proc_error(l10n('error.db-connect'));
-
-		$stmt = $db->prepare($sql);
-		if($stmt === false)
-			return proc_error(l10n('error.db-prepare'), $db);
-
-		if(false === $stmt->execute($params))
-			return proc_error(l10n('error.db-execute'), $db);
-
-		$row = $stmt->fetch(PDO::FETCH_ASSOC);
-		return true;
-	}
-
-	//------------------------------------------------------------------------------------------
-	function db_prep_exec($sql, $params, &$stmt, $db = false) {
-	//------------------------------------------------------------------------------------------
-		if($db === false)
-			$db = db_connect();
-		if($db === false)
-			return proc_error(l10n('error.db-connect'));
-		$stmt = $db->prepare($sql);
-		if($stmt === false)
-			return proc_error(l10n('error.db-prepare'), $db);
-		if(false === $stmt->execute($params))
-			return proc_error(l10n('error.db-execute'), $db);
-		return true;
-	}
-
-	//------------------------------------------------------------------------------------------
 	function get_file_upload_error_msg($code) {
 	//------------------------------------------------------------------------------------------
         switch ($code) {
@@ -1362,7 +1244,7 @@ STR;
 
 					// postgres 9.2 >>
 					$cols .= sprintf(
-						"(SELECT '[' || array_to_json(array_agg(%s)) || ',' || array_to_json(array_agg(%s)) || ']' " .
+						"(SELECT CONCAT('[', " . db_array_to_json_array_agg('%s') . ", ',', " . db_array_to_json_array_agg('%s') . ", ']') " .
 						'FROM %s other, %s link WHERE link.%s = t.%s AND other.%s = link.%s) %s',
 						db_esc($field['lookup']['field'], 'other'), resolve_display_expression($field['lookup']['display'], 'other'),
 						db_esc($field['lookup']['table']), db_esc($field['linkage']['table']),
@@ -1371,8 +1253,8 @@ STR;
 					//<< postgres 9.2
 				}
 				else { // MODE_EDIT
-					$cols .= sprintf("(SELECT array_to_json(array_agg(link.%s)) ".
-							 "FROM %s link WHERE link.%s = ?) %s",
+					$cols .= sprintf("(SELECT " . db_array_to_json_array_agg('link.%s') .
+							 " FROM %s link WHERE link.%s = ?) %s",
 							 db_esc($field['linkage']['fk_other']),
 							 db_esc($field['linkage']['table']), db_esc($field['linkage']['fk_self']),
 							 db_esc($field_name));

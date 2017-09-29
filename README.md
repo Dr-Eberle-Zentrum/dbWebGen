@@ -9,7 +9,7 @@ Developers may add custom functionality and extensions to the engine through hoo
 
 ## Requirements
 * Webserver running PHP (lowest tested version is 5.3)
-* Database server (currently working only with PostgreSQL; lowest tested version is 9.2)
+* Database server (currently working only with PostgreSQL -- lowest tested version is 9.2; experimental support for MySQL)
 * A database
 
 ## Get it Running
