@@ -259,10 +259,10 @@
 		// for sprintf() we need to escape any %
 		$pre_term_op = str_replace('%', '%%', $pre_term_op);
 		$post_term_op = str_replace('%', '%%', $post_term_op);
-		if($pre_term_op != '') $pre_term_op = "'$pre_term_op' || ";
-		if($post_term_op != '') $post_term_op = " || '$post_term_op'";
+		if($pre_term_op != '') $pre_term_op = "'$pre_term_op', ";
+		if($post_term_op != '') $post_term_op = ", '$post_term_op'";
 		$query_trafo_without_ops = str_replace('%s', '?', $string_trafo);
-		$query_trafo = '(' . $pre_term_op . $query_trafo_without_ops . $post_term_op . ')';
+		$query_trafo = 'concat(' . $pre_term_op . $query_trafo_without_ops . $post_term_op . ')';
 		#debug_log($query_trafo);
 
 		if($APP['search_lookup_resolve'] && $fields[$search_field]['type'] == T_LOOKUP && $fields[$search_field]['lookup']['cardinality'] == CARDINALITY_SINGLE) {
@@ -280,7 +280,7 @@
 		else if($APP['search_lookup_resolve'] && $fields[$search_field]['type'] == T_LOOKUP && $fields[$search_field]['lookup']['cardinality'] == CARDINALITY_MULTIPLE) {
 			$field = $fields[$search_field];
 
-			$field_trafo = str_replace('%s', "array_to_string(array_agg(%s), ' ')", $string_trafo);
+			$field_trafo = str_replace('%s', db_array_to_string_array_agg('%s', ' '), $string_trafo);
 
 			$term['sql'] = sprintf("(select $field_trafo FROM %s other, %s link WHERE link.%s = %s.%s AND other.%s = link.%s) %s $query_trafo",
 				resolve_display_expression($field['lookup']['display'], 'other'),
