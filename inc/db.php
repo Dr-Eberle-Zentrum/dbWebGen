@@ -131,14 +131,16 @@
     }
 
     //------------------------------------------------------------------------------------------
-    function db_array_to_json_array_agg($expr) {
+    function db_array_to_json_array_agg($expr, $cast_to_text = true) {
     //------------------------------------------------------------------------------------------
         global $DB;
         switch($DB['type']) {
             case DB_POSTGRESQL:
                 return "array_to_json(array_agg($expr))";
             case DB_MYSQL:
-                return "group_concat(json_quote($expr) separator ',')";
+                if($cast_to_text)
+                    $expr = db_cast_text($expr);
+                return "concat('[',group_concat(json_quote($expr) separator ','),']')";
         }
     }
 
