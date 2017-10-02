@@ -233,7 +233,7 @@
 			$table_qualifier = null)
 		{
 			return sprintf(
-				"(%s)::text like '%%'||:%s||'%%'",
+				db_cast_text('(%s)') . " like concat('%%', ". db_cast_text(':%s') .", '%%')",
 				sprintf($search_string_transformation, db_esc($this->field_name, $table_qualifier)),
 				$param_name
 			);

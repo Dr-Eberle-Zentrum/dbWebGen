@@ -226,7 +226,7 @@
 				return proc_error(l10n('error.db-prepare'), $db);
 
 			if(false === $stmt->execute($where_clause != '' ? array($this->get_submitted_value()) : array()))
-				return proc_error(l10n('error.db-execute'), $db);
+				return proc_error(l10n('error.db-execute'), $stmt);
 
 			$output_buf .= "<option value=''></option>\n";
 
@@ -371,8 +371,9 @@
 			}
 			else {
 				$linkage = $this->get_linkage_info();
+
 				return sprintf(
-					"(SELECT '[' || array_to_json(array_agg(%s)) || ',' || array_to_json(array_agg(%s)) || ']'
+					"(SELECT CONCAT('[', " . db_array_to_json_array_agg('%s') . ", ',', " . db_array_to_json_array_agg('%s') . ", ']')
 					 FROM %s other, %s link
 					 WHERE link.%s = t.%s
 					 AND other.%s = link.%s) %s",
@@ -391,7 +392,7 @@
 		{
 			if($this->get_cardinality() == CARDINALITY_SINGLE) {
 				$s = sprintf(
-					"(SELECT (%s)::text FROM %s k WHERE %s = t.%s) like '%%'||:%s||'%%'",
+					"(SELECT ". db_cast_text('(%s)') ." FROM %s k WHERE %s = t.%s) like concat('%%', ". db_cast_text(':%s') .", '%%')",
 					sprintf($search_string_transformation, resolve_display_expression($this->get_lookup_display(), 'k')),
 					db_esc($this->get_lookup_table_name()),
 					db_esc($this->get_lookup_field_name()),
@@ -403,11 +404,11 @@
 			else {
 				$linkage = $this->get_linkage_info();
 				$s = sprintf(
-					"(SELECT array_to_string(array_agg(%s), ' ')
+					"(SELECT " . db_array_to_string_array_agg('%s', ' ') . "
 					 FROM %s other, %s link
 					 WHERE link.%s = t.%s
 					 AND other.%s = link.%s)
-					 like '%%'||:%s||'%%'",
+					 like concat('%%', ". db_cast_text(':%s') .", '%%')",
 					sprintf($search_string_transformation, resolve_display_expression($this->get_lookup_display(), 'other')),
 					db_esc($this->get_lookup_table_name()), db_esc($linkage['table']),
 					db_esc($linkage['fk_self']), db_esc($this->table['primary_key']['columns'][0]),

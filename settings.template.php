@@ -97,8 +97,8 @@
 	/* ========================================================================================================
 		$DB has database connection details
 
-		- type: {DB_POSTGRESQL}
-			Database type, currently only postgres supported
+		- type: { DB_POSTGRESQL, DB_MYSQL }
+			Database type, currently only postgres and mysql supported
 		- host: string
 			Database server (IP oder hostname)
 		- port: int

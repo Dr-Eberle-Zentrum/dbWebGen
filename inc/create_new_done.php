@@ -49,11 +49,11 @@
 
 		$stmt = $db->prepare($sql);
 		if($stmt === false)
-			return proc_error(l10n('error.db-prepare'));
+			return proc_error(l10n('error.db-prepare'), $db);
 
 		$res = $stmt->execute(array($pk_value));
 		if($res === false)
-			return proc_error(l10n('error.db-execute'));
+			return proc_error(l10n('error.db-execute'), $stmt);
 
 		$label = $stmt->fetchColumn();
 		$text = format_lookup_item_label($label, $lookup_settings, $pk_value, 'plain');

@@ -89,7 +89,7 @@
 			$table_qualifier = null) {
 		//--------------------------------------------------------------------------------------
 			return sprintf(
-				"lower(st_astext(%s)) like '%%' || :%s || '%%'",
+				"lower(st_astext(%s)) like concat('%%', ". db_cast_text(':%s') .", '%%')",
 				db_esc($this->field_name, $table_qualifier),
 				$param_name
 			);

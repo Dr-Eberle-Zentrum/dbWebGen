@@ -40,7 +40,7 @@
 
 		$stmt = $db->prepare($sql);
 		if($stmt === false)
-		return proc_error(l10n('error.db-prepare'), $db);
+			return proc_error(l10n('error.db-prepare'), $db);
 
 		$upload_locations = array();
 
@@ -61,11 +61,11 @@
 		if(isset($table['hooks']) && isset($table['hooks']['before_delete']) && trim($table['hooks']['before_delete']) != '')
 			$table['hooks']['before_delete']($table_name, $table, $pk_hash);
 
-		if($stmt->execute($values) === FALSE)
-			return proc_error(l10n('error.delete-exec'), $db);
+		if($stmt->execute($values) === false)
+			return proc_error(l10n('error.delete-exec'), $stmt);
 
 		if($stmt->rowCount() != 1)
-			return proc_error(l10n('error.delete-count'), $db);
+			return proc_error(l10n('error.delete-count'), $stmt);
 
 		// call after_delete hook, if any
 		if(isset($table['hooks']) && isset($table['hooks']['after_delete']) && trim($table['hooks']['after_delete']) != '')

@@ -259,7 +259,7 @@ HTML;
             if($stmt === false)
                 return proc_error(l10n('error.db-prepare'), $db);
             if(false === $stmt->execute(array($param_name => $transformed_search_term)))
-    			return proc_error(l10n('error.db-execute'), $db);
+    			return proc_error(l10n('error.db-execute'), $stmt);
 
             $highlighter = new SearchResultHighlighter($transformed_search_term, self::transliterator_rules());
             $rr = new RecordRenderer($table_name, $table, $relevant_fields, $stmt, false, false, $highlighter);

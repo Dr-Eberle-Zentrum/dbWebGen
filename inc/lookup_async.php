@@ -45,12 +45,12 @@
 
 			if($field['lookup']['field'] == $field['lookup']['display']) {
 				// look only in display field
-				$sql = sprintf("select %s id, %s \"label\" from %s t where ($string_trafo) like '%%' || ($string_trafo) || '%%' order by 2",
+				$sql = sprintf("select %s id, %s \"label\" from %s t where ($string_trafo) like concat('%%',($string_trafo),'%%') order by 2",
 					db_esc($field['lookup']['field']), $display_expr, $field['lookup']['table'], $display_expr, '?');
 			}
 			else {
 				// look in display field and primary key field
-				$sql = sprintf("select %s id, %s \"label\" from %s t where ($string_trafo) || ($string_trafo) like '%%' || ($string_trafo) || '%%' order by 2",
+				$sql = sprintf("select %s id, %s \"label\" from %s t where concat(($string_trafo),($string_trafo)) like concat('%%',($string_trafo),'%%') order by 2",
 					db_esc($field['lookup']['field']), $display_expr, $field['lookup']['table'], $display_expr, db_esc($field['lookup']['field']), '?');
 			}
 

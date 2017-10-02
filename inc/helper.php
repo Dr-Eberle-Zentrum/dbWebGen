@@ -1,4 +1,6 @@
 <?
+	require_once ENGINE_PATH_LOCAL . 'inc/db.php';
+
 	//------------------------------------------------------------------------------------------
 	function process_redirect($flush_ob = false) {
 	//------------------------------------------------------------------------------------------
@@ -257,16 +259,16 @@
 		// for sprintf() we need to escape any %
 		$pre_term_op = str_replace('%', '%%', $pre_term_op);
 		$post_term_op = str_replace('%', '%%', $post_term_op);
-		if($pre_term_op != '') $pre_term_op = "'$pre_term_op' || ";
-		if($post_term_op != '') $post_term_op = " || '$post_term_op'";
+		if($pre_term_op != '') $pre_term_op = "'$pre_term_op', ";
+		if($post_term_op != '') $post_term_op = ", '$post_term_op'";
 		$query_trafo_without_ops = str_replace('%s', '?', $string_trafo);
-		$query_trafo = '(' . $pre_term_op . $query_trafo_without_ops . $post_term_op . ')';
+		$query_trafo = 'concat(' . $pre_term_op . $query_trafo_without_ops . $post_term_op . ')';
 		#debug_log($query_trafo);
 
 		if($APP['search_lookup_resolve'] && $fields[$search_field]['type'] == T_LOOKUP && $fields[$search_field]['lookup']['cardinality'] == CARDINALITY_SINGLE) {
 			$lookup = $fields[$search_field]['lookup'];
 
-			$field_trafo = str_replace('%s', '%s::text', $string_trafo);
+			$field_trafo = str_replace('%s', db_cast_text('%s'), $string_trafo);
 
 			$term['sql'] = sprintf("$field_trafo %s $query_trafo or (select $field_trafo from %s other where other.%s = %s.%s) %s $query_trafo",
 				db_esc($search_field), $op,
@@ -278,7 +280,7 @@
 		else if($APP['search_lookup_resolve'] && $fields[$search_field]['type'] == T_LOOKUP && $fields[$search_field]['lookup']['cardinality'] == CARDINALITY_MULTIPLE) {
 			$field = $fields[$search_field];
 
-			$field_trafo = str_replace('%s', "array_to_string(array_agg(%s), ' ')", $string_trafo);
+			$field_trafo = str_replace('%s', db_array_to_string_array_agg('%s', ' '), $string_trafo);
 
 			$term['sql'] = sprintf("(select $field_trafo FROM %s other, %s link WHERE link.%s = %s.%s AND other.%s = link.%s) %s $query_trafo",
 				resolve_display_expression($field['lookup']['display'], 'other'),
@@ -288,8 +290,12 @@
 
 			// for SEARCH_ANY & SEARCH_WORD queries (~ contains) we also want to look whether the provided query value matches any of the multiple foreign keys (not only the lookup values), expecting those key values to be integers (but also works with others)
 			if($search_option === SEARCH_ANY || $search_option === SEARCH_WORD) {
-				$field_trafo = sprintf("array_agg(%s)", $string_trafo);
+				/*$field_trafo = sprintf("array_agg(%s)", $string_trafo);
 				$or_term = sprintf("(select $field_trafo from %s link where link.%s = %s.%s) @> array[$query_trafo_without_ops]",
+					db_esc($field['linkage']['fk_other']), db_esc($field['linkage']['table']),
+					db_esc($field['linkage']['fk_self']), $table_alias, db_esc($table['primary_key']['columns'][0]));*/
+
+				$or_term = sprintf("($query_trafo_without_ops) in (select $string_trafo from %s link where link.%s = %s.%s)",
 					db_esc($field['linkage']['fk_other']), db_esc($field['linkage']['table']),
 					db_esc($field['linkage']['fk_self']), $table_alias, db_esc($table['primary_key']['columns'][0]));
 
@@ -301,7 +307,7 @@
 			if($fields[$search_field]['type'] == T_POSTGIS_GEOM)
 				$field_trafo = str_replace('%s', 'ST_AsText(%s)', $string_trafo);
 			else
-				$field_trafo = str_replace('%s', '%s::text', $string_trafo);
+				$field_trafo = str_replace('%s', db_cast_text('%s'), $string_trafo);
 
 			$term['sql'] = sprintf("$field_trafo %s $query_trafo", db_esc($search_field), $op);
 		}
@@ -332,22 +338,6 @@
 	//------------------------------------------------------------------------------------------
 		 global $TABLES;
 		 return $TABLES[$table_name]['primary_key']['columns'][0];
-	}
-
-	//------------------------------------------------------------------------------------------
-	function db_connect() {
-	//------------------------------------------------------------------------------------------
-		global $DB;
-
-		try {
-			return new PDO(
-				"pgsql:dbname={$DB['db']};host={$DB['host']};port={$DB['port']};options='--client_encoding=UTF8'",
-				$DB['user'],
-				$DB['pass']);
-		}
-		catch(PDOException $e) {
-			return FALSE;
-		}
 	}
 
 	//------------------------------------------------------------------------------------------
@@ -968,14 +958,14 @@ STR;
 	}
 
 	//------------------------------------------------------------------------------------------
-	function proc_error($txt, $db = null, $clear_msg_buffer = false) {
+	function proc_error($txt, $db_obj = null /* can be db or statement obj */, $clear_msg_buffer = false) {
 	//------------------------------------------------------------------------------------------
 		if($clear_msg_buffer)
 			$_SESSION['msg'] = array();
 
 		$msg = '<div class="alert alert-danger"><b>'. l10n('info-box.error-head') .'</b>: ' . $txt;
-		if(is_object($db)) {
-			$e = $db->errorInfo();
+		if(is_object($db_obj)) {
+			$e = $db_obj->errorInfo();
 			$msg .= "<ul>\n<li>". str_replace("\n", '</li><li>', html($e[2])) . "</li>\n";
 			$msg .= "<li>". l10n('info-box.sql-codes') .": SQLSTATE {$e[0]}, Driver {$e[1]}</li>\n";
 			$msg .= "</ul>\n";
@@ -1163,110 +1153,6 @@ STR;
 	}
 
 	//------------------------------------------------------------------------------------------
-	function db_esc($name, $qualifier = null) {
-	//------------------------------------------------------------------------------------------
-		global $DB;
-
-		switch($DB['type']) {
-			case DB_POSTGRESQL:
-				$escape_char = '"';
-				$separator_char = '.';
-				break;
-
-			default:
-				return proc_error(l10n('error.invalid-dbtype', $DB['type']));
-		}
-
-		if($name[0] == $escape_char)
-			return $name; // already escaped
-
-		if($qualifier !== null)
-			return $escape_char . $qualifier . $escape_char . $separator_char . $escape_char . $name . $escape_char;
-		else
-			return $escape_char . $name . $escape_char;
-	}
-
-	//------------------------------------------------------------------------------------------
-	// $return_escaped:
-	//   if NULL, it will return escaped only of $fieldname is already escaped, otherwise not
-	//   if TRUE/FALSE, it will/will not escape the postfixed fieldname
-	function db_postfix_fieldname($fieldname, $postfix, $return_escaped) {
-	//------------------------------------------------------------------------------------------
-		global $DB;
-
-		switch($DB['type']) {
-			case DB_POSTGRESQL:
-				$escape_char = '"';
-				break;
-
-			default:
-				return proc_error(l10n('error.invalid-dbtype', $DB['type']));
-		}
-
-		$fieldname_unescaped = trim($fieldname, $escape_char);
-		$was_escaped = ($fieldname_unescaped == $fieldname);
-		$do_escape = ($return_escaped === TRUE || ($return_escaped === NULL && $was_escaped === TRUE));
-
-		if(!$do_escape)
-			$escape_char = '';
-
-		return "{$escape_char}{$fieldname}{$postfix}{$escape_char}";
-	}
-
-	//------------------------------------------------------------------------------------------
-	function db_get_single_val($sql, $params, &$retrieved_value, $db = false) {
-	//------------------------------------------------------------------------------------------
-		if($db === false)
-			$db = db_connect();
-		if($db === false)
-			return proc_error(l10n('error.db-connect'));
-
-		$stmt = $db->prepare($sql);
-		if($stmt === false)
-			return proc_error(l10n('error.db-prepare'), $db);
-
-		if(false === $stmt->execute($params))
-			return proc_error(l10n('error.db-execute'), $db);
-
-		$retrieved_value = $stmt->fetchColumn();
-		return true;
-	}
-
-	//------------------------------------------------------------------------------------------
-	function db_get_single_row($sql, $params, &$row, $db = false) {
-	//------------------------------------------------------------------------------------------
-		if($db === false)
-			$db = db_connect();
-		if($db === false)
-			return proc_error(l10n('error.db-connect'));
-
-		$stmt = $db->prepare($sql);
-		if($stmt === false)
-			return proc_error(l10n('error.db-prepare'), $db);
-
-		if(false === $stmt->execute($params))
-			return proc_error(l10n('error.db-execute'), $db);
-
-		$row = $stmt->fetch(PDO::FETCH_ASSOC);
-		return true;
-	}
-
-	//------------------------------------------------------------------------------------------
-	function db_prep_exec($sql, $params, &$stmt, $db = false) {
-	//------------------------------------------------------------------------------------------
-		if($db === false)
-			$db = db_connect();
-		if($db === false)
-			return proc_error(l10n('error.db-connect'));
-		$stmt = $db->prepare($sql);
-		if($stmt === false)
-			return proc_error(l10n('error.db-prepare'), $db);
-		if(false === $stmt->execute($params))
-			return proc_error(l10n('error.db-execute'), $db);
-		return true;
-	}
-
-	//------------------------------------------------------------------------------------------
 	function get_file_upload_error_msg($code) {
 	//------------------------------------------------------------------------------------------
         switch ($code) {
@@ -1362,7 +1248,7 @@ STR;
 
 					// postgres 9.2 >>
 					$cols .= sprintf(
-						"(SELECT '[' || array_to_json(array_agg(%s)) || ',' || array_to_json(array_agg(%s)) || ']' " .
+						"(SELECT CONCAT('[', " . db_array_to_json_array_agg('%s') . ", ',', " . db_array_to_json_array_agg('%s') . ", ']') " .
 						'FROM %s other, %s link WHERE link.%s = t.%s AND other.%s = link.%s) %s',
 						db_esc($field['lookup']['field'], 'other'), resolve_display_expression($field['lookup']['display'], 'other'),
 						db_esc($field['lookup']['table']), db_esc($field['linkage']['table']),
@@ -1371,8 +1257,8 @@ STR;
 					//<< postgres 9.2
 				}
 				else { // MODE_EDIT
-					$cols .= sprintf("(SELECT array_to_json(array_agg(link.%s)) ".
-							 "FROM %s link WHERE link.%s = ?) %s",
+					$cols .= sprintf("(SELECT " . db_array_to_json_array_agg('link.%s') .
+							 " FROM %s link WHERE link.%s = ?) %s",
 							 db_esc($field['linkage']['fk_other']),
 							 db_esc($field['linkage']['table']), db_esc($field['linkage']['fk_self']),
 							 db_esc($field_name));
