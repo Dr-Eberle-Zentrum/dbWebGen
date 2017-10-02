@@ -579,7 +579,7 @@ HTML;
 					return proc_error(l10n('error.db-prepare'), $this->db);
 
 				if($stmt->execute($this->query_info['params']) === false)
-					return proc_error(l10n('error.db-execute'), $this->db);
+					return proc_error(l10n('error.db-execute'), $stmt);
 
 				$js = $this->chart->get_js($stmt);
 

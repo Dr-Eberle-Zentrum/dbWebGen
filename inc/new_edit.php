@@ -659,7 +659,7 @@ EOT;
 		if($stmt === false)
 			return proc_error(l10n('error.db-prepare'), $db);
 		if(false === $stmt->execute($values))
-			return proc_error(l10n('error.db-execute'), $db);
+			return proc_error(l10n('error.db-execute'), $stmt);
 
 		$form_id = get_form_id();
 
@@ -737,7 +737,7 @@ EOT;
 					if($select_stmt === false)
 						return proc_error(l10n('error.edit-update-rels-prep', $field_name, 0), $db);
 					if($select_stmt->execute(array_merge(array_values($primary_keys), $values)) === false)
-						return proc_error(l10n('error.edit-update-rels-exec', $field_name, 0), $db);
+						return proc_error(l10n('error.edit-update-rels-exec', $field_name, 0), $select_stmt);
 
 					while($record = $select_stmt->fetch(PDO::FETCH_ASSOC)) {
 						$pk_hash = array(
@@ -757,7 +757,7 @@ EOT;
 				if($delete_stmt === false)
 					return proc_error(l10n('error.edit-update-rels-prep', $field_name, 1), $db);
 				if($delete_stmt->execute(array_merge(array_values($primary_keys), $values)) === false)
-					return proc_error(l10n('error.edit-update-rels-exec', $field_name, 1), $db);
+					return proc_error(l10n('error.edit-update-rels-exec', $field_name, 1), $delete_stmt);
 				// << ACTUAL DELETION
 
 				// AFTER_DELETE hook >>
@@ -782,7 +782,7 @@ EOT;
 					if($stmt === false)
 						return proc_error(l10n('error.edit-update-rels-prep', $field_name, 2), $db);
 					if($stmt->execute(array_merge(array_values($primary_keys), array($values[$i]))) === false)
-						return proc_error(l10n('error.edit-update-rels-exec', $field_name, 2), $db);
+						return proc_error(l10n('error.edit-update-rels-exec', $field_name, 2), $stmt);
 
 					$cunt = $stmt->fetchColumn();
 					if($cunt > 0) {
@@ -808,7 +808,7 @@ EOT;
 							if($details_upd === false)
 								proc_info(l10n('info.new-edit-update-rels-prep-problems', $values[$i], $table['fields'][$field_name]['label']), $db);
 							else if($details_upd->execute($inline_params) === false)
-								proc_info(l10n('info.new-edit-update-rels-exec-problems', $values[$i], $table['fields'][$field_name]['label']), $db);
+								proc_info(l10n('info.new-edit-update-rels-exec-problems', $values[$i], $table['fields'][$field_name]['label']), $details_upd);
 						}
 
 						// already exists, needs to be removed from values
@@ -874,7 +874,7 @@ EOT;
 
 					#debug_log("Default linkage: $default_sql", $default_params);
 					if($default_stmt->execute($default_params) === false)
-						proc_info(l10n('info.new-edit-update-rels-inline-defaults', $value, $field_name), $db);
+						proc_info(l10n('info.new-edit-update-rels-inline-defaults', $value, $field_name), $default_stmt);
 				}
 				else {
 					// we do have additional info, so we need to prepare and exec a different SQL statement
@@ -890,7 +890,7 @@ EOT;
 					if($details_stmt === false)
 						proc_info(l10n('info.new-edit-update-rels-inline-prep', $table['fields'][$field]['label'], $value), $db);
 					else if($details_stmt->execute($inline_details['params']) === false)
-						proc_info(l10n('info.new-edit-update-rels-inline-exec', $table['fields'][$field]['label'], $value), $db);
+						proc_info(l10n('info.new-edit-update-rels-inline-exec', $table['fields'][$field]['label'], $value), $details_stmt);
 				}
 			}
 		}

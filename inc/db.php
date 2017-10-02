@@ -90,7 +90,7 @@
             return proc_error(l10n('error.db-prepare'), $db);
 
         if(false === $stmt->execute($params))
-            return proc_error(l10n('error.db-execute'), $db);
+            return proc_error(l10n('error.db-execute'), $stmt);
 
         $retrieved_value = $stmt->fetchColumn();
         return true;
@@ -109,7 +109,7 @@
             return proc_error(l10n('error.db-prepare'), $db);
 
         if(false === $stmt->execute($params))
-            return proc_error(l10n('error.db-execute'), $db);
+            return proc_error(l10n('error.db-execute'), $stmt);
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return true;
@@ -126,7 +126,7 @@
         if($stmt === false)
             return proc_error(l10n('error.db-prepare'), $db);
         if(false === $stmt->execute($params))
-            return proc_error(l10n('error.db-execute'), $db);
+            return proc_error(l10n('error.db-execute'), $stmt);
         return true;
     }
 

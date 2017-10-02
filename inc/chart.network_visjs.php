@@ -203,7 +203,7 @@ OPTIONS;
 				}
 
 				if($nodes_stmt->execute() === false) {
-					proc_error(l10n('chart.network-visjs.node-query-exec'), $this->page->db());
+					proc_error(l10n('chart.network-visjs.node-query-exec'), $nodes_stmt);
 					break;
 				}
 

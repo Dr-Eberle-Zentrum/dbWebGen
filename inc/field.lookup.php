@@ -226,7 +226,7 @@
 				return proc_error(l10n('error.db-prepare'), $db);
 
 			if(false === $stmt->execute($where_clause != '' ? array($this->get_submitted_value()) : array()))
-				return proc_error(l10n('error.db-execute'), $db);
+				return proc_error(l10n('error.db-execute'), $stmt);
 
 			$output_buf .= "<option value=''></option>\n";
 

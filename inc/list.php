@@ -174,7 +174,7 @@
 			if($res === false)
 				return proc_error(l10n('error.db-prepare'), $db);
 			if($res->execute($params_arr) === false)
-				return proc_error(l10n('error.db-execute'), $db);
+				return proc_error(l10n('error.db-execute'), $res);
 
 			echo $pag;
 

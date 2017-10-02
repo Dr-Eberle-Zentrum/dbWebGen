@@ -958,14 +958,14 @@ STR;
 	}
 
 	//------------------------------------------------------------------------------------------
-	function proc_error($txt, $db = null, $clear_msg_buffer = false) {
+	function proc_error($txt, $db_obj = null /* can be db or statement obj */, $clear_msg_buffer = false) {
 	//------------------------------------------------------------------------------------------
 		if($clear_msg_buffer)
 			$_SESSION['msg'] = array();
 
 		$msg = '<div class="alert alert-danger"><b>'. l10n('info-box.error-head') .'</b>: ' . $txt;
-		if(is_object($db)) {
-			$e = $db->errorInfo();
+		if(is_object($db_obj)) {
+			$e = $db_obj->errorInfo();
 			$msg .= "<ul>\n<li>". str_replace("\n", '</li><li>', html($e[2])) . "</li>\n";
 			$msg .= "<li>". l10n('info-box.sql-codes') .": SQLSTATE {$e[0]}, Driver {$e[1]}</li>\n";
 			$msg .= "</ul>\n";
