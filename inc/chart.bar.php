@@ -2,9 +2,6 @@
 	//==========================================================================================
 	class dbWebGenChart_bar extends dbWebGenChart_Google {
 	//==========================================================================================
-		// select name "Student", num_changes "Number of Edits" from view_changes_by_user v, users u where role = 'user' and u.id = v.user_id order by 2 desc
-
-		// select lastname_translit "Persons by Family Name", count(*)::int "Number of Persons", max(length(forename_translit))::int "Longest Name" from persons group by 1 order by 2 desc limit 10
 
 		//--------------------------------------------------------------------------------------
 		// form field @name must be prefixed with exact charttype followed by dash

@@ -2,9 +2,6 @@
 	//==========================================================================================
 	class dbWebGenChart_annotated_timeline extends dbWebGenChart_Google {
 	//==========================================================================================
-		// select day, edits "Daily Edits", (select count(*) from recent_changes_list where timestamp::date <= a.day) "Cumulative Edits" from (select timestamp::date "day", count(*) "edits" from recent_changes_list group by 1) a
-
-		// select timestamp::date, count(*) "# Edits" from recent_changes_list group by 1 order by 1
 
 		//--------------------------------------------------------------------------------------
 		// form field @name must be prefixed with exact charttype followed by dash

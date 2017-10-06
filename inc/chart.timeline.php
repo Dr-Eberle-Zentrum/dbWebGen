@@ -2,8 +2,7 @@
 	//==========================================================================================
 	class dbWebGenChart_timeline extends dbWebGenChart_Google {
 	//==========================================================================================
-		// select id::varchar, signature, gregorian_year_lower, gregorian_year_upper from documents where gregorian_year_lower is not null order by gregorian_year_lower
-
+		
 		//--------------------------------------------------------------------------------------
 		// form field @name must be prefixed with exact charttype followed by dash
 		public function settings_html() {
