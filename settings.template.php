@@ -321,6 +321,9 @@
 				If store & STORE_FOLDER, then the file will be stored in a folder specified by 'location'
 			- allowed_ext: array (optional)
 				If type=T_UPLOAD, the file extension of the uploaded file will be checked against this array
+			- post_proc: string (optional)
+				Name of a function that will be called after the file was uploaded to the server. 
+				Arguments: table name, field name, file info array, file path
 			- reset: bool (default: false)
 				reset=true means that when editing a record (MODE_EDIT) its current value is not fetched into the form control.
 			- min: number (optional)

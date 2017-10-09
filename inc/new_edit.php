@@ -366,7 +366,7 @@ EOT;
 	}
 
 	//------------------------------------------------------------------------------------------
-	function handle_uploaded_file($table, $field_name, $field, &$file) {
+	function handle_uploaded_file($table_name, $table, $field_name, $field, &$file) {
 	//------------------------------------------------------------------------------------------
 		/*
 			$file = [
@@ -428,6 +428,9 @@ EOT;
 			$moved = move_uploaded_file($file['tmp_name'], $target_filename);
 			if(!$moved)
 				return proc_error(l10n('error.upload-move-file'));
+
+			if($moved && isset($field['post_proc']))
+				$field['post_proc']($table_name, $field_name, $file, $target_filename);
 
 			$file['path'] = $target_filename;
 		}
@@ -571,7 +574,7 @@ EOT;
 				if($_FILES[$field_name]['error'] !== UPLOAD_ERR_OK)
 					return proc_error(get_file_upload_error_msg($_FILES[$field_name]['error']));
 
-				if(handle_uploaded_file($table, $field_name, $field_info, $_FILES[$field_name]) === false)
+				if(handle_uploaded_file($table_name, $table, $field_name, $field_info, $_FILES[$field_name]) === false)
 					return false;
 
 				if($field_info['store'] & STORE_FOLDER) {
