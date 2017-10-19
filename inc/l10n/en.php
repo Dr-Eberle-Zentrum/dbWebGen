@@ -6,6 +6,7 @@
         'chart-type.geo' => 'Geo Chart',
         'chart-type.leaflet' => 'Leaflet Map',
         'chart-type.network-visjs' => 'Network (vis.js)',
+        'chart-type.pie' => 'Pie Chart',
         'chart-type.sankey' => 'Sankey Chart',
         'chart-type.table' => 'Table',
         'chart-type.timeline' => 'Timeline',
@@ -144,6 +145,17 @@ HTML
         'chart.network-visjs.node-query-exec' => 'Node Query produces error during execution.',
         'chart.network-visjs.stabilizing-info' => 'Network is still stabilizing, but ready to explore.',
         'chart.network-visjs.stabilizing-stop' => 'Click here to freeze network.',
+
+        'chart.pie.settings' => <<<HTML
+            <p>Creates a pie chart. Labels for pie slices must be in the first column. The second column must contain numerical values (<a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/piechart#data-format">details</a>).</p>
+            <div class="form-group">
+                <label class="control-label">Display Options</label>
+                <div class='checkbox top-margin-zero'><label>$1 3D Pie</label></div>
+                <div class='checkbox'><label>$2 Donut Style (ignored when 3D activated)</label></div>
+            </div>
+HTML
+        ,
+
         'chart.sankey.settings' => <<<HTML
             <p>A sankey diagram is a visualization used to depict a flow (links) from one set of values (nodes) to another. Sankeys are best used when you want to show a many-to-many mapping between two domains or multiple paths through a set of stages.</p>
             <p><a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/sankey#data-format">Required columns</a>:
@@ -156,6 +168,7 @@ HTML
 
 HTML
         ,
+
         'chart.table.settings' => <<<HTML
             <p>The query result will be visualized as a table.</p>
             <div class="form-group">

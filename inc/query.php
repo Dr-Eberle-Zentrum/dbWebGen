@@ -29,7 +29,8 @@
 			'leaflet' => 'chart-type.leaflet',
 			'network_visjs' => 'chart-type.network-visjs',
 			'sankey' => 'chart-type.sankey',
-			'timeline' => 'chart-type.timeline'
+			'timeline' => 'chart-type.timeline',
+			'pie' => 'chart-type.pie'
 		);
 
 		//--------------------------------------------------------------------------------------

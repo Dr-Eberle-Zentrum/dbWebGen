@@ -6,6 +6,7 @@
         'chart-type.geo' => 'Geo-Karte',
         'chart-type.leaflet' => 'Leaflet-Karte',
         'chart-type.network-visjs' => 'Netzwerk (vis.js)',
+        'chart-type.pie' => 'Tortendiagramm',
         'chart-type.sankey' => 'Sankey-Diagramm',
         'chart-type.table' => 'Tabelle',
         'chart-type.timeline' => 'Zeitleiste',
@@ -151,6 +152,16 @@ HTML
         'chart.network-visjs.node-query-exec' => 'Ausführen der Knotenabfrage scheitert.',
         'chart.network-visjs.stabilizing-info' => 'Das Netzwerk stabilisiert sich noch, kann aber schon verwendet werden.',
         'chart.network-visjs.stabilizing-stop' => 'Hier klicken um Stabiliserung zu stoppen.',
+
+        'chart.pie.settings' => <<<HTML
+            <p>Erzeugt ein Tortendiagramm. Beschriftungen für die Tortenecken müssen in der 1. Spalte sein. Die 2. Spalte muss numerische Werte beinhalten (<a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/piechart#data-format">Details</a>).</p>
+            <div class="form-group">
+                <label class="control-label">Anzeigeoptionen</label>
+                <div class='checkbox top-margin-zero'><label>$1 3D-Darstellung</label></div>
+                <div class='checkbox'><label>$2 Donut statt Torte (ignoriert wenn 3D aktiviert)</label></div>
+            </div>
+HTML
+        ,
 
         'chart.sankey.settings' => <<<HTML
             <p>Erzeugt ein Flussdiagram zwischen zwei Wertmengen.</p>
