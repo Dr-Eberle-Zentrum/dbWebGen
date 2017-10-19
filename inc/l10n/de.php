@@ -160,8 +160,26 @@ HTML
                 <div class='checkbox top-margin-zero'><label>$1 3D-Darstellung</label></div>
                 <div class='checkbox'><label>$2 Donut statt Torte (ignoriert wenn 3D aktiviert)</label></div>
             </div>
+            <div class="form-group">
+                <label class="control-label">Beschriftung der Tortenstücke</label>
+                <div>$3</div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Positionierung der Legende</label>
+                <div>$4</div>
+            </div>
 HTML
         ,
+        'chart.pie.pie-slice-text.percentage' => 'Prozentsatz',
+        'chart.pie.pie-slice-text.label' => 'Titel (1. Ergebnisspalte)',
+        'chart.pie.pie-slice-text.value' => 'Absoluter Wert (2. Ergebnisspalte)',
+        'chart.pie.pie-slice-text.none' => 'Keine',
+        'chart.pie.legend-position.bottom' => 'Unter dem Kuchen',
+        'chart.pie.legend-position.labeled' => 'Linien zum Kuchen',
+        'chart.pie.legend-position.left' => 'Links vom Kuchen',
+        'chart.pie.legend-position.none' => 'Legende ausblenden',
+        'chart.pie.legend-position.right' => 'Rechts vom Kuchen',
+        'chart.pie.legend-position.top' => 'Über dem Kuchen',
 
         'chart.sankey.settings' => <<<HTML
             <p>Erzeugt ein Flussdiagram zwischen zwei Wertmengen.</p>

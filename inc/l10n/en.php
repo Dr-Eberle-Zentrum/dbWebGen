@@ -153,8 +153,26 @@ HTML
                 <div class='checkbox top-margin-zero'><label>$1 3D Pie</label></div>
                 <div class='checkbox'><label>$2 Donut Style (ignored when 3D activated)</label></div>
             </div>
+            <div class="form-group">
+                <label class="control-label">Labeling of pie slices</label>
+                <div>$3</div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Position of Legend</label>
+                <div>$4</div>
+            </div>
 HTML
         ,
+        'chart.pie.pie-slice-text.percentage' => 'Percentage of total',
+        'chart.pie.pie-slice-text.label' => 'Label (1st result column)',
+        'chart.pie.pie-slice-text.value' => 'Absolute value (2nd result column)',
+        'chart.pie.pie-slice-text.none' => 'None',
+        'chart.pie.legend-position.bottom' => 'Below the chart',
+        'chart.pie.legend-position.labeled' => 'Lines connect to outside labels',
+        'chart.pie.legend-position.left' => 'Left of the chart',
+        'chart.pie.legend-position.none' => 'Hide legend',
+        'chart.pie.legend-position.right' => 'Right of the chart',
+        'chart.pie.legend-position.top' => 'Above the chart',
 
         'chart.sankey.settings' => <<<HTML
             <p>A sankey diagram is a visualization used to depict a flow (links) from one set of values (nodes) to another. Sankeys are best used when you want to show a many-to-many mapping between two domains or multiple paths through a set of stages.</p>
