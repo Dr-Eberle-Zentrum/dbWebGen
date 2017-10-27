@@ -58,6 +58,13 @@
 		abstract public /*string*/ function get_js(/*PDOStatement*/ $query_result);
 
 		//--------------------------------------------------------------------------------------
+		// override this to return true if the chart renders plaintext only
+		public /*bool*/ function is_plaintext() {
+		//--------------------------------------------------------------------------------------
+            return false;
+		}
+
+		//--------------------------------------------------------------------------------------
 		// returns cached js for visualization, or false if no cache exists
 		public /*string | false*/ function cache_get_js() {
 		//-------------------------------------------------------------------------------------
@@ -67,20 +74,23 @@
 			$query_id = $this->page->get_stored_query_id();
 			$dir = $this->cache_get_dir();
 			// read cache
-			$t = @filemtime($dir . '/' . $query_id . '.html');
+			$filename_base = $dir . '/' . $query_id;
+			$filename_res = $filename_base . '.html';
+			$t = @filemtime($filename_res);
 			if($t === false) // probably does not exist yet
 				return false;
 			if(time() - $t > $this->cache_get_ttl()) // cache expired
 				return false;
-			$cache = @file_get_contents($dir . '/' . $query_id . '.html');
+			// load cached result
+			$cache = @file_get_contents($filename_res);
 			if($cache === false)
 				return false;
 			// check version
-			if(preg_match('/^<!-- (?P<ver>\d+) -->\n/', $cache, $matches) !== 1)
+			$filename_ver = $filename_base . '.version';
+			$version = @file_get_contents($filename_ver);
+			if($version === false)
 				return false; // can't find version info
-			if(!isset($matches['ver']))
-				return false;
-			if(intval($matches['ver']) < $this->cache_get_version())
+			if(intval($version) < $this->cache_get_version())
 				return false; // this code is newer version -> don't return cache
 			return $cache;
 		}
@@ -94,12 +104,16 @@
 			$query_id = $this->page->get_stored_query_id();
 			$dir = $this->cache_get_dir();
 			create_dir_if_not_exists($dir);
-
-			// make version
-			$version = "<!-- " . $this->cache_get_version() . " -->\n";
-			$filename = $dir . '/' . $query_id . '.html';
-			$ret = @file_put_contents($filename, $version . $js);
-			@chmod($filename, 0777);
+			$filename_base = $dir . '/' . $query_id;
+			// save cache version
+			$filename_ver = $filename_base . '.version';
+			if(false === @file_put_contents($filename_ver, (string) $this->cache_get_version()))
+				return false;
+			@chmod($filename_ver, 0777);
+			// save cached result
+			$filename_res =  $filename_base . '.html';
+			$ret = @file_put_contents($filename_res, $js);
+			@chmod($filename_res, 0777);
 			return $ret;
 		}
 

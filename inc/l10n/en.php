@@ -10,7 +10,12 @@
         'chart-type.sankey' => 'Sankey Chart',
         'chart-type.table' => 'Table',
         'chart-type.timeline' => 'Timeline',
+        'chart-type.plaintext' => 'Plain Text',
 
+        'chart.plaintext.settings' => <<<HTML
+            <p>Displays the first column of the first row of the query result as plain text.</p>
+HTML
+        ,
         'chart.annotated-timeline.settings' => <<<HTML
             <p>Allows producing an interactive time series line chart with annotations. The first column must be a date, all subsequent columns numeric (<a href="https://developers.google.com/chart/interactive/docs/gallery/annotationchart#data-format" target="_blank">see here</a>).</p>
             <div class="form-group">

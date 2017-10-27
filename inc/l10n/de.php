@@ -10,6 +10,12 @@
         'chart-type.sankey' => 'Sankey-Diagramm',
         'chart-type.table' => 'Tabelle',
         'chart-type.timeline' => 'Zeitleiste',
+        'chart-type.plaintext' => 'Unformattierter Text',
+
+        'chart.plaintext.settings' => <<<HTML
+            <p>Erzeugt eine reine Textausgabe des Abfrageergebnisses. Es wird nur die erste Spalte der ersten Ergebniszeile ausgegeben, unabhängig davon, wie das Abfrageergebnis aussieht.</p>
+HTML
+        ,
 
         'chart.annotated-timeline.settings' => <<<HTML
             <p>Erzeugt eine annotierte Zeitleiste. Die erste Spalte muss Datumsformat haben, alle Folgespalten müssen numerisch sein (<a href="https://developers.google.com/chart/interactive/docs/gallery/annotationchart#data-format" target="_blank">Infos</a>).</p>

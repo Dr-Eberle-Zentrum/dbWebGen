@@ -30,7 +30,8 @@
 			'network_visjs' => 'chart-type.network-visjs',
 			'sankey' => 'chart-type.sankey',
 			'timeline' => 'chart-type.timeline',
-			'pie' => 'chart-type.pie'
+			'pie' => 'chart-type.pie',
+			'plaintext' => 'chart-type.plaintext'
 		);
 
 		//--------------------------------------------------------------------------------------
@@ -502,14 +503,6 @@ HTML;
 				$size = 12;
 				$css_class = 'result-full fill-height';
 
-				// remove padding of main container to fill page
-				/*$this->viz_ui .= <<<JS
-					<script>
-						$(document).ready(function() {
-							$('#main-container').css('padding', '0');
-						});
-					</script>
-JS;*/
 				$nometa = isset($_GET['meta']) && $_GET['meta'] == 'none'; // some kind of hack to allow hiding title + description (for embedding)
 				$css = isset($_GET[PLUGIN_PARAM_NAVBAR]) && $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_ON ? 'margin-top:0' : '';
 				if($this->stored_title != '' && !$nometa)
@@ -588,23 +581,45 @@ HTML;
 					$this->chart->cache_put_js($js);
 			}
 			else {
-				$js .= "console.log('Query visualization loaded from cache.');";
+				if(!$this->chart->is_plaintext())
+					$js .= "console.log('Query visualization loaded from cache.');";
 			}
 
-			$this->viz_ui .= "<script>\n{$js}\n</script>\n";
-
-			$this->viz_ui .= <<<JS
-			<script>
-				$(document).ready(function() {
-					$('form.param-query-form select').change(function() {
-						// submit form, but only if selection different than initial
-						if($(this).find('option:selected').attr('selected') === 'selected')
-							return;
-						$(this).parents('form').first().submit();
-					})
-				});
-			</script>
+			if($this->chart->is_plaintext()) {
+				if($this->view == QUERY_VIEW_RESULT) {
+					// kill it
+					ob_end_clean();
+					header('Content-Type: text/plain; charset=utf-8');
+					echo $js;
+					exit;
+				}
+				else {
+					$js_encoded = json_encode($js);
+					$this->viz_ui .= <<<JS
+					<script>
+						$(document).ready(function() {
+							$('#chart_div').text($js_encoded);
+						});
+					</script>
 JS;
+				}
+			}
+			else {
+				$this->viz_ui .= "<script>\n{$js}\n</script>\n";
+
+				$this->viz_ui .= <<<JS
+				<script>
+					$(document).ready(function() {
+						$('form.param-query-form select').change(function() {
+							// submit form, but only if selection different than initial
+							if($(this).find('option:selected').attr('selected') === 'selected')
+								return;
+							$(this).parents('form').first().submit();
+						})
+					});
+				</script>
+JS;
+			}
 		}
 
 		//--------------------------------------------------------------------------------------
