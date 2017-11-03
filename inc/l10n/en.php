@@ -113,6 +113,10 @@ HTML
                 <p>Select the coordinate system that Leaflet should use. The source data needs to be transformed to this projection.</p>
                 <div class='form-group'>$9</div>
             </div>
+            <div class='form-group'>
+                <label class="control-label">Additional JavaScript Code</label>
+                <p>$10</p>
+            </div>
 HTML
         ,
         'chart.leaflet.no-data' => '<b>Note:</b> Your query did not return any records.',

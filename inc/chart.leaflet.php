@@ -108,7 +108,8 @@ JS;
 					'L.CRS.EPSG4326' => 'EPSG:4326 WGS 84',
 					'L.CRS.EPSG3395' => 'EPSG:3395 World Mercator',
 					'L.CRS.Simple' => 'Direct projection'
-				))
+				)),
+				$this->page->render_textarea($this->ctrlname('additional_js'), '')
 			)
 			. $basemap_script;
 		}
@@ -315,6 +316,8 @@ JS;
 
 					$('.leaflet-popup-content').css('margin', '1em .5em .5em .5em');
 				});
+
+				{$this->page->get_post($this->ctrlname('additional_js'))}
 			});
 JS;
 			return $js;

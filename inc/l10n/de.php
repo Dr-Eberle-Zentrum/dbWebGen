@@ -120,6 +120,10 @@ HTML
                 <p>Die Koordinaten im Abfrageergebnisses müssen ggf. in dieses Referenzsystem transformiert werden.</p>
                 <div class='form-group'>$9</div>
             </div>
+            <div class='form-group'>
+                <label class="control-label">Zusätzlicher JavaScript-Code</label>
+                <p>$10</p>
+            </div>
 HTML
         ,
         'chart.leaflet.no-data' => '<b>Achtung:</b> Die Abfrage lieferte keine Ergebnisse.',
