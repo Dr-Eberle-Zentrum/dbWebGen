@@ -97,9 +97,9 @@ SQL;
 	foreach($tables as $table_name) {
 		// general table info
 		$TABLES[$table_name] = array(
-			'display_name' => $table_name,
+			'display_name' => ucwords(strtolower(str_replace('_', ' ', $table_name))),
 			'description' => '',
-			'item_name' => $table_name,
+			'item_name' => ucwords(strtolower(str_replace('_', ' ', $table_name))),
 			'actions' => array(MODE_EDIT, MODE_NEW, MODE_VIEW, MODE_LIST, MODE_DELETE, MODE_LINK),
 			'fields' => array()
 		);
@@ -127,7 +127,7 @@ SQL;
 
 			// put default text line fields
 			$field = array(
-				'label' => $col['column_name'],
+				'label' => ucwords(strtolower(str_replace('_', ' ', $col['column_name']))),
 				'required' => $col['is_nullable'] == 'YES' ? false : true,
 				'editable' => $col['is_updatable'] == 'YES' ? true : false,
 				'type' => T_TEXT_LINE // default
