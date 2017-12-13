@@ -380,6 +380,8 @@ HTML
             <p>Geben Sie hier Ihre SQL-Abfrage ein. Nur <code>SELECT</code>-Abfragen sind erlaubt.</p>
             <p><b>Parametrisierte Abfrage</b>: Sie können benannte Platzhalter mit vorbelegten Werten statt konkreten Wertden in Ihrer Abfrage verwenden. Ein Parameter wird wie folgt verwendet: <code>#{my_param|default_val}</code>, wobei <code>my_param</code> der Name des Parameters ist und <code>default_val</code> ist der vorbelegte Wert. Letzterer kann auch leer sein, aber das Trennzeichen <code>|</code> muss trotzdem gesetzt werden.</p>
             <p><b>Beispiel</b>: <code>select * from users where lastname = #{Name|Norris}</code></p>
+            <p>Jedem Parameter kann optional bei erster Verwendung in der Abfrage ein Label gegeben, werden, der dann in der Ausführungsansicht verwendet wird. Das Muster ist dann wie folgt: <code>#{my_param:label|default_val}</code>, also z.B. <code>#{a:Mindestalter der Person|18}</code></p>
+            <p>Expertenmodus: zusätzlich kann optional ein Dropdown-Feld aus einer Tabelle angegeben werden, das dann dem Benutzer in der Abfragenansicht angeboten wird, nach folgendem Muster: <code>#{Name||table:person,field:fullname}</code>. Hier werden aus der Tabelle <code>person</code> entsprechend den Projekteinstellungen für das Feld <code>fullname</code> eine Dropdown-Box angeboten zur Auswahl.</p>
 HTML
         ,
         'querypage.store-settings-heading' => 'Einstellungen',

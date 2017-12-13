@@ -520,13 +520,16 @@ HTML;
 							}
 						}
 						$param_name = substr($param_name, 1);
+						$param_label = isset($this->query_info['labels'][":$param_name"]) &&
+						  $this->query_info['labels'][":$param_name"] != '' ?
+						  html($this->query_info['labels'][":$param_name"]) : $param_name;
 						if($control_html == '') {
 							$param_value = unquote($param_value);
 							$control_html = "<input id='$param_name' type='text' class='input-sm form-control' name='p:$param_name' value='$param_value' />";
 						}
 						$param_fields .= <<<HTML
 							<div class="form-group">
-								<label for='$param_name'>$param_name:</label>
+								<label for='$param_name'>$param_label:</label>
 								$control_html &nbsp;&nbsp;
 							</div>
 HTML;
@@ -628,20 +631,21 @@ JS;
 			$retval = array(
 				'sql' => $this->sql,
 				'params' => array(),
-				'lookups' => array()
+				'lookups' => array(),
+				'labels' => array()
 			);
 
 			// extract parameters
-			if(preg_match_all('/#{(?P<params>\\w+)\\|(?P<defvals>[^}|]*)(\\|(?P<lookups>[^}]*))?}/', $this->sql, $matches) > 0) {
+			//if(preg_match_all('/#{(?P<params>\\w+)\\|(?P<defvals>[^}|]*)(\\|(?P<lookups>[^}]*))?}/', $this->sql, $matches) > 0) {
 				//debug_log($matches);
-
+			if(preg_match_all('/#{(?P<params>\w+)(:(?P<labels>[^|]+))?\|(?P<defvals>[^}|]*)(\|(?P<lookups>[^}]*))?}/', $this->sql, $matches) > 0) {
 				for($i = 0; $i < count($matches['params']); $i++) {
 					// prefer to take value from GET parameters e.g ...&p:xxx=blah
 					$val = isset($_GET['p:' . $matches['params'][$i]]) ? $_GET['p:' . $matches['params'][$i]] : $matches['defvals'][$i];
 
 					// replace this stuff in the sql statement
 					$retval['sql'] = preg_replace(
-						'/#{' . $matches['params'][$i] . '\\|[^}]*}/',
+						'/#{' . $matches['params'][$i] . '(:[^|]+)?\|[^}]*}/',
 						':' . $matches['params'][$i],
 						$retval['sql']);
 
@@ -651,6 +655,10 @@ JS;
 					// set lookup info
 					if(mb_strlen($lookup = trim($matches['lookups'][$i])) > 0)
 						$retval['lookups'][':' . $matches['params'][$i]] = $lookup;
+
+					// set label info
+					if(mb_strlen($label = trim($matches['labels'][$i])) > 0)
+						$retval['labels'][':' . $matches['params'][$i]] = $label;
 				}
 			}
 

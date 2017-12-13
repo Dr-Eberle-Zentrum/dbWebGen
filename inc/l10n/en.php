@@ -370,6 +370,8 @@ HTML
             <p>Enter here the SQL query to execute. Only <code>SELECT</code> queries are possible.</p>
             <p><b>Parameterized Queries</b>: It is possible to use named placeholders with default values instead of literal values in the where clause. A parameter looks like <code>#{my_param|default_val}</code>, where <code>my_param</code> is the name of the paramenter, and <code>default_val</code> is the default value. The default value can be empty. The separator <code>|</code> is mandatory even for an empty default value.</p>
             <p><b>Example</b>: <code>select * from users where lastname = #{Name|Norris}</code></p>
+            <p>Every parameter can optionally be given a label upon first use. The label is then displayed in the query display and is defined as follows: <code>#{my_param:label|default_val}</code>, for instance <code>#{a:Minimum Age of Person|18}</code></p>
+            <p>For experts: additionally one can define to display a dropdown box in the query view, by referencing a table field setting in the project settings. This exemplary works as follows: <code>#{Name||table:person,field:fullname}</code>. This will display a dropdown box as configured in the table <code>person</code> for the field <code>fullname</code>.</p>
 HTML
         ,
         'querypage.store-settings-heading' => 'Settings',
