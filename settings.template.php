@@ -307,6 +307,8 @@
 						* $total_num_items is the total number of items in the list
 						* &$params is reserved for future use; currently the engine will pass a reference to an empty array
 						The function must return the HTML to be rendered for the current item.
+				- maxnum: int (optional) (default: 0)
+					If a number greater than zero is provided here, the number of linked records will be limited to this number. When maxnum is reached, the dropdown and the create new button will be disabled. This setting is only considered if cardinality is CARDINALITY_MULTIPLE
 			- SRID: int (required only for type=T_POSTGIS_GEOM)
 				Spatial Reference ID of the Postgis geometry
 			- min_len: int (optional)
@@ -322,7 +324,7 @@
 			- allowed_ext: array (optional)
 				If type=T_UPLOAD, the file extension of the uploaded file will be checked against this array
 			- post_proc: string (optional)
-				Name of a function that will be called after the file was uploaded to the server. 
+				Name of a function that will be called after the file was uploaded to the server.
 				Arguments: table name, field name, file info array, file path
 			- reset: bool (default: false)
 				reset=true means that when editing a record (MODE_EDIT) its current value is not fetched into the form control.

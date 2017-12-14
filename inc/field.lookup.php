@@ -12,6 +12,15 @@
 			return false;
 		}
 		//--------------------------------------------------------------------------------------
+		public function get_linkage_maxnum() {
+		//--------------------------------------------------------------------------------------
+			return isset($this->field['linkage'])
+				&& isset($this->field['linkage']['maxnum'])
+				&& is_int($maxnum = $this->field['linkage']['maxnum'])
+				&& $maxnum >= 0
+				 ? $maxnum : 0;
+		}
+		//--------------------------------------------------------------------------------------
 		public function get_lookup_settings() {
 		//--------------------------------------------------------------------------------------
 			return $this->field['lookup'];
@@ -266,8 +275,11 @@
 				$this->get_required_attr()
 			);
 
+			// fetch linked items
+			$linked_items = $this->get_linked_record_ids();
+
 			$output_buf .= sprintf(
-				"<select %s class='form-control multiple-select-dropdown %s' id='%s_dropdown' data-table='%s' data-thistable='%s' data-fieldname='%s' data-placeholder='%s' %s %s %s data-lookuptype='multiple' %s title='%s'>\n",
+				"<select %s class='form-control multiple-select-dropdown %s' id='%s_dropdown' data-table='%s' data-thistable='%s' data-fieldname='%s' data-placeholder='%s' %s %s %s data-lookuptype='multiple' %s title='%s' data-maxnum='%s' data-initialcount='%s'>\n",
 
 				$this->get_disabled_attr(),
 				//$this->get_required_attr(),
@@ -281,11 +293,12 @@
 				$this->is_lookup_async() ? sprintf("data-minimum-input-length='%s'", $this->get_async_min_input_len()) : '',
 				$this->is_lookup_async() && $this->has_async_delay() ? sprintf("data-asyncdelay='%s'", $this->get_async_delay()) : '',
 				$this->get_focus_attr(),
-				unquote($this->get_label())
+				unquote($this->get_label()),
+				$this->get_linkage_maxnum(),
+				count($linked_items)
 			);
 
 			// we look which ones are already connected
-			$linked_items = $this->get_linked_record_ids();
 			$this->linked_items_div = '';
 
 			// check whether additional fields can be set in the linkage table

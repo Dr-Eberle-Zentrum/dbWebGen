@@ -153,6 +153,10 @@ function make_dropdowns_select2() {
 				box.select2({ theme: 'bootstrap', width: width, minimumResultsForSearch: Infinity });
 		}
 
+        var maxnum = box.data('maxnum');
+        if(maxnum && parseInt(box.data('initialcount')) >= parseInt(maxnum))
+            multi_lookup_field_allow(box.data('fieldname'), false);
+
         if(box.val() != '')
 			box.change();
 	});
@@ -272,12 +276,13 @@ function init_multilookup_dropdowns() {
         var dropdown_id = '#' + field + '_dropdown';
         var list_id = '#' + field + '_list';
         var hidden_input = this;
+        var dropdown_box = $(dropdown_id);
 
-        $(dropdown_id).val('').change();
+        dropdown_box.val('').change();
 
         // automatic add
-        $(dropdown_id).on('change', function() {
-            var selected_value = $(dropdown_id).val();
+        dropdown_box.on('change', function() {
+            var selected_value = dropdown_box.val();
             if(selected_value === null || selected_value === '')
                 return;
 
@@ -313,8 +318,14 @@ function init_multilookup_dropdowns() {
                     $(this).remove();
                 });
 
+                var maxnum = dropdown_box.data('maxnum');
+                if(maxnum && list.length >= maxnum) {
+                    // disable box and create new button
+                    multi_lookup_field_allow(field, false);
+                }
+
                 // reset dropdown selection
-                $(dropdown_id).val('').change();
+                dropdown_box.val('').change();
             });
         });
     });
@@ -533,6 +544,20 @@ function remove_linked_item(e) {
 	item_div.fadeOut(100, function() { item_div.remove() });
 
 	insert_option_sorted(dropdown_id, removed_id, label, removed_text, false);
+
+    // ensure box and create new are enabled
+    multi_lookup_field_allow(field, true);
+}
+
+//------------------------------------------------------------------------------------------
+function multi_lookup_field_allow(field_id, enable) {
+//------------------------------------------------------------------------------------------
+    var dropdown = $('#' + field_id + '_dropdown');
+    var create_new_buttong = $('#' + field_id + '_add');
+    if(dropdown.prop('disabled') === enable) {
+        dropdown.prop('disabled', !enable);
+        create_new_buttong.prop('disabled', !enable);
+    }
 }
 
 //------------------------------------------------------------------------------------------
