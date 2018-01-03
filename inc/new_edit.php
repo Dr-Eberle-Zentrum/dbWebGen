@@ -24,31 +24,7 @@
 			$_SESSION["redirect-$form_id"] = $_SERVER['HTTP_REFERER'];
 		}
 
-		// override field display settings? >>
-		foreach($_GET as $param => $val) {
-			if(substr($param, 0, strlen(FIELD_SETTINGS_PREFIX)) == FIELD_SETTINGS_PREFIX
-				&& strlen($field = substr($param, strlen(FIELD_SETTINGS_PREFIX))) > 0
-				&& isset($table['fields'][$field]))
-			{
-				if(strpos($val, 'h') !== false)
-					$table['fields'][$field]['editable'] = false;
-				else {
-					$table['fields'][$field]['render_settings'] = array();
-					if(strpos($val, 's') !== false)
-						$table['fields'][$field]['editable'] = true;
-
-					if(strpos($val, 'e') !== false)
-						$table['fields'][$field]['render_settings']['disabled'] = false;
-					else if(strpos($val, 'd') !== false)
-						$table['fields'][$field]['render_settings']['disabled'] = true;
-
-					if(strpos($val, 'o') !== false)
-						$table['fields'][$field]['required'] = false;
-					else if(strpos($val, 'r') !== false)
-						$table['fields'][$field]['required'] = true;
-				}
-			}
-		} // <<
+		process_field_settings_override($table);
 
 		if($_GET['mode'] == MODE_NEW) {
 			echo "<h1>" . l10n('new-edit.heading-new', $table['item_name']) . "</h1>\n";
@@ -519,6 +495,8 @@ EOT;
 		if(!is_allowed($table, $_GET['mode']) && !is_own_user_record(true))
 			return proc_error(l10n('error.not-allowed'));
 
+		process_field_settings_override($table);
+
 		$columns = array();
 		$many2many_field_assocs = array();
 		$values = array();
@@ -966,4 +944,36 @@ JS;
 
 		return true;
 	}
+
+	//------------------------------------------------------------------------------------------
+	function process_field_settings_override(&$table) {
+	//------------------------------------------------------------------------------------------
+		// override field display settings? >>
+		foreach($_GET as $param => $val) {
+			if(substr($param, 0, strlen(FIELD_SETTINGS_PREFIX)) == FIELD_SETTINGS_PREFIX
+				&& strlen($field = substr($param, strlen(FIELD_SETTINGS_PREFIX))) > 0
+				&& isset($table['fields'][$field]))
+			{
+				if(strpos($val, 'h') !== false) {
+					$table['fields'][$field]['editable'] = false;
+				}
+				else {
+					$table['fields'][$field]['render_settings'] = array();
+					if(strpos($val, 's') !== false)
+						$table['fields'][$field]['editable'] = true;
+
+					if(strpos($val, 'e') !== false)
+						$table['fields'][$field]['render_settings']['disabled'] = false;
+					else if(strpos($val, 'd') !== false)
+						$table['fields'][$field]['render_settings']['disabled'] = true;
+
+					if(strpos($val, 'o') !== false)
+						$table['fields'][$field]['required'] = false;
+					else if(strpos($val, 'r') !== false)
+						$table['fields'][$field]['required'] = true;
+				}
+			}
+		} // <<
+	}
+
 ?>
