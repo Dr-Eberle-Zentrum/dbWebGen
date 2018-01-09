@@ -384,9 +384,8 @@ HTML
             <p>Expertenmodus: zusätzlich kann optional ein Dropdown-Feld aus einer Tabelle angegeben werden, das dann dem Benutzer in der Abfragenansicht angeboten wird, nach folgendem Muster: <code>#{Name||table:person,field:fullname}</code>. Hier werden aus der Tabelle <code>person</code> entsprechend den Projekteinstellungen für das Feld <code>fullname</code> eine Dropdown-Box angeboten zur Auswahl.</p>
 HTML
         ,
-        'querypage.store-settings-heading' => 'Einstellungen',
         'querypage.store-settings-cache-expires' => 'Zwischenspeichern aktivieren. Erneuerungsintervall (Sekonden)',
-        'querypage.store-settings-cache-public' => 'Diese Visualisierung ist öffentlich (mit Vorsicht verwenden).',
+        'querypage.store-settings-allow-public' => 'Diese Visualisierung ist öffentlich (mit Vorsicht verwenden).',
         'querypage.store-button-save' => 'Speichern',
         'querypage.store-button-new' => 'Speichern als Neu',
         'querypage.store-button-update' => 'Aktualisieren',
