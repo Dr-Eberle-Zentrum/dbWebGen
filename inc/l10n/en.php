@@ -374,9 +374,8 @@ HTML
             <p>For experts: additionally one can define to display a dropdown box in the query view, by referencing a table field setting in the project settings. This exemplary works as follows: <code>#{Name||table:person,field:fullname}</code>. This will display a dropdown box as configured in the table <code>person</code> for the field <code>fullname</code>.</p>
 HTML
         ,
-        'querypage.store-settings-heading' => 'Settings',
         'querypage.store-settings-cache-expires' => 'Enable caching of data. Cache expires after (seconds)',
-        'querypage.store-settings-cache-public' => 'This visualization is publicly accessible (use with caution).',
+        'querypage.store-settings-allow-public' => 'This visualization is publicly accessible (use with caution).',
         'querypage.store-button-save' => 'Save',
         'querypage.store-button-new' => 'Save as New',
         'querypage.store-button-update' => 'Update Existing',

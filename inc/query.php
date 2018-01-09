@@ -274,16 +274,10 @@ QUI;
 			if(!$this->is_cache_enabled())
 				return '';
 
-			$head = l10n('querypage.store-settings-heading');
-			$cache_public = l10n('querypage.store-settings-cache-public');
 			$cache_exp = l10n('querypage.store-settings-cache-expires');
 
 			$s = <<<HTML
 			<div class="form-group">
-				<label class="control-label">$head</label>
-				<div class="checkbox top-margin-zero">
-					<label>{$this->render_checkbox($this->chart->ctrlname('public_access'), 'ON', false)}$cache_public</label>
-				</div>
 				<div class="table">
 					<div class="tr">
 						<div class='checkbox td'>
@@ -378,12 +372,16 @@ STR;
 			$str_intro = l10n('querypage.store-intro');
 			$str_store_success = json_encode(l10n('querypage.store-success'));
 			$str_store_error = json_encode(l10n('querypage.store-error'));
+			$str_public_access = l10n('querypage.store-settings-allow-public');
 
 			$share_popup = <<<SHARE
 				<form>
 				<p>$str_intro</p>
 				<p><input class="form-control" placeholder="$str_title_placeholder" id="stored_query_title" /></p>
 				<p><textarea class="form-control vresize" placeholder="$str_descr_placeholder" id="stored_query_description"></textarea></p>
+				<div class="checkbox top-margin-zero">
+					<label>{$this->render_checkbox($this->chart->ctrlname('public_access'), 'ON', false)}$str_public_access</label>
+				</div>
 				{$this->get_cache_settings_html()}
 				<p class="nowrap">
 					<button type="button" id="viz-share" class="btn btn-primary space-right">$save_label</button>
@@ -403,8 +401,8 @@ STR;
 							post_obj['storedquery-replace-id'] = $replace_id;
 
 						var params_json = $post_data;
+						params_json['{$this->chart->ctrlname('public_access')}'] = $('#{$this->chart->ctrlname('public_access')}').is(':checked') ? 'ON' : 'OFF';
 						if($js_cache_enabled) {
-							params_json['{$this->chart->ctrlname('public_access')}'] = $('#{$this->chart->ctrlname('public_access')}').is(':checked') ? 'ON' : 'OFF';
 							params_json['{$this->chart->ctrlname('caching')}'] = $('#{$this->chart->ctrlname('caching')}').is(':checked') ? 'ON' : 'OFF';
 							params_json['{$this->chart->ctrlname('cache_ttl')}'] = $('#{$this->chart->ctrlname('cache_ttl')}').val();
 						}
