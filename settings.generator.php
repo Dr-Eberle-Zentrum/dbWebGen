@@ -414,7 +414,8 @@ SQL;
 							'cardinality' => CARDINALITY_MULTIPLE,
 							'table'  => $field1['lookup']['table'],
 							'field'  => $field1['lookup']['field'],
-							'display' => $field1['lookup']['display']
+							'display' => $field1['lookup']['display'],
+							'label_display_expr_only' => true
 						),
 						'linkage' => array(
 							'table' => $table_name,
@@ -434,7 +435,8 @@ SQL;
 							'cardinality' => CARDINALITY_MULTIPLE,
 							'table'  => $field0['lookup']['table'],
 							'field'  => $field0['lookup']['field'],
-							'display' => $field0['lookup']['display']
+							'display' => $field0['lookup']['display'],
+							'label_display_expr_only' => true
 						),
 						'linkage' => array(
 							'table' => $table_name,
