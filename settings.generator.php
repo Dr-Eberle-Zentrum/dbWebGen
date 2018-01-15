@@ -359,7 +359,8 @@ SQL;
 				'cardinality' => CARDINALITY_SINGLE,
 				'table'  => $cons['references_table'],
 				'field'  => $cons['references_field'],
-				'display' => ($cons['display_field'] !== null ? $cons['display_field'] : $cons['references_field'])
+				'display' => ($cons['display_field'] !== null ? $cons['display_field'] : $cons['references_field']),
+				'label_display_expr_only' => true
 			);
 
 			// remember the foreign keys in a hash for later
