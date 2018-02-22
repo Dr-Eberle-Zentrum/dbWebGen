@@ -329,6 +329,7 @@ HTML
         'list.num-indicator' => 'Displaying records <b>$1</b>&ndash;<b>$2</b> of <b>$3</b>',
         'list.total-indicator' => 'total in table: <b>$1</b>',
         'list.button-new' => 'New $1',
+        'list.jump-to-page' => 'Jump to page',
 
         'login.button' => 'Log In',
         'login.head' => 'Login',

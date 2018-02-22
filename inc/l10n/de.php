@@ -339,6 +339,7 @@ HTML
         'list.num-indicator' => 'Zeige Datensätze <b>$1</b>&ndash;<b>$2</b> von <b>$3</b>',
         'list.total-indicator' => 'Gesamtanzahl in der Tabelle: <b>$1</b>',
         'list.button-new' => 'Neuer Datensatz',
+        'list.jump-to-page' => 'Springe zu Seite',
 
         'login.button' => 'Anmelden',
         'login.head' => 'Anmelden',

@@ -25,7 +25,7 @@
 		$div = "<p><div class='hidden-print'><div class='btn-group'>\n";
 		$div .= "<a href='$prev_href' class='btn btn-sm btn-default $prev_disabled'><span class='glyphicon glyphicon-triangle-left'></span></a>\n";
 		$div .= "<a href='$next_href' class='btn btn-sm btn-default $next_disabled'><span class='glyphicon glyphicon-triangle-right'></span></a>\n";
-		$div .= '</div><span class="page-jumper">Jump to page: ';
+		$div .= '</div><span class="page-jumper">' . l10n('list.jump-to-page') . ': ';
 
 		$before_skip = ($cur_page >= 3 + $APP['pages_prevnext']);
 		$after_skip = ($num_pages - $cur_page >= 3 + $APP['pages_prevnext']);
