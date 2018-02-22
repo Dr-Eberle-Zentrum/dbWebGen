@@ -195,9 +195,9 @@ HTML;
                 }
             }
             if($total_results == 0)
-                $msg = 'No search results in any table.';
+                $msg = l10n('global-search.no-results');
             else if($total_results == 1)
-                $msg = 'One search result found.';
+                $msg = l10n('global-search.one-result');
             else {
                 $msg = l10n(
                     'global-search.results-info',
