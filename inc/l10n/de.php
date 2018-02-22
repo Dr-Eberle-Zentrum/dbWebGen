@@ -313,7 +313,7 @@ HTML
         'global-search.one-result' => 'Ein Suchergebnis gefunden.',
         'global-search.results-info' => 'Suchergebnisse wurden in $1 $2 gefunden. $3',
         'global-search.results-one' => 'einer',
-        'global-search.results-table-singluar' => 'Tabelle',
+        'global-search.results-table-singular' => 'Tabelle',
         'global-search.results-table-plural' => 'Tabellen',
         'global-search.results-jump' => 'Springe zu Tabelle',
         'global-search.results-found-detail' => '$1 Suchergebnisse gefunden.',

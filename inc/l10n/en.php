@@ -303,7 +303,7 @@ HTML
         'global-search.one-result' => 'One search result found.',
         'global-search.results-info' => 'Found search results in $1 $2. $3',
         'global-search.results-one' => 'one',
-        'global-search.results-table-singluar' => 'table',
+        'global-search.results-table-singular' => 'table',
         'global-search.results-table-plural' => 'tables',
         'global-search.results-jump' => 'Click to jump to table',
         'global-search.results-found-detail' => '$1 search results found.',
