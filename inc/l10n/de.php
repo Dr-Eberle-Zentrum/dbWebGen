@@ -344,7 +344,7 @@ HTML
         'login.button' => 'Anmelden',
         'login.head' => 'Anmelden',
         'login.logout-navbar-label' => 'Abmelden',
-        'login.guest-login' => 'Gastzugang',
+        'login.guest-access' => 'Gastzugang',
 
 		'lookup-field.create-new-button' => 'Neu',
 		'lookup-field.create-new-tooltip' => 'Wenn Sie den gewünschten Datensatz nicht in der Dropdown-Liste finden, klicken Sie diesen Knopf, um einen neuen Datensatz anzulegen.',

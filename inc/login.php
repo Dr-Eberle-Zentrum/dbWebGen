@@ -5,6 +5,7 @@
 		global $LOGIN;
 		$heading = l10n('login.head');
 		$btn = l10n('login.button');
+		$guest_btn = l10n('login.guest-access');
 
 		$guest_button = '';
 		if(isset($LOGIN['guest_user']) && mb_strlen($LOGIN['guest_user']) > 0) {
@@ -12,7 +13,7 @@
 				<hr />
 				<div class="form-group">
 					<div class="col-sm-offset-2 col-sm-10">
-					  <button id="guest-access" class="btn btn-success"><span class="glyphicon glyphicon glyphicon-triangle-right space-right"></span> Guest Access</button>
+					  <button id="guest-access" class="btn btn-success"><span class="glyphicon glyphicon glyphicon-triangle-right space-right"></span> $guest_btn</button>
 					</div>
 					<script>
 						$(document).ready(function() {
