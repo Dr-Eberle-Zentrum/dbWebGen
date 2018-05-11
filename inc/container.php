@@ -79,7 +79,10 @@
 
 			if(isset($LOGIN['users_table'])) {
 				$user_details_href = null;
-				if(is_string($LOGIN['users_table'])) {
+				if(is_string($LOGIN['users_table']) &&
+					// if current user is the guest user, disallow editing of user details
+					!(isset($LOGIN['guest_user']) && $LOGIN['guest_user'] == $_SESSION['user_data'][$LOGIN['username_field']]))
+				{
 					$user_details_href = '?' . http_build_query(array(
 						'table' => $LOGIN['users_table'],
 						'mode' => MODE_VIEW,

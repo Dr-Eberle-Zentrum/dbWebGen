@@ -954,7 +954,8 @@ STR;
 			&& (!$check_if_password_change_allowed || ($check_if_password_change_allowed && is_password_change_allowed()))
 			&& $_GET['table'] === $LOGIN['users_table']
 			&& isset($_GET[$LOGIN['primary_key']])
-			&& $_GET[$LOGIN['primary_key']] == strval($_SESSION['user_id']);
+			&& $_GET[$LOGIN['primary_key']] == strval($_SESSION['user_id'])
+			&& !(isset($LOGIN['guest_user']) && $LOGIN['guest_user'] == $_SESSION['user_data'][$LOGIN['username_field']]);
 	}
 
 	//------------------------------------------------------------------------------------------

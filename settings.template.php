@@ -160,6 +160,8 @@
 			No arguments. NOTE: in some cases this function is NOT allowed to write anything to the output buffer!
 		- allow_change_password: bool (optional) (default: true)
 			Whether or not to allow each user to change their password. This is only applicable if the users are stored in the database, otherwise this setting is ignored.
+		- guest_user: string (optional)
+			Allows specifying a guest user account, which needs to have an empty password. If this setting is provided, the login form will have a button to log in as the guest user.
 	======================================================================================================== */
 	$LOGIN = array(
 		'users_table' => 'users',
