@@ -228,7 +228,7 @@
 				$where_clause = sprintf('where %s = ?', db_esc($this->get_lookup_field_name()));
 
 			$sql = sprintf('select %s val, %s txt from %s t %s order by txt',
-				db_esc($this->get_lookup_field_name()), resolve_display_expression($this->get_lookup_display(), 't'), $this->get_lookup_table_name(), $where_clause);
+				db_esc($this->get_lookup_field_name()), resolve_display_expression($this->get_lookup_display(), 't'), db_esc($this->get_lookup_table_name()), $where_clause);
 
 			$stmt = $db->prepare($sql);
 			if(false === $stmt)
