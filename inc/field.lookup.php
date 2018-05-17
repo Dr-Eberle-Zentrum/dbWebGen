@@ -227,7 +227,7 @@
 			if($this->is_lookup_async() && $this->has_submitted_value() && $this->get_submitted_value() != '') // NULL_OPTION
 				$where_clause = sprintf('where %s = ?', db_esc($this->get_lookup_field_name()));
 
-			$sql = sprintf('select %s val, %s txt from %s t %s order by txt',
+			$sql = sprintf('select %s val, %s txt from "%s" t %s order by txt',
 				db_esc($this->get_lookup_field_name()), resolve_display_expression($this->get_lookup_display(), 't'), $this->get_lookup_table_name(), $where_clause);
 
 			$stmt = $db->prepare($sql);
