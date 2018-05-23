@@ -1,4 +1,4 @@
-<?
+<?php
 	/*
 		This is the main application engine that renders the user interface and
 		delegates the processing of every major action.
@@ -94,7 +94,7 @@
 </head>
 <body>
 
-<?
+<?php
 	add_stylesheet(ENGINE_PATH_HTTP . 'inc/styles.css', true);
 	add_javascript(ENGINE_PATH_HTTP . 'inc/dbweb.js', true);
 	check_pseudo_login_public_queryviz();
@@ -102,7 +102,7 @@
 ?>
 
 <div id='main-container' class="container-fluid">
-<?
+<?php
 	$page_head = ob_get_contents();
 	ob_end_clean();
 

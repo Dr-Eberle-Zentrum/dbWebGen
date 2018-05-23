@@ -1,4 +1,4 @@
-<?
+<?php
 	/*
 		Functions to render and process a list of records within a table.
 	*/

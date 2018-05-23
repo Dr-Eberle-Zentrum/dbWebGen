@@ -1,4 +1,4 @@
-<?
+<?php
 	if(!defined('QUERYPAGE_NO_INCLUDES')) {
 		require_once 'chart.base.php';
 		require_once 'chart.google.base.php';
