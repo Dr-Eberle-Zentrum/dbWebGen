@@ -1,4 +1,4 @@
-<?
+<?php
 	require_once 'field.base.php';
 	require_once 'field.enum.php';
 	require_once 'field.lookup.php';

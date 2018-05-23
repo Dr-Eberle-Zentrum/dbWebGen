@@ -1,4 +1,4 @@
-<?
+<?php
 /*
 	this is one ugly script that tries to extract a comfortable starting point for settings.php based on any given postgres database.
 	it can extract tables, columns, primary keys, foreign keys, check constraints (range of values) and enum types.

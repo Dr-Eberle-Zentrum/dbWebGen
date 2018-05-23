@@ -1,4 +1,4 @@
-<?
+<?php
     $_L10N = array(
         'chart-type.annotated-timeline' => 'Annotated Timeline',
         'chart-type.bar' => 'Bar Chart',

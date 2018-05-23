@@ -1,4 +1,4 @@
-<?
+<?php
 	// see engine.php for info which includes are available during MODE_FUNC calls.
 	// everything needed on top of that needs to be included here.
 
