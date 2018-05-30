@@ -1,4 +1,8 @@
 <?php
+	/*
+		NOTE: if a new chart type is added, it needs to be referenced in QueryPage::$chart_types
+	*/
+
 	//==========================================================================================
 	abstract class dbWebGenChart {
 	//==========================================================================================

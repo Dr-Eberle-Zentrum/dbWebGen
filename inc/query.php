@@ -31,7 +31,8 @@
 			'sankey' => 'chart-type.sankey',
 			'timeline' => 'chart-type.timeline',
 			'pie' => 'chart-type.pie',
-			'plaintext' => 'chart-type.plaintext'
+			'plaintext' => 'chart-type.plaintext',
+			'sna' => 'chart-type.sna'
 		);
 
 		//--------------------------------------------------------------------------------------
