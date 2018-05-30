@@ -11,6 +11,7 @@
         'chart-type.table' => 'Table',
         'chart-type.timeline' => 'Timeline',
         'chart-type.plaintext' => 'Plain Text',
+        'chart-type.sna' => 'Social Network Analysis',
 
         'chart.plaintext.settings' => <<<HTML
             <p>Displays the first column of the first row of the query result as plain text.</p>
@@ -206,6 +207,47 @@ HTML
             </div>
 HTML
         ,
+
+        'chart.sna.settings' => <<<HTML
+            <p>Displays an overview table of node centralities in a network graph.</p>
+            <p>The query results needs to be a node list with the following columns:</p>
+            <ol class='columns'>
+                <li><code>source</code>: Source node ID (string or integer)</li>
+                <li><code>target</code>: Target node ID (string or integer)</li>
+            </ol>
+            <label class='control-label'>Node Query $1</label>
+            <p>$2</p>
+            <!--<div class='checkbox top-margin-zero'>
+                <label>$3 Entferne Knoten, die nicht im Ergebnis der Knotenabfrage vorkommen</label>
+            </div>-->
+            <div class="form-group">
+                <label class="control-label">Options</label>
+                <div class='checkbox top-margin-zero'>
+                    <label>$3 Allow HTML in node labels</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class=''>
+                    <label>Caption of node column in result table:</label>
+                    $4
+                </div>
+            </div>
+HTML
+        ,
+
+        'chart.sna.nodequery-help' => <<<HTML
+            <p>SQL query that yields the node labels to display in the result table instead of the node IDs (optional). The following columns are required:</p>
+            <ol class='columns'>
+                <li><code>id</code>Node ID (string or integer), corresponding to <code>source</code>/<code>target</code> node IDs in the network query above</li>
+                <li><code>label</code>Node label (string)</li>
+            </ol>
+HTML
+        ,
+
+        'chart.sna.node-column-label' => 'Node',
+        'chart.sna.result.betweenness-centrality' => 'Betweenness Centrality',
+        'chart.sna.result.degree-centrality' => 'Degree Centrality',
+
         'chart.timeline.settings' => <<<HTML
         <p>Plots date and time ranges as bars on a scrollable timeline. The query result columns must comply with the <a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/timeline#data-format">specified data format</a>.</p>
         <div class="form-group">

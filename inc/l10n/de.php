@@ -11,6 +11,7 @@
         'chart-type.table' => 'Tabelle',
         'chart-type.timeline' => 'Zeitleiste',
         'chart-type.plaintext' => 'Unformattierter Text',
+        'chart-type.sna' => 'Netzwerkanalyse',
 
         'chart.plaintext.settings' => <<<HTML
             <p>Erzeugt eine reine Textausgabe des Abfrageergebnisses. Es wird nur die erste Spalte der ersten Ergebniszeile ausgegeben, unabhängig davon, wie das Abfrageergebnis aussieht.</p>
@@ -213,7 +214,46 @@ HTML
                 </div>
             </div>
 HTML
+
+        , 'chart.sna.settings' => <<<HTML
+            <p>Erzeugt eine Überischt der Zentralitätsmaße der Knoten in einem ungerichteten Netzwerkgraph.</p>
+            <p>Das Abfrageergebnis muss eine Kantenliste sein mit folgenden Spalten:</p>
+            <ol class='columns'>
+                <li><code>source</code>: Quellknoten-ID (string oder integer)</li>
+                <li><code>target</code>: Zielknoten-ID (string oder integer)</li>
+            </ol>
+            <label class='control-label'>Knotenabfrage $1</label>
+            <p>$2</p>
+            <!--<div class='checkbox top-margin-zero'>
+                <label>$3 Entferne Knoten, die nicht im Ergebnis der Knotenabfrage vorkommen</label>
+            </div>-->
+            <div class="form-group">
+                <label class="control-label">Optionen</label>
+                <div class='checkbox top-margin-zero'>
+                    <label>$3 Erlaube HTML in der Knotenbeschriftung</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class=''>
+                    <label>Beschriftung der Knotenspalte in der Ergebnistabelle:</label>
+                    $4
+                </div>
+            </div>
+HTML
         ,
+
+        'chart.sna.nodequery-help' => <<<HTML
+            <p>SQL-Abfrage, welche die Knotennamen liefert, die statt deren ID dargestellt werden soll (optional). Folgende Spalten müssen:</p>
+            <ol class='columns'>
+                <li><code>id</code>Knoten-ID (string oder integer), korrespondiert mit den <code>source</code>/<code>target</code> Knoten-IDs in der Netzwerkabfrage oben</li>
+                <li><code>label</code>Knotenname (string)</li>
+            </ol>
+HTML
+        ,
+
+        'chart.sna.node-column-label' => 'Knoten',
+        'chart.sna.result.betweenness-centrality' => 'Betweenness-Zentralität',
+        'chart.sna.result.degree-centrality' => 'Grad',
 
         'chart.timeline.settings' => <<<HTML
         <p>Erzeugt eine scrollbare Zeitleiste mit Zeitabschnitten und -balken. Die benötigten Spalten im Abfrageergebnis sind <a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/timeline#data-format">hier erläutert</a>.</p>
