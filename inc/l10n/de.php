@@ -234,10 +234,17 @@ HTML
                 </div>
             </div>
             <div class="form-group">
-                <div class=''>
-                    <label>Beschriftung der Knotenspalte in der Ergebnistabelle:</label>
-                    $4
-                </div>
+                <label>Beschriftung der Knotenspalte in der Ergebnistabelle:</label>
+                $4
+            </div>
+            <div class="form-group"
+                <label>Ergebnistabelle sortieren nach:</label>
+                $5
+            </div>
+            <div class="form-group">
+                <label>Ergebnisliste eingrenzen</label>
+                <div>Geben Sie eine Zahl an um die Ergebnisliste einzugrenzen oder lassen Sie das Feld leer um alle Knoten anzuzeigen:</div>
+                $6
             </div>
 HTML
         ,
@@ -254,6 +261,9 @@ HTML
         'chart.sna.node-column-label' => 'Knoten',
         'chart.sna.result.betweenness-centrality' => 'Betweenness-Zentralität',
         'chart.sna.result.degree-centrality' => 'Grad',
+        'chart.sna.sort-cb' => 'Betweenness-Zentralität (absteigend)',
+        'chart.sna.sort-cd' => 'Grad (absteigend)',
+        'chart.sna.sort-node' => 'Knotenname (aufsteigend)',
 
         'chart.timeline.settings' => <<<HTML
         <p>Erzeugt eine scrollbare Zeitleiste mit Zeitabschnitten und -balken. Die benötigten Spalten im Abfrageergebnis sind <a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/timeline#data-format">hier erläutert</a>.</p>

@@ -227,10 +227,17 @@ HTML
                 </div>
             </div>
             <div class="form-group">
-                <div class=''>
-                    <label>Caption of node column in result table:</label>
-                    $4
-                </div>
+                <label>Caption of node column in result table:</label>
+                $4
+            </div>
+            <div class="form-group">
+                <label>Sort result table by:</label>
+                $5
+            </div>
+            <div class="form-group">
+                <label>Limit number of results</label>
+                <div>Enter a number to limit results or leave empty to show all results:</div>
+                $6
             </div>
 HTML
         ,
@@ -247,6 +254,9 @@ HTML
         'chart.sna.node-column-label' => 'Node',
         'chart.sna.result.betweenness-centrality' => 'Betweenness Centrality',
         'chart.sna.result.degree-centrality' => 'Degree Centrality',
+        'chart.sna.sort-cb' => 'Betweenness Centrality (descending)',
+        'chart.sna.sort-cd' => 'Degree Centrality (descending)',
+        'chart.sna.sort-node' => 'Node Label (ascending)',
 
         'chart.timeline.settings' => <<<HTML
         <p>Plots date and time ranges as bars on a scrollable timeline. The query result columns must comply with the <a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/timeline#data-format">specified data format</a>.</p>

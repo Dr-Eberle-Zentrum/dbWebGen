@@ -21,6 +21,25 @@
 				return false;
 			return $this->table[$this->cur_row++];
 		}
+
+		//--------------------------------------------------------------------------------------
+		public function sort($key, $asc) {
+		//--------------------------------------------------------------------------------------
+			usort($this->table, function($a, $b) use ($key, $asc) {
+				if($a[$key] == $b[$key]) return 0;
+				return $a[$key] < $b[$key] ? ($asc ? -1 : 1) : ($asc ? 1 : -1);
+			});
+		}
+
+		//--------------------------------------------------------------------------------------
+		public function limit($n) {
+		//--------------------------------------------------------------------------------------
+			if($n >= $this->num_rows)
+				return;
+			array_splice($this->table, $n);
+			debug_log("splicing from $n");
+			$this->num_rows = $n;
+		}
 	}
 
 	//==========================================================================================
@@ -36,7 +55,13 @@
 				get_help_popup('Node Query', l10n('chart.sna.nodequery-help')),
 				$this->page->render_textarea($this->ctrlname('nodequery'), '', 'monospace vresize'),
 				$this->page->render_checkbox($this->ctrlname('allowHtml'), 'ON', true),
-				$this->page->render_textbox($this->ctrlname('nodeColumnLabel'), l10n('chart.sna.node-column-label'))
+				$this->page->render_textbox($this->ctrlname('nodeColumnLabel'), l10n('chart.sna.node-column-label')),
+				$this->page->render_select($this->ctrlname('sort'), 'cb', array(
+					'cb' => l10n('chart.sna.sort-cb'),
+					'cd' => l10n('chart.sna.sort-cd'),
+					'node' => l10n('chart.sna.sort-node')
+				)),
+				$this->page->render_textbox($this->ctrlname('limit'), '')
 			);
 		}
 
@@ -113,7 +138,7 @@
 			$sna->calc_betweenness_centralities($Cb, false, true);
 
 			$V = $sna->get_vertex_list();
-			asort($V);
+			//asort($V);
 			$allow_html = ($this->page->get_post($this->ctrlname('allowHtml')) === 'ON');
 
 			$node_labels = array();
@@ -148,6 +173,12 @@
 					'cd' => isset($Cd[$v]) ? $Cd[$v] : 0
 				));
 			}
+			$sort_key = $this->page->get_post($this->ctrlname('sort'), 'cb');
+			$sort_asc = $sort_key == 'node' ? true : false;
+			$query_result->sort($sort_key, $sort_asc);
+			$limit = trim($this->page->get_post($this->ctrlname('limit'), ''));
+			if(preg_match('/^\d+$/', $limit) && ($limit = intval($limit)) > 0)
+				$query_result->limit($limit);
 			return parent::get_js($query_result);
 		}
 	};
