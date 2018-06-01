@@ -258,10 +258,25 @@ HTML
 HTML
         ,
 
+        'chart.sna.help-link' => 'Klicken Sie hier um eine Erklärung der Spalten anzuzeigen',
+        'chart.sna.help-content' => <<<HTML
+            <li><b>Betweenness-Zentralität</b>:
+                Dieser Wert deutet an, ob viele Pfade durch das Netzwerk durch diesen Knoten verlaufen. Die Werte aller Knoten werden auf das Intervall 0 bis 1 normalisiert, d.h. der Knoten mit der höchsten Betweenness-Zentralität im Netzwerk hat den Wert 1, jener mit der niedrigsten den Wert 0. Knoten mit einem hohen Wert haben stärkeren Einfluss auf den Informationsfluss im Netzwerk, da viele Pfade ihn kreuzen. Diese Knoten haben auch eher das Potenzial, sonst abgeschlossene Teile des Netzwerks miteinander zu verknüpfen, bzw. umgekehrt ein Netzwerk zu spalten, sollten sie entfernt werden.</li>
+
+            <li><b>Clusterkoeffizient</b>:
+                Der Clusterkoeffizient eines Knoten gibt an, wie stark vernetzt seine direkten Nachbarn untereinander sind. Der Wert gibt den Anteil der Kanten zwischen den direkten Nachbarknoten in Relation zu der Anzahl der maximal möglichen Verknüpfungen. Knoten mit hohem Clusterkoeffizient deuten auf lokale Cliquenbildung hin. Die Interpretation dieses Koeffizienten ist sinnvoller für Knoten mit größerer Nachbarschaft.</li>
+
+            <li><b>Grad</b>:
+                Der Grad eines Knoten gibt die Anzahl der direkt mit ihm verbundenen Nachbarknoten an.</li>
+HTML
+        ,
+
         'chart.sna.node-column-label' => 'Knoten',
         'chart.sna.result.betweenness-centrality' => 'Betweenness-Zentralität',
         'chart.sna.result.degree-centrality' => 'Grad',
+        'chart.sna.result.clustering-coefficient' => 'Clusterkoeffizient',
         'chart.sna.sort-cb' => 'Betweenness-Zentralität (absteigend)',
+        'chart.sna.sort-cc' => 'Clusterkoeffizient (absteigend)',
         'chart.sna.sort-cd' => 'Grad (absteigend)',
         'chart.sna.sort-node' => 'Knotenname (aufsteigend)',
 

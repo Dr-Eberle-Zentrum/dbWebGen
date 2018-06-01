@@ -57,6 +57,7 @@
 				$this->page->render_textbox($this->ctrlname('nodeColumnLabel'), l10n('chart.sna.node-column-label')),
 				$this->page->render_select($this->ctrlname('sort'), 'cb', array(
 					'cb' => l10n('chart.sna.sort-cb'),
+					'cc' => l10n('chart.sna.sort-cc'),
 					'cd' => l10n('chart.sna.sort-cd'),
 					'node' => l10n('chart.sna.sort-node')
 				)),
@@ -116,6 +117,11 @@
 				),
 				array(
 					'type' => 'number',
+					'id' => 'cc',
+					'label' => l10n('chart.sna.result.clustering-coefficient')
+				),
+				array(
+					'type' => 'number',
 					'id' => 'cd',
 					'label' => l10n('chart.sna.result.degree-centrality')
 				),
@@ -135,6 +141,7 @@
 			$sna->init($E);
 			$sna->calc_degree_centralities($Cd, false);
 			$sna->calc_betweenness_centralities($Cb, false, true);
+			$sna->calc_clustering_coefficients($Cc, $global_clustering, false);
 
 			$V = $sna->get_vertex_list();
 			//asort($V);
@@ -169,6 +176,7 @@
 				$query_result->add_row(array(
 					'node' => $allow_html ? $label : html($label),
 					'cb' => isset($Cb[$v]) ? $Cb[$v] : 0,
+					'cc' => isset($Cc[$v]) ? $Cc[$v] : 0,
 					'cd' => isset($Cd[$v]) ? $Cd[$v] : 0
 				));
 			}
@@ -178,7 +186,36 @@
 			$limit = trim($this->page->get_post($this->ctrlname('limit'), ''));
 			if(preg_match('/^\d+$/', $limit) && ($limit = intval($limit)) > 0)
 				$query_result->limit($limit);
-			return parent::get_js($query_result);
+
+			if($this->page->view() === QUERY_VIEW_RESULT) {
+				$help_l10n = l10n('chart.sna.help-content');
+				$help_content = <<<HTML
+					<style>
+						.popover { max-width: 100%; }
+						#sna-hint-popup li { margin-bottom: 1em; }
+						#sna-hint-popup li:last-child { margin-bottom: 0; }
+					</style>
+					<ul id='sna-hint-popup' style='padding-left: 1em'>
+						$help_l10n
+					</ul>
+HTML;
+				$help_content = json_encode($help_content);
+				$help_link = json_encode(l10n('chart.sna.help-link'));
+				$hint_js = <<<JS
+				$('#chart_div').before($('<p/>').attr('id', 'sna-hint').append(
+					$('<a/>').html('<span class="glyphicon glyphicon-info-sign"></span> ' + $help_link).attr({
+						href: 'javascript:void(0)',
+						'data-purpose': 'help',
+						'data-toggle': 'popover',
+						'data-placement': 'bottom',
+						'data-content': $help_content
+					})
+				));
+JS;
+			}
+			else
+				$hint_js = '';
+			return $hint_js . parent::get_js($query_result);
 		}
 	};
 
@@ -238,6 +275,40 @@
 		}
 
 		//--------------------------------------------------------------------------------------
+		public function calc_clustering_coefficients(&$Cc, &$global_average, $sort) {
+		//--------------------------------------------------------------------------------------
+			$Cc = array();
+			$global_average = 0;
+			$glob_cc = 0.;
+			foreach($this->V as $v) {
+				$Cc[$v] = 0;
+				if(isset($this->N[$v])) {
+					$neighbors = $this->N[$v];
+					$c_neighbors = count($neighbors);
+					if($c_neighbors > 1) {
+						$e_act = 0;
+						for($i = 0; $i < $c_neighbors; $i++) {
+							for($j = $i + 1; $j < $c_neighbors; $j++) {
+								// for each pair of neighbors (i,j) check whether an edge exists
+								if(isset($this->N[$neighbors[$i]]) && in_array($neighbors[$j], $this->N[$neighbors[$i]], true))
+									$e_act++;
+								/*else if(isset($this->N[$neighbors[$j]]) && in_array($neighbors[$i], $this->N[$neighbors[$j]], true))
+									$e_act++;*/
+							}
+						}
+						$Cc[$v] = 2. * $e_act / ($c_neighbors * ($c_neighbors - 1));
+						$glob_cc += $Cc[$v];
+					}
+				}
+			}
+			$global_average = (count($Cc) > 0 ? $glob_cc / count($Cc) : 0);
+			if($sort)
+				arsort($Cc);
+		}
+
+		//--------------------------------------------------------------------------------------
+		// This is an implementation of: Brandes, U. (2001). "A faster algorithm for between-
+		// ness centrality". Journal of Mathematical Sociology. 25 (2): 163–177.
 		public function calc_betweenness_centralities(&$Cb, $sort, $normalize) {
 		//--------------------------------------------------------------------------------------
 			// init Cb assoc

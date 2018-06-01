@@ -251,10 +251,25 @@ HTML
 HTML
         ,
 
+        'chart.sna.help-link' => 'Click here to show an explanation of the columns',
+        'chart.sna.help-content' => <<<HTML
+            <li><b>Betweenness Centrality</b>:
+                This number indicates how many paths through the network pass through the node. The highest value is 1, and the lowest value is 0. Nodes with a high betweenness centrality have relatively higher influence on the network as more paths pass through the node and therefore these nodes have higher control over information flow.</li>
+
+            <li><b>Clustering Coefficient</b>:
+                The clustering coefficient of a node reflects how well connected its direct neighbor nodes are. The value expresses the share of edges among direct neighbors in relation to the maximum possible number of edges among its neighbors. Nodes with a high clustering coefficient can be used reveal to cliques within the network. Note that the interpretation of the coefficient is more meaningful for nodes with high degree centrality.</li>
+
+            <li><b>Degree Centrality</b>:
+                The size of the neighborhood of a node, that is, the number of immediately connected nodes.</li>
+HTML
+        ,
+
         'chart.sna.node-column-label' => 'Node',
         'chart.sna.result.betweenness-centrality' => 'Betweenness Centrality',
+        'chart.sna.result.clustering-coefficient' => 'Clustering Coefficient',
         'chart.sna.result.degree-centrality' => 'Degree Centrality',
         'chart.sna.sort-cb' => 'Betweenness Centrality (descending)',
+        'chart.sna.sort-cc' => 'Clustering Coefficient (descending)',
         'chart.sna.sort-cd' => 'Degree Centrality (descending)',
         'chart.sna.sort-node' => 'Node Label (ascending)',
 
