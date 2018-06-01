@@ -37,7 +37,6 @@
 			if($n >= $this->num_rows)
 				return;
 			array_splice($this->table, $n);
-			debug_log("splicing from $n");
 			$this->num_rows = $n;
 		}
 	}
