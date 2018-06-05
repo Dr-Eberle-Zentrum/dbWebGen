@@ -504,8 +504,16 @@ HTML;
 
 				$nometa = isset($_GET['meta']) && $_GET['meta'] == 'none'; // some kind of hack to allow hiding title + description (for embedding)
 				$css = isset($_GET[PLUGIN_PARAM_NAVBAR]) && $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_ON ? 'margin-top:0' : '';
-				if($this->stored_title != '' && !$nometa)
-					$this->viz_ui .= "<h3 style='$css'>" . html($this->stored_title) . "</h3>\n";
+				if(!$nometa) {
+					$download_link = $this->chart->can_download() ?
+						" <small><a id='download-link' href='javascript:void(0)' title='Download Data as CSV'><span class='glyphicon glyphicon-download-alt'></span></a></small>" : '';
+					if($download_link != '' || $this->stored_title != '') {
+						$this->viz_ui .= sprintf(
+							"<h3 style='%s'>%s%s</h3>\n",
+							$css, html($this->stored_title), $download_link
+						);
+					}
+				}
 				if($this->stored_description != '' && !$nometa)
 					$this->viz_ui .= '<p>' . html($this->stored_description) . "</p>\n";
 				if(count($this->query_info['params']) > 0) {
@@ -609,6 +617,54 @@ JS;
 			else {
 				$this->viz_ui .= "<script>\n{$js}\n</script>\n";
 
+				$download_js = '';
+				if($this->chart->can_download()) {
+					$download_js = <<<JS
+						if(downloadable_data !== null && Blob !== undefined) {
+							if(typeof preprocess_downloadable_data === 'function')
+								preprocess_downloadable_data();
+							// creation of csv string from array based on solution in
+							// https://stackoverflow.com/a/24922761 >>
+							var make_csv_row = function(arr) {
+								var csv = '';
+								for(var i = 0; i < arr.length; i++) {
+									var v = arr[i] === null ? '' : arr[i].toString();
+									if (arr[i] instanceof Date || arr[i] instanceof Number)
+										v = arr[i].toLocaleString();
+									v = v.replace(/"/g, '""');
+									if(v.search(/("|\\t|\\n)/g) >= 0)
+										v = '"' + v + '"';
+									csv += i > 0 ? '\\t' + v : v;
+								}
+								return csv + '\\n';
+							};
+							var csv_download_file = '';
+							for(var i = 0; i < downloadable_data.length; i++)
+								csv_download_file += make_csv_row(downloadable_data[i]);
+							// <<
+							$('#download-link').click(function() {
+								var blob = new Blob([ new Uint8Array([0xEF, 0xBB, 0xBF]), csv_download_file ], {
+									type: 'text/csv; charset=utf-8', endings: 'native'
+								});
+								if(typeof navigator.msSaveBlob === 'function') {
+									navigator.msSaveBlob(blob, 'data.csv');
+								} else {
+									$("<a/>").attr({
+										id: 'download-temp',
+										target: '_blank',
+										href: URL.createObjectURL(blob),
+										download: 'data.csv',
+										style: 'display: none'
+									}).appendTo('body').get(0).click();
+									$('a#download-temp').remove();
+								}
+							});
+						}
+						else
+							$('#download-link').remove();
+JS;
+				}
+
 				$this->viz_ui .= <<<JS
 				<script>
 					$(document).ready(function() {
@@ -619,6 +675,7 @@ JS;
 							$(this).parents('form').first().submit();
 						})
 					});
+					$download_js
 				</script>
 JS;
 			}

@@ -51,6 +51,13 @@
 		}
 
 		//--------------------------------------------------------------------------------------
+		// override this to return true if the chart allows downloading of data
+		public /*bool*/ function can_download() {
+		//--------------------------------------------------------------------------------------
+            return true;
+		}
+
+		//--------------------------------------------------------------------------------------
 		public /*array*/ function get_columns(&$stmt) {
 		//--------------------------------------------------------------------------------------
 			$cols = array();
@@ -169,16 +176,16 @@
 
 				$data_array .= ($row_nr == 0 ? '' : ",\n") . $this->data_to_js($row, $row_nr++);
 			}
-
+			$can_download_js = json_encode($this->can_download());
 			$viz_ui = <<<JS
+				var data_array = [
+					{$data_array}
+				];
+				var downloadable_data = $can_download_js ? data_array : null;
 				google.charts.load('current', { packages: {$this->packages_js()} } );
 				google.charts.setOnLoadCallback(draw_chart);
-
 				function draw_chart() {
 					console.log('draw_chart');
-					var data_array = [
-						{$data_array}
-					];
 					var data_table = new google.visualization.DataTable();
 					{$table_cols}
 					data_table.addRows(data_array);

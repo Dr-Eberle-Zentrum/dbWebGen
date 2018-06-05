@@ -69,6 +69,13 @@
 		}
 
 		//--------------------------------------------------------------------------------------
+		// override this to return true if the chart allows downloading of data
+		public /*bool*/ function can_download() {
+		//--------------------------------------------------------------------------------------
+            return false;
+		}
+
+		//--------------------------------------------------------------------------------------
 		// returns cached js for visualization, or false if no cache exists
 		public /*string | false*/ function cache_get_js() {
 		//-------------------------------------------------------------------------------------
