@@ -178,6 +178,8 @@
 		echo "<div style='padding-bottom:4em'>&nbsp;</div>";
 
 		echo implode($conditional_label_scripts);
+
+		echo get_form_validation_code($table_name, $table);
 	}
 
 	//------------------------------------------------------------------------------------------
@@ -197,6 +199,56 @@
 EOT;
 
 		return $js;
+	}
+
+	//------------------------------------------------------------------------------------------
+	function get_form_validation_code($table_name, &$table) {
+	//------------------------------------------------------------------------------------------
+		if(!isset($table['validation_func']))
+			return '';
+		$fields = array();
+		foreach($table['fields'] as $field_name => $field_settings) {
+			if(!is_field_editable($field_settings))
+				continue;
+			$fields[] = $field_name;
+		}
+		$error_note_html = json_encode(sprintf(
+			'<div class="validation-error"><b>%s</b></div>',
+			l10n('new-edit.validation-error')
+		));
+		$fields = json_encode($fields);
+		$table_name_js = json_encode($table_name);
+		$table_js = json_encode($table);
+		return <<<JS
+			<script>
+				$('form').bind('submit', function () {
+					$('.validation-error').remove();
+					$('div.form-group').removeClass('has-error');
+					if(typeof {$table['validation_func']} !== 'function') {
+						console.log('WARNING: invalid table validation function; check settings.php');
+						return true;
+					}
+					var values = {};
+					var fields = $fields;
+					for(var i = 0; i < fields.length; i++)
+						values[fields[i]] = $('#' + fields[i]).val();
+					var errors = {$table['validation_func']}($table_name_js, $table_js, values);
+					if(errors === null)
+						return true;
+					for(var field_name in errors) {
+						if(!errors.hasOwnProperty(field_name))
+							continue;
+						var field = $('#' + field_name);
+						field.after($('<span/>').addClass('validation-error help-block').html(errors[field_name]));
+					}
+					$('button[type=submit]').after($('<span/>').addClass('validation-error help-block').html($error_note_html));
+					$('.validation-error').each(function() {
+						$(this).parents('div.form-group').addClass('has-error');
+					});
+					return false;
+				});
+			</script>
+JS;
 	}
 
 	//------------------------------------------------------------------------------------------

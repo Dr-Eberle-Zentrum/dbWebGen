@@ -447,7 +447,15 @@
 						If specified, any information (HTML encoded) that should be displayed at the top of the form tab.
 				- restrict_modes: array (optional)
 					If tabs are only desired in subset of {MODE_NEW, MODE_EDIT, MODE_VIEW}, specify this subset as an array here.
-
+		- validation_func: string (optional)
+			Allows naming a validation function that is invoked upon submission of the MODE_NEW/MODE_EDIT form. This function needs to be implemented in JavaScript; the file in which it is implemented needs to be included via the add_javascript() helper function; the best place to do this in most circumstances is the preprocess_func defined in $APP (see above).
+			The function is called with three arguments:
+				- table_name: string (the current table)
+				- table_settings: object (a JS object representing the table's settings from settings.php)
+				- values: object (for each column this object maps the column name to the value entered in the form)
+			Expected return values:
+				- If there are errors in the form, the function must a JSON object that maps each erroneous form field to an error message that shall be displayed next to the form field.
+				- If there are no errors in the form, the function must return null
 
 	======================================================================================================== */
 	$TABLES = array(

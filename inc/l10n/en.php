@@ -431,6 +431,7 @@ HTML
         'new-edit.field-required-tooltip' => 'This field is required',
         'new-edit.success-new' => 'Record stored in the database.',
         'new-edit.success-edit' => 'Record updated in the database.',
+        'new-edit.validation-error' => 'The form includes errors! Please correct the values entered in the fields highlighted in red.',
 
         'querypage.sql-label' => 'SQL Query',
         'querypage.exec-button' => 'Execute',
