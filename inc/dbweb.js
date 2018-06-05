@@ -571,8 +571,8 @@ function handle_create_new_result(result) {
 	$('select[data-table]').each(function() {
 		var $this = $(this);
 		if($this.data('table') == table) {
-			insert_option_sorted($this.attr('id'), result.value, result.label,
-				result.text, dropdown_id == $this.attr('id'));
+			insert_option_sorted($this.attr('id'), result.value, String(result.label),
+				String(result.text), dropdown_id == $this.attr('id'));
 		}
 	});
 }
