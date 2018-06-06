@@ -83,9 +83,9 @@ OPTIONS;
 		// override if additional scripts are needed for this type
 		public /*void*/ function add_required_scripts() {
 		//--------------------------------------------------------------------------------------
-			add_javascript('https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.js');
-			add_stylesheet('https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.css');
-			add_stylesheet('https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css');
+			add_javascript(ENGINE_PATH_HTTP . 'node_modules/vis/dist/vis.min.js');
+			add_stylesheet(ENGINE_PATH_HTTP . 'node_modules/vis/dist/vis.min.css');
+			add_stylesheet(ENGINE_PATH_HTTP . 'node_modules/ionicons/css/ionicons.min.css');
 		}
 
 		//--------------------------------------------------------------------------------------

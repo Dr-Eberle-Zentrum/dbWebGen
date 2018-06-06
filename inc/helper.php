@@ -400,7 +400,7 @@
 	//------------------------------------------------------------------------------------------
 		global $APP;
 		return isset($APP['bootstrap_css']) ? $APP['bootstrap_css'] :
-			'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css';
+			(ENGINE_PATH_HTTP . 'node_modules/bootstrap/dist/css/bootstrap.min.css');
 	}
 
 	//------------------------------------------------------------------------------------------

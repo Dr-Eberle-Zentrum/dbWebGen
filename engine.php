@@ -82,21 +82,23 @@
   <title><?= isset($APP['page_title']) ? $APP['page_title'] : $APP['title'] ?></title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="<?= bootstrap_css() ?>">
   <link rel="icon" href="<?= page_icon() ?>">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/css/select2.min.css" rel="stylesheet">
-  <link href="https://select2.github.io/select2-bootstrap-theme/css/select2-bootstrap.css" rel="stylesheet"><!-- Bootstrap theme from https://github.com/select2/select2-bootstrap-theme -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.2/js/select2.min.js"></script>
-  <script src="https://unpkg.com/transliteration/lib/browser/transliteration.min.js"></script>
-  <!--META_INCLUDES_GO_HERE-->
+  <!--META_INCLUDES_GO_HERE--> <!-- DO NOT EDIT OR REMOVE THIS LINE !!! -->
 </head>
 <body>
 
 <?php
-	add_stylesheet(ENGINE_PATH_HTTP . 'inc/styles.css', true);
+	add_javascript(ENGINE_PATH_HTTP . 'node_modules/jquery/dist/jquery.min.js');
+	add_javascript(ENGINE_PATH_HTTP . 'node_modules/bootstrap/dist/js/bootstrap.min.js');
+	add_javascript(ENGINE_PATH_HTTP . 'node_modules/select2/dist/js/select2.full.min.js');
+	add_javascript(ENGINE_PATH_HTTP . 'node_modules/transliteration/lib/browser/transliteration.min.js');
 	add_javascript(ENGINE_PATH_HTTP . 'inc/dbweb.js', true);
+
+	add_stylesheet(bootstrap_css());
+	add_stylesheet(ENGINE_PATH_HTTP . 'node_modules/select2/dist/css/select2.min.css');
+	add_stylesheet(ENGINE_PATH_HTTP . 'node_modules/select2-bootstrap-theme/dist/select2-bootstrap.min.css');
+	add_stylesheet(ENGINE_PATH_HTTP . 'inc/styles.css', true);
+
 	check_pseudo_login_public_queryviz();
 	render_navigation_bar();
 ?>

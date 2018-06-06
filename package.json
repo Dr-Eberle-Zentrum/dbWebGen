@@ -1,0 +1,22 @@
+{
+  "name": "dbwebgen",
+  "version": "1.0.0",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "bootstrap": "3.3.6",
+    "ionicons": "2.0.1",
+    "jquery": "1.12.0",
+    "leaflet": "1.0.3",
+    "leaflet-draw": "0.4.14",
+    "leaflet-minimap": "3.6.1",
+    "leaflet-omnivore": "0.3.1",
+    "leaflet-providers": "*",
+    "select2": "4.0.2",
+    "select2-bootstrap-theme": "*",
+    "terraformer": "1.0.6",
+    "terraformer-wkt-parser": "1.1.1",
+    "transliteration": "1.6.2",
+    "vis": "4.16.1"
+  }
+}

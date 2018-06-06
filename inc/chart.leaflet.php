@@ -118,16 +118,16 @@ JS;
 		// override if additional scripts are needed for this type
 		public /*void*/ function add_required_scripts() {
 		//--------------------------------------------------------------------------------------
-			add_javascript('https://unpkg.com/leaflet@1.1.0/dist/leaflet.js');
-			add_stylesheet('https://unpkg.com/leaflet@1.1.0/dist/leaflet.css');
-			add_javascript('https://leaflet-extras.github.io/leaflet-providers/leaflet-providers.js');
+			add_javascript(ENGINE_PATH_HTTP . 'node_modules/leaflet/dist/leaflet.js');
+			add_stylesheet(ENGINE_PATH_HTTP . 'node_modules/leaflet/dist/leaflet.css');
+			add_javascript(ENGINE_PATH_HTTP . 'node_modules/leaflet-providers/leaflet-providers.js');
 
 			if($this->page->get_post($this->ctrlname('data_format')) === 'wkt')
-				add_javascript('https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js');
+				add_javascript(ENGINE_PATH_HTTP . 'node_modules/leaflet-omnivore/leaflet-omnivore.min.js');
 
 			if($this->page->get_post($this->ctrlname('minimap')) === 'ON') {
-				add_javascript('https://norkart.github.io/Leaflet-MiniMap/Control.MiniMap.js');
-				add_stylesheet('https://norkart.github.io/Leaflet-MiniMap/Control.MiniMap.css');
+				add_javascript(ENGINE_PATH_HTTP . 'node_modules/leaflet-minimap/dist/Control.MiniMap.min.js');
+				add_stylesheet(ENGINE_PATH_HTTP . 'node_modules/leaflet-minimap/dist/Control.MiniMap.min.css');
 			}
 		}
 

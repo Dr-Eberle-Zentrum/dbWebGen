@@ -7,13 +7,13 @@
         if($field_settings === null)
             return proc_error('Invalid parameters.');
 
-        add_javascript('https://unpkg.com/leaflet@1.0.3/dist/leaflet.js');
-        add_stylesheet('https://unpkg.com/leaflet@1.0.3/dist/leaflet.css');
-        add_javascript(ENGINE_PATH_HTTP . 'inc/leaflet.draw/leaflet.draw.js');
-        add_stylesheet(ENGINE_PATH_HTTP . 'inc/leaflet.draw/leaflet.draw.css');
-        add_javascript('https://cdn-geoweb.s3.amazonaws.com/terraformer/1.0.6/terraformer.min.js');
-        add_javascript('https://cdn-geoweb.s3.amazonaws.com/terraformer-wkt-parser/1.1.1/terraformer-wkt-parser.min.js');
-        add_javascript('https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js');
+        add_javascript(ENGINE_PATH_HTTP . 'node_modules/leaflet/dist/leaflet.js');
+        add_stylesheet(ENGINE_PATH_HTTP . 'node_modules/leaflet/dist/leaflet.css');
+        add_javascript(ENGINE_PATH_HTTP . 'node_modules/leaflet-draw/dist/leaflet.draw.js');
+        add_stylesheet(ENGINE_PATH_HTTP . 'node_modules/leaflet-draw/dist/leaflet.draw.css');
+        add_javascript(ENGINE_PATH_HTTP . 'node_modules/terraformer/terraformer.min.js');
+        add_javascript(ENGINE_PATH_HTTP . 'node_modules/terraformer-wkt-parser/dist/terraformer-wkt-parser.min.js');
+        add_javascript(ENGINE_PATH_HTTP . 'node_modules/leaflet-omnivore/leaflet-omnivore.min.js');
 
         $cur_geom = '';
         if(isset($_GET['val']) && trim($_GET['val']) != '') {

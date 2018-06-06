@@ -14,6 +14,7 @@ Developers may add custom functionality and extensions to the engine through hoo
 
 ## Get it Running
 * Clone this repository into any folder that is served by your webserver.
+* Run `npm install` in this folder.
 * Since this repository contains the app engine only, you need to create another folder that will serve as the actual app folder
 * In the app folder, create a PHP file that serves as the main entry point of the app (typically `index.php`). This file is very simple: it must include a definition of the constant `ENGINE_PATH`, which shall define the relative path to app engine folder. The other line in this file is the inclusion of `engine.php` from the app engine folder. You can also define the language by defining `DBWEBGEN_LANG` (currently English `en` and German `de` are available).
 
