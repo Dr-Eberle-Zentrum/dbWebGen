@@ -15,12 +15,27 @@ Developers may add custom functionality and extensions to the engine through hoo
 ## Get it Running
 * Clone this repository into any folder that is served by your webserver.
 * Since this repository contains the app engine only, you need to create another folder that will serve as the actual app folder
-* In the app folder, create a PHP file that serves as the main entry point of the app (typically `index.php`). This file is very simple: it must include a definition of the constant `ENGINE_PATH`, which shall define the relative path to app engine folder. The other line in this file is the inclusion of `engine.php` from the app engine folder. Note: if required, you may use `ENGINE_PATH_LOCAL` to define the relative or absolute local file system path to the engine folder, which is used for including `.php` files; the `ENGINE_PATH` is used to point to files in `<script>` or `<link>` tags, so those must be resolveable by the web server.
-* Copy `settings.template.php` into your app folder, rename it to `settings.php`, and fill the file with settings that reflect your app and database structure.
+* In the app folder, create a PHP file that serves as the main entry point of the app (typically `index.php`). This file is very simple: it must include a definition of the constant `ENGINE_PATH`, which shall define the relative path to app engine folder. The other line in this file is the inclusion of `engine.php` from the app engine folder. You can also define the language by defining `DBWEBGEN_LANG` (currently English `en` and German `de` are available).
+
+ Note: if required, you may use `ENGINE_PATH_LOCAL` to define the relative or absolute local file system path to the engine folder, which is used for including `.php` files; the `ENGINE_PATH` is used to point to files in `<script>` or `<link>` tags, so those must be resolveable by the web server.
+
+ The typical index file would then look like this:
+
+ ```php
+ <?php
+    define('ENGINE_PATH', '../dbWebGen/');
+    define('DBWEBGEN_LANG', 'de');
+    include ENGINE_PATH . 'engine.php';
+ ?>
+ ```
+* Copy `settings.template.php` into your app folder, rename it to `settings.php`, and fill the file with settings that reflect your app and database structure. Alternatively, for PostgreSQL only, you can use `settings.generator.php` to create a starting point for your settings file from your database.
 * Direct your web browser to the app folder and be happy.
 
 ## Example Database and App
 An example app using this engine can be seen in the [dbWebGen-demo](https://github.com/eScienceCenter/dbWebGen-demo) repository
+
+## Limitations
+The major limitation currently is that the table settings for composite primary keys (e.g. in N:M-tables where each primary key part is a foreign key) currently only support a maximum of two primary key columns per table. If a composite primary key in some table in your DB consists of more than two columns, the remedy would be to create an artificial single-column primary key with auto-increment value for such tables.
 
 ## Screenshots
 Below are some screenshots from a database app that uses dbWebGen to allow users to work with historic documents from 19th century Oman. Click any thumbnail to view at full resolution.
