@@ -54,7 +54,13 @@
 			$this->field = $field;
 			global $TABLES;
 			$this->table = &$TABLES[$table_name];
+			$this->init();
 		}
+
+		//--------------------------------------------------------------------------------------
+		// override this to perform initializations; this is invoked by constructor
+		public function init() {}
+		//--------------------------------------------------------------------------------------
 
 		//--------------------------------------------------------------------------------------
 		// whether to principally allow the set NULL check box next to the control, if the
@@ -283,6 +289,26 @@
 	abstract class SingleLineTextInputField extends TextFieldBase
 	//==========================================================================================
 	{
+		protected $datetime_picker_main_icon = 'glyphicon glyphicon-calendar';
+
+		//--------------------------------------------------------------------------------------
+		public function init() {
+		//--------------------------------------------------------------------------------------
+			parent::init();
+
+			// if datetime picker options set, check settings
+			if($this->has_datetime_picker()) {
+				$this->field['datetime_picker']['showClear'] = !$this->is_required();
+				$this->field['datetime_picker']['locale'] = DBWEBGEN_LANG;
+				if($this->has_submitted_value())
+					$this->field['datetime_picker']['defaultDate'] = $this->get_submitted_value('');
+				if(isset($this->field['datetime_picker']['mainIcon'])) {
+					$this->datetime_picker_main_icon = $this->field['datetime_picker']['mainIcon'];
+					unset($this->field['datetime_picker']['mainIcon']);
+				}
+			}
+		}
+
 		//------------------------------------------------------------------------------------------
 		protected function get_input_size_class($max) {
 		//------------------------------------------------------------------------------------------
@@ -303,6 +329,24 @@
 			if(!$this->has_fixed_column_width())
 				$width = $this->get_input_size_class($width);
 			return $width;
+		}
+
+		//--------------------------------------------------------------------------------------
+		public function has_datetime_picker() {
+		//--------------------------------------------------------------------------------------
+			return isset($this->field['datetime_picker']) && is_array($this->field['datetime_picker']);
+		}
+
+		//--------------------------------------------------------------------------------------
+		public function get_datetime_picker_options() {
+		//--------------------------------------------------------------------------------------
+			return $this->field['datetime_picker'];
+		}
+
+		//--------------------------------------------------------------------------------------
+		public function get_datetime_picker_main_icon() {
+		//--------------------------------------------------------------------------------------
+			return $this->datetime_picker_main_icon;
 		}
 	}
 ?>

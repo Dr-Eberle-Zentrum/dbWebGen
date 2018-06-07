@@ -2,6 +2,10 @@
 	//------------------------------------------------------------------------------------------
 	function render_form() {
 	//------------------------------------------------------------------------------------------
+		add_javascript(ENGINE_PATH_HTTP . 'node_modules/moment/min/moment-with-locales.min.js');
+		add_javascript(ENGINE_PATH_HTTP . 'node_modules/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js');
+		add_stylesheet(ENGINE_PATH_HTTP . 'node_modules/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css');
+
 		global $TABLES;
 
 		$just_came_here = count($_POST) === 0;

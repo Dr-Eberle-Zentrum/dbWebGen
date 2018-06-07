@@ -394,6 +394,13 @@
 							)
 						)
 					)
+			- datetime_picker: array (optional)
+				For T_TEXT_LINE fields, use this to attach a datetime picker to this field (useful e.g. for timestamp, time or date fields in the DB). The settings array can include any of the settings allowed by eonasdan's bootstrap-datetimepicker at initialization (http://eonasdan.github.io/bootstrap-datetimepicker/Options/). Note that the "showClear" setting will be autoamtically set based on whether the field is required or not; and the "defaultDate" setting only has an effect if the field has no value yet in the DB. Additional to the picker options you can add a setting "mainIcon" to this array, which will control the icon displayed in the input control; use any glyphicon class, by default "glyphicon glyphicon-calendar" will be used.
+				Example:
+					..., 'datetime_picker' => array(
+						'format' => 'YYYY-MM-DD', // include time, e.g. HH:mm to also enable time picker
+						'showTodayButton' => true
+					), ...
 		- sort: array (optional)
 			Used for default sorting of tables in MODE_LIST. Associative array with key := fieldname (or SQL expression) and value := {'asc', 'desc'}
 			e.g. [ 'lastname' => 'asc, 'firstname' => 'asc' ]
