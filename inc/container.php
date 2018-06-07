@@ -216,6 +216,12 @@
 						echo GlobalSearch::render_result();
 						break;
 
+					case MODE_MERGE:
+						require_once ENGINE_PATH_LOCAL . 'inc/merge.php';
+						$p = new MergeRecordsPage;
+						$p->render();
+						break;
+
 					default:
 						throw new Exception(l10n('error.invalid-mode', $_GET['mode']));
 				}

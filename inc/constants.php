@@ -95,6 +95,7 @@
 	define('MODE_EDIT', 'edit'); // table-level action
 	define('MODE_LIST', 'list'); // table-level action
 	define('MODE_VIEW', 'view'); // table-level action
+	define('MODE_MERGE', 'merge'); // table-level action
 	define('MODE_QUERY', 'query');
 	define('MODE_GLOBALSEARCH', 'search');
 
