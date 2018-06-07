@@ -300,8 +300,10 @@
 			if($this->has_datetime_picker()) {
 				$this->field['datetime_picker']['showClear'] = !$this->is_required();
 				$this->field['datetime_picker']['locale'] = DBWEBGEN_LANG;
-				if($this->has_submitted_value())
-					$this->field['datetime_picker']['defaultDate'] = $this->get_submitted_value('');
+				if($this->has_submitted_value()) {
+					$this->field['datetime_picker']['defaultDate'] = $this->get_submitted_value();
+					$this->field['datetime_picker']['useCurrent'] = false;
+				}
 				if(isset($this->field['datetime_picker']['mainIcon'])) {
 					$this->datetime_picker_main_icon = $this->field['datetime_picker']['mainIcon'];
 					unset($this->field['datetime_picker']['mainIcon']);

@@ -208,24 +208,32 @@ function set_popover_close_handler() {
 }
 
 //------------------------------------------------------------------------------------------
+function update_null_value_checkbox(control) {
+//------------------------------------------------------------------------------------------
+    $('input[name="' + control.attr('name') + '__null__"]').each(function() {
+        var box = $(this);
+        if(control.val() !== '' && box.prop('checked'))
+            box.prop('checked', false);
+        else if(control.val() === '' && !box.prop('checked'))
+            box.prop('checked', true);
+    });
+}
+
+//------------------------------------------------------------------------------------------
 function init_null_value_handler() {
 //------------------------------------------------------------------------------------------
     // handle NULL checkbox updates for fields that are not required
     $('input[type="text"]:not([required]), input[type="number"]:not([required]), textarea:not([required])').each(function() {
         var control = $(this);
-        $('input[name="' + control.attr('name') + '__null__"]').each(function() {
-            var checkbox = $(this);
-            control.on('input', function(e) {
-                if(control.val() != '' && checkbox.prop('checked'))
-                    checkbox.prop('checked', false);
-                else if(control.val() == '' && !checkbox.prop('checked'))
-                    checkbox.prop('checked', true);
-            });
+        control.on('input', function(e) {
+            update_null_value_checkbox(control);
         });
     });
 }
 
+//------------------------------------------------------------------------------------------
 $.wait = function(ms) {
+//------------------------------------------------------------------------------------------
     var defer = $.Deferred();
     setTimeout(function() { defer.resolve(); }, ms);
     return defer;

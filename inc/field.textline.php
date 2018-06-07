@@ -31,7 +31,10 @@
 					</div>
 					<script>
 						$(document).ready(function() {
-							$('#%s').parents('div.date').first().datetimepicker(%s);
+							var input = $('#%s');
+							input.parents('div.date').first().datetimepicker(%s).on('dp.change', function() {
+								update_null_value_checkbox(input);
+							});
 						});
 					</script>
 JS;
