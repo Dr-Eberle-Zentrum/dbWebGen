@@ -420,6 +420,10 @@ HTML
         'menu.browse+edit' => 'Browse & Edit',
         'menu.new' => 'New',
 
+        'merge.page-heading' => 'Merge $1',
+        'merge.intro' => 'In the table below, the $1 displayed in the second row (i.e. the <i>Slave</i> record) will be merged into the $1 displayed in the first row (i.e. the <i>Master</i> record). Review and adjust the selection boxes in the table below to define for each column which value shall be in the merged $1. In case of two checked boxes for a column, the values of both $1 records will be merged (in case of multiple selection columns) or the slave value will be appended to the master value (in case of text values). To merge the records, click the "Merge" button.',
+        'merge.button-merge' => 'Merge',
+
         'new-edit.heading-new' => 'New $1',
         'new-edit.heading-edit' => 'Edit $1',
         'new-edit.heading-edit-inline' => 'Edit Details of $1',

@@ -14,7 +14,7 @@
             global $TABLES;
             $this->table_name = $this->get_urlparam('table');
             if(!$this->table_name || !isset($TABLES[$this->table_name])) {
-                proc_error('l10nize invalid table name');
+                proc_error(l10n('error.invalid-table', $this->table_name ? $this->table_name : ''));
                 return '';
             }
             $this->table = $TABLES[$this->table_name];
@@ -48,7 +48,6 @@
         //--------------------------------------------------------------------------------------
         public function do_merge() {
         //--------------------------------------------------------------------------------------
-            debug_log($_POST);
             global $TABLES;
 
             $master_id_cond = $this->get_id_cond('master', $master_params);
@@ -205,8 +204,6 @@
 
                 $db = db_connect();
                 foreach($queries as $query) {
-                    debug_log($query['sql']);
-                    debug_log($query['params']);
                     db_prep_exec($query['sql'], $query['params'], $stmt, $db);
                 }
             }
@@ -289,20 +286,23 @@
             db_prep_exec($sql, $exec_params, $stmt);
             $rr = new RecordRenderer($this->table_name, $this->table, $display_fields, $stmt, true, false, null);
             $merge_infos_js = json_encode($merge_infos);
+
+            $str_page_heading = l10n('merge.page-heading', $this->table['display_name']);
+            $str_intro = l10n('merge.intro', $this->table['item_name']);
+            $str_button_merge = l10n('merge.button-merge');
+
             $ret = <<<HTML
                 <style>
                     #master-slave-table input {
                         margin-right: 0.5em;
                     }
                 </style>
-                <h1>Merge</h1>
-                <p>
-                    In the table below, the record displayed in the second row (i.e. the <i>Slave</i> record) will be merged into the record displayed in the first row (i.e. the <i>Master</i> record). Review and adjust the selection boxes to define for each column which value shall be in the merged record. In case of two checked boxes for a column, the values of both rows will be merged (in case of multiple selection columns) or the slave value will be appended to the master value (in case of text values).
-                </p>
+                <h1>$str_page_heading</h1>
+                <p>$str_intro</p>
                 <form id='master-slave-table' class="col-sm-12" role="form" method="post">
                     {$rr->html()}
                     <div class="form-group">
-                        <button type="submit" name="do_merge" value="1" class="btn btn-primary"><span class="glyphicon glyphicon-transfer"> Merge</button>
+                        <button type="submit" name="do_merge" value="1" class="btn btn-primary"><span class="glyphicon glyphicon-transfer"> $str_button_merge</button>
                     </div>
                 </form>
                 <script>

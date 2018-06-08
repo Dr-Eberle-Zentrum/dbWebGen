@@ -428,6 +428,10 @@ HTML
         'menu.browse+edit' => 'Durchsuchen & Bearbeiten',
         'menu.new' => 'Neuer Datensatz',
 
+        'merge.page-heading' => '$1 Zusammenführen',
+        'merge.intro' => 'In der Tabelle unten sollen die Daten des $1-Datensatzes in der zweiten Reihe (der sog. "<i>Slave</i>"-Datensatz) in den $1-Datensatz in der ersten Reihe (den sog "<i>Master</i>"-Datensatz) überführt werden. Sichten und adjustieren Sie die Auswahlboxen in jeder Spalte, um zu definieren, welche Daten im zusammengeführten $1-Datensatz gespeichert werden sollen. Wenn in einer Spalte beide Kontrollkästchen markiert sind, werden die Daten beider $1-Datensätze zusammengeführt (im Falle von Mehrfachverknüpfungen) bzw. wird der Wert des Slave-Datensatzes dem Wert des Master-Datensatzes angefügt (im Falle von Textdaten). Klicken Sie anschließend den "Zusammenführen"-Knopf.',
+        'merge.button-merge' => 'Zusammenführen',
+
         'new-edit.heading-new' => 'Neu: $1',
         'new-edit.heading-edit' => 'Bearbeiten: $1',
         'new-edit.heading-edit-inline' => 'Details von $1 bearbeiten',
