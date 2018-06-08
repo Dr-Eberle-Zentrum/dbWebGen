@@ -1348,13 +1348,13 @@ STR;
 	}
 
 	//------------------------------------------------------------------------------------------
-	function enable_delete() {
+	function enable_delete(&$buf = null) {
 	//------------------------------------------------------------------------------------------
 		$box_head = l10n('delete.confirm-head');
 		$box_msg = l10n('delete.confirm-msg');
 		$button_cancel = l10n('delete.button-cancel');
 		$button_delete = l10n('delete.button-delete');
-		echo <<<END
+		$echo = <<<END
 			<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog">
 				<div class="modal-dialog">
 					<div class="modal-content">
@@ -1389,6 +1389,10 @@ STR;
 			});
 			</script>
 END;
+		if($buf !== null)
+			$buf = $echo;
+		else
+			echo $echo;
 	}
 
 
