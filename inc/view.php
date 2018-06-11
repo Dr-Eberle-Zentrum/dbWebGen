@@ -78,6 +78,33 @@
 				l10n('view.list-button')
 			);
 
+		if(is_allowed($table, MODE_MERGE)) {
+			get_session_var('merge', $merge_info);
+			$display_merge_btn = true;
+			if(is_array($merge_info)) {
+				$display_merge_btn = false;
+				foreach($merge_info[0]['keys'] as $key => $val) {
+					if(!isset($pk_vals[$key]) || $pk_vals[$key] != $val) {
+						$display_merge_btn = true;
+						break;
+					}
+				}
+			}
+			if($display_merge_btn) {
+				require_once ENGINE_PATH_HTTP . 'inc/merge.php';
+				$get_params = array('table' => $table_name, 'mode' => MODE_MERGE, 'action' => 'push');
+				foreach($pk_vals as $pk => $val)
+					$get_params['key_' . $pk] = $val;
+				$addl_data .= sprintf(
+					"<a title='%s' class='btn btn-default' role='button' data-merge-push='%s'><span class='glyphicon glyphicon-transfer'></span> %s</a>%s",
+					unquote(l10n('view.merge-icon', $table['item_name'])),
+					build_get_params($get_params),
+					l10n('view.merge-button'),
+					MergeRecordsPage::get_merge_button_js()
+				);
+			}
+		}
+
 		if(isset($table['render_links']) && is_allowed($table, MODE_LINK)) {
 			foreach($table['render_links'] as $render_link) {
 				$addl_data .= "<a href='" .

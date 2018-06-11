@@ -6,23 +6,172 @@
     class MergeRecordsPage extends dbWebGenPage
     //==========================================================================================
     {
-        protected $table_name, $table;
+        protected $table_name, $table, $merge_success = false;
 
         //--------------------------------------------------------------------------------------
         public function render() {
         //--------------------------------------------------------------------------------------
             global $TABLES;
             $this->table_name = $this->get_urlparam('table');
-            if(!$this->table_name || !isset($TABLES[$this->table_name])) {
-                proc_error(l10n('error.invalid-table', $this->table_name ? $this->table_name : ''));
-                return '';
-            }
+            if(!$this->table_name || !isset($TABLES[$this->table_name]))
+                return proc_error(l10n('error.invalid-table', $this->table_name ? $this->table_name : ''));
             $this->table = $TABLES[$this->table_name];
-
+            if(!is_allowed($this->table, MODE_MERGE))
+                return proc_error(l10n('error.not-allowed'));
             if($this->get_post('do_merge'))
                 echo $this->do_merge();
-
             echo $this->display_form();
+        }
+
+        //--------------------------------------------------------------------------------------
+        public static function get_push_key_values(&$table, &$keys) {
+        //--------------------------------------------------------------------------------------
+            $keys = array();
+            foreach($table['primary_key']['columns'] as $col_name) {
+                if(!get_request('key_' . $col_name, $key))
+                    return proc_error(l10n('error.invalid-params'));
+                $keys[$col_name] = $key;
+            }
+            return true;
+        }
+
+        //--------------------------------------------------------------------------------------
+        public static function get_merge_button_js() {
+        //--------------------------------------------------------------------------------------
+            return <<<JS
+                <script>
+                    $(document).ready(function() {
+                        $('[data-merge-push]').click(function() {
+                            $.get($(this).data('merge-push'), function(data) {
+                                location.reload();
+                            });
+                        });
+                    });
+                </script>
+JS;
+        }
+
+        //--------------------------------------------------------------------------------------
+        public static function get_cancel_button_js() {
+        //--------------------------------------------------------------------------------------
+            return <<<JS
+                <script>
+                    $(document).ready(function() {
+                        $('[data-merge-reset]').click(function() {
+                            $.get($(this).data('merge-reset'), function(data) {
+                                if(data != '')
+                                    window.location = data;
+                                else
+                                    location.reload;
+                            });
+                        });
+                    });
+                </script>
+JS;
+        }
+
+        //--------------------------------------------------------------------------------------
+        public static function process_ajax() {
+        //--------------------------------------------------------------------------------------
+            get_session_var('merge', $merge_info);
+            if(!isset($_GET['action']))
+                return false;
+            if($_GET['action'] == 'push') {
+                MergeRecordsPage::push_record();
+                return true;
+            }
+            if($_GET['action'] == 'reset') {
+                MergeRecordsPage::reset();
+                return true;
+            }
+            if($_GET['action'] == 'debug') {
+                MergeRecordsPage::debug();
+                return true;
+            }
+            return false;
+        }
+
+        //--------------------------------------------------------------------------------------
+        public static function push_record() {
+        //--------------------------------------------------------------------------------------
+            global $TABLES;
+            header('Content-Type: text/plain; charset=utf-8');
+            if(!get_request('table', $table_name))
+                return proc_error(l10n('error.invalid-params'));
+            if(!isset($TABLES[$table_name]))
+                return proc_error(l10n('error.invalid-table', $table_name));
+            $table = $TABLES[$table_name];
+            if(!is_allowed($table, MODE_MERGE))
+                return proc_error(l10n('error.not-allowed'));
+            if(get_session_var('merge', $merge_info) && $merge_info !== null) {
+                // second merge click
+                if(!MergeRecordsPage::get_push_key_values($table, $keys))
+                    return false;
+                // check if same table as before. if so, push as second and redirect to table
+                if($merge_info[0]['table'] == $table_name) {
+                    if(count($merge_info) > 1) {
+                        // through weird user navigation more than 2 records can accumulate. Clear those first.
+                        array_splice($_SESSION['merge'], 1);
+                    }
+                    $_SESSION['merge'][] = array(
+                        'keys' => $keys,
+                        'view_url' => '?' . http_build_query(array(
+                            'table' => $table_name,
+                            'mode' => MODE_VIEW
+                        )) . '&' . http_build_query($keys)
+                    );
+                    $url_params = array(
+                        'mode' => MODE_MERGE,
+                        'table' => $table_name
+                    );
+                    for($i = 0; $i < 2; $i++) {
+                        foreach($_SESSION['merge'][$i]['keys'] as $col => $val)
+                            $url_params[($i + 1) . '_' . $col] = $val;
+                    }
+                    $_SESSION['redirect'] = '?' . http_build_query($url_params);
+                    return true;
+                }
+                // fall through to push as first...
+            }
+
+            // first merge click
+            if(!MergeRecordsPage::get_push_key_values($table, $keys))
+                return false;
+            $_SESSION['merge'] = array(
+                array(
+                    'table' => $table_name,
+                    'keys' => $keys,
+                    'view_url' => '?' . http_build_query(array(
+                        'table' => $table_name,
+                        'mode' => MODE_VIEW
+                    )) . '&' . http_build_query($keys)
+                )
+            );
+            proc_info(l10n('merge.record-pushed', $table['item_name']));
+            return true;
+        }
+
+        //--------------------------------------------------------------------------------------
+        public static function reset() {
+        //--------------------------------------------------------------------------------------
+            header('Content-Type: text/plain; charset=utf-8');
+            if(get_session_var('merge', $merge_info) && $merge_info !== null) {
+                $i = count($merge_info) == 2 ? 1 : 0;
+                echo $merge_info[$i]['view_url'];
+            }
+            $_SESSION['merge'] = null;
+            return true;
+        }
+
+        //--------------------------------------------------------------------------------------
+        public static function debug() {
+        //--------------------------------------------------------------------------------------
+            header('Content-Type: text/plain; charset=utf-8');
+            if(get_session_var('merge', $merge_info) && $merge_info !== null)
+                var_dump($merge_info);
+            else
+                echo 'No records selected for merge.';
+            return true;
         }
 
         //--------------------------------------------------------------------------------------
@@ -53,6 +202,7 @@
             $master_id_cond = $this->get_id_cond('master', $master_params);
             $slave_id_cond = $this->get_id_cond('slave', $slave_params);
 
+            $queries = array();
             foreach($_POST as $post_param => $choice) {
                 if($post_param[0] != ':')
                     continue;
@@ -75,7 +225,6 @@
                 else if($field_obj->get_type() == T_LOOKUP && $field_obj->get_cardinality() == CARDINALITY_MULTIPLE && is_array($choice))
                     $action = 'merge';
 
-                $queries = array();
                 switch($action) {
                     case 'replace':
                         if($field_obj->get_type() == T_LOOKUP && $field_obj->get_cardinality() == CARDINALITY_MULTIPLE) { // single lookup
@@ -201,15 +350,42 @@
                         );
                         break;
                 }
-
-                $db = db_connect();
-                foreach($queries as $query) {
-                    db_prep_exec($query['sql'], $query['params'], $stmt, $db);
+            }
+            if(count($queries) == 0) {
+                proc_info(l10n('merge.nothing-to-do'));
+                return '';
+            }
+            $db = db_connect();
+            if($db === false)
+                return proc_error(l10n('error.db-connect'));
+            $begin_trans = false;
+            try {
+                $begin_trans = $db->beginTransaction();
+            } catch(Exception $e) {
+            }
+            foreach($queries as $query) {
+                if(!db_prep_exec($query['sql'], $query['params'], $stmt, $db)) {
+                    try {
+                        if($begin_trans && $db->rollBack()) {
+                            proc_info(l10n('merge.info-rollback'));
+                        }
+                    } catch(Exception $e) {
+                    }
+                    return '';
                 }
             }
+            try {
+                if($begin_trans && !$db->commit())
+                    throw new Exception('');
+            } catch(Exception $e) {
+                proc_error(l10n('merge.fail'));
+                return '';
+            }
 
-            $ret = '';
-            return $ret;
+            proc_success(l10n('merge.success'));
+            unset($_SESSION['merge']);
+            $this->merge_success = true;
+            return '';
         }
 
         //--------------------------------------------------------------------------------------
@@ -287,9 +463,15 @@
             $rr = new RecordRenderer($this->table_name, $this->table, $display_fields, $stmt, true, false, null);
             $merge_infos_js = json_encode($merge_infos);
 
+            get_session_var('merge', $merge_session_data);
             $str_page_heading = l10n('merge.page-heading', $this->table['display_name']);
             $str_intro = l10n('merge.intro', $this->table['item_name']);
-            $str_button_merge = l10n('merge.button-merge');
+            $str_button_cancel = $this->merge_success || !is_array($merge_session_data) || count($merge_session_data) != 2 ? '' : sprintf(
+                '<button data-merge-reset="?%s" class="btn btn-basic"><span class="glyphicon glyphicon-remove"> %s</button>',
+                http_build_query(array('mode' => MODE_MERGE, 'action' => 'reset')),
+                l10n('merge.button-cancel')
+            );
+            $str_button_merge = $this->merge_success ? l10n('merge.button-merge-again') : l10n('merge.button-merge');
 
             $ret = <<<HTML
                 <style>
@@ -303,6 +485,7 @@
                     {$rr->html()}
                     <div class="form-group">
                         <button type="submit" name="do_merge" value="1" class="btn btn-primary"><span class="glyphicon glyphicon-transfer"> $str_button_merge</button>
+                        $str_button_cancel
                     </div>
                 </form>
                 <script>
@@ -365,6 +548,7 @@
                     })
                 </script>
 HTML;
+            $ret .= MergeRecordsPage::get_cancel_button_js();
             enable_delete($del);
             $ret .= $del;
             return $ret;

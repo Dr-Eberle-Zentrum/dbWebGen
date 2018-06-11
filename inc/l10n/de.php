@@ -431,6 +431,13 @@ HTML
         'merge.page-heading' => '$1 Zusammenführen',
         'merge.intro' => 'In der Tabelle unten sollen die Daten des $1-Datensatzes in der zweiten Reihe (der sog. "<i>Slave</i>"-Datensatz) in den $1-Datensatz in der ersten Reihe (den sog "<i>Master</i>"-Datensatz) überführt werden. Sichten und adjustieren Sie die Auswahlboxen in jeder Spalte, um zu definieren, welche Daten im zusammengeführten $1-Datensatz gespeichert werden sollen. Wenn in einer Spalte beide Kontrollkästchen markiert sind, werden die Daten beider $1-Datensätze zusammengeführt (im Falle von Mehrfachverknüpfungen) bzw. wird der Wert des Slave-Datensatzes dem Wert des Master-Datensatzes angefügt (im Falle von Textdaten). Klicken Sie anschließend den "Zusammenführen"-Knopf.',
         'merge.button-merge' => 'Zusammenführen',
+        'merge.button-merge-again' => 'Nocheinmal Zusammenführen',
+        'merge.info-rollback' => 'Die Zusammenführung wurde rückgängig gemacht, da Fehler aufgetreten sind.',
+        'merge.success' => 'Die Datensätze wurden erfolgreich zusammengeführt. Bitte sichten Sie den zusammengeführten Datensatz in der ersten Tabellenzeile. Falls nötig, könnten Sie die beiden Datensätze nocheinmal zusammenführen oder auch den Slave-Datensatz löschen, falls er nicht mehr benötigt wird.',
+        'merge.fail' => 'Das Zusammenführen der Datensätze konnte nicht durchgeführt werden. Es kann sein, dass in der Datenbank definierte Einschränkungen dafür verantwortlich sind.',
+        'merge.button-cancel' => 'Abbrechen',
+        'merge.nothing-to-do' => 'Durch die in der Tabelle ausgewählten Werte würde sich der Master-Datensatz nicht verändern. Es ist daher keine Zusammenführung nötig.',
+        'merge.record-pushed' => 'Dieser $1-Datensatz wurde als Ziel für eine Zusammenführung ausgewählt. Bitte navigieren Sie nun zu dem anderen für die Zusammenführung relevanten $1-Datensatz und starten Sie dort die Zusammenführung durch Drücken des Knopfes "Zusammenführung". Vor der Zusammenführung können Sie dann noch auswählen, welche Daten genau übernommen werden sollen.',
 
         'new-edit.heading-new' => 'Neu: $1',
         'new-edit.heading-edit' => 'Bearbeiten: $1',
@@ -517,5 +524,7 @@ HTML
         'view.hidden-fields-hint-N' => 'Dieser $1-Datensatz hat $2 leere Felder.',
         'view.show-hidden-field-1' => 'Leeres Feld anzeigen',
         'view.show-hidden-field-N' => 'Leere Felder anzeigen',
+        'view.merge-icon' => 'Diesen $1-Datensatz mit einem anderen $1-Datensatz zusammenführen',
+        'view.merge-button' => 'Zusammenführen',
     );
 ?>

@@ -71,6 +71,12 @@
 			require_once ENGINE_PATH_LOCAL . 'inc/func.php';
 			process_func();
 			exit;
+
+		case MODE_MERGE:
+			require_once ENGINE_PATH_LOCAL . 'inc/merge.php';
+			if(MergeRecordsPage::process_ajax())
+				exit;
+			break;
 	}
 
 	require_once ENGINE_PATH_LOCAL . 'inc/global_search.php';

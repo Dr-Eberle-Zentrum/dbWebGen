@@ -423,6 +423,13 @@ HTML
         'merge.page-heading' => 'Merge $1',
         'merge.intro' => 'In the table below, the $1 displayed in the second row (i.e. the <i>Slave</i> record) will be merged into the $1 displayed in the first row (i.e. the <i>Master</i> record). Review and adjust the selection boxes in the table below to define for each column which value shall be in the merged $1. In case of two checked boxes for a column, the values of both $1 records will be merged (in case of multiple selection columns) or the slave value will be appended to the master value (in case of text values). To merge the records, click the "Merge" button.',
         'merge.button-merge' => 'Merge',
+        'merge.button-merge-again' => 'Merge Again',
+        'merge.info-rollback' => 'The merge operation was rolled back because errors occurred.',
+        'merge.success' => 'The merge operation was completed successfully. Please review the merged record in the first table row. If necessary, you can merge these records again or you may also delete the Slave record in the second table row, if it is not required any more.',
+        'merge.fail' => 'The merge operation could not be completed. Constraints defined within the database could be responsible for this.',
+        'merge.button-cancel' => 'Cancel',
+        'merge.nothing-to-do' => 'Using the selected values in the table, the master record would remain unchanged. Therefore the merge operation is obsolete.',
+        'merge.record-pushed' => 'This $1 was selected for merging with another $1. Please select the other $1 to be merged with this one by navigating to the other $1 and clicking the "Merge" button there. You will then be able to define exactly which parts of the two records shall be merged.',
 
         'new-edit.heading-new' => 'New $1',
         'new-edit.heading-edit' => 'Edit $1',
@@ -509,5 +516,7 @@ HTML
         'view.hidden-fields-hint-N' => 'This $1 has $2 emtpy fields.',
         'view.show-hidden-field-1' => 'Show This Field',
         'view.show-hidden-field-N' => 'Show These Fields',
+        'view.merge-icon' => 'Merge This $1 With Another $1',
+        'view.merge-button' => 'Merge',
     );
 ?>
