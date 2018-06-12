@@ -318,7 +318,7 @@ function init_multilookup_dropdowns() {
             // in "normal" lookup boxes this is in the option's "data-label" attribute
             // in "async" lookup boxes this is in the "label" attribute of the option's data object
             var sel_option = $(dropdown_id + ' option:selected');
-            var label = typeof sel_option.data('data').label === 'undefined' ? sel_option.data('label') : sel_option.data('data').label;
+            var label = typeof sel_option.data('data') === 'undefined' || typeof sel_option.data('data').label === 'undefined' ? sel_option.data('label') : sel_option.data('data').label;
 
             // append selected item to bullet list
             $.get('', {
