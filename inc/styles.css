@@ -3,7 +3,7 @@
 }
 
 #lookup-async-alert {
-	position: absolute;
+	position: fixed;
 	bottom: 0;
 	z-index: 99999;
 	-webkit-box-shadow: 0px 0px 10px 3px rgba(169, 68, 66, 0.7);
