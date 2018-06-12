@@ -101,6 +101,7 @@
 			$this->column_infos = array(
 				array('js_type' => 'string'),
 				array('js_type' => 'number'),
+				array('js_type' => 'number'),
 				array('js_type' => 'number')
 			);
 
