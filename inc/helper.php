@@ -74,7 +74,7 @@
 	}
 
 	//------------------------------------------------------------------------------------------
-	function add_meta_include($template, $file, $cache_control) {
+	function add_meta_include($template, $file, $cache_control, $echo = false) {
 	//------------------------------------------------------------------------------------------
 		global $META_INCLUDES;
 		if($cache_control) {
@@ -82,7 +82,28 @@
 			if($t !== false)
 				$file .= "?v=$t";
 		}
-		$META_INCLUDES[] = sprintf($template, $file);
+		if($echo)
+			echo sprintf($template, $file);
+		else
+			$META_INCLUDES[] = sprintf($template, $file);
+	}
+
+	//------------------------------------------------------------------------------------------
+	function echo_javascript(
+		$src,
+		$cache_control = false // only set this to true for local relative paths
+	) {
+	//------------------------------------------------------------------------------------------
+		add_meta_include("  <script type='text/javascript' src='%s'></script>", $src, $cache_control, true);
+	}
+
+	//------------------------------------------------------------------------------------------
+	function echo_stylesheet(
+		$src,
+		$cache_control = false // only set this to true for local relative paths
+	) {
+	//------------------------------------------------------------------------------------------
+		add_meta_include("  <link rel='stylesheet' href='%s' />", $src, $cache_control, true);
 	}
 
 	//------------------------------------------------------------------------------------------
@@ -91,7 +112,7 @@
 		$cache_control = false // only set this to true for local relative paths
 	) {
 	//------------------------------------------------------------------------------------------
-		add_meta_include("  <script type='text/javascript' src='%s'></script>", $src, $cache_control);
+		add_meta_include("  <script type='text/javascript' src='%s'></script>", $src, $cache_control, false);
 	}
 
 	//------------------------------------------------------------------------------------------
@@ -100,7 +121,7 @@
 		$cache_control = false // only set this to true for local relative paths
 	) {
 	//------------------------------------------------------------------------------------------
-		add_meta_include("  <link rel='stylesheet' href='%s' />", $src, $cache_control);
+		add_meta_include("  <link rel='stylesheet' href='%s' />", $src, $cache_control, false);
 	}
 
 	//------------------------------------------------------------------------------------------

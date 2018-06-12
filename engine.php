@@ -85,52 +85,43 @@
 ?>
 <!DOCTYPE html>
 <head>
-  <title><?= isset($APP['page_title']) ? $APP['page_title'] : $APP['title'] ?></title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="<?= page_icon() ?>">
-  <!--META_INCLUDES_GO_HERE--> <!-- DO NOT EDIT OR REMOVE THIS LINE !!! -->
+	<title><?= isset($APP['page_title']) ? $APP['page_title'] : $APP['title'] ?></title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" href="<?= page_icon() ?>">
+	<?php
+		echo_javascript(ENGINE_PATH_HTTP . 'node_modules/jquery/dist/jquery.min.js');
+		echo_javascript(ENGINE_PATH_HTTP . 'node_modules/bootstrap/dist/js/bootstrap.min.js');
+		echo_javascript(ENGINE_PATH_HTTP . 'node_modules/select2/dist/js/select2.full.min.js');
+		echo_javascript(ENGINE_PATH_HTTP . 'node_modules/transliteration/lib/browser/transliteration.min.js');
+		echo_javascript(ENGINE_PATH_HTTP . 'inc/dbweb.js', true);
+		echo_stylesheet(bootstrap_css());
+		echo_stylesheet(ENGINE_PATH_HTTP . 'node_modules/select2/dist/css/select2.min.css');
+		echo_stylesheet(ENGINE_PATH_HTTP . 'node_modules/select2-bootstrap-theme/dist/select2-bootstrap.min.css');
+		echo_stylesheet(ENGINE_PATH_HTTP . 'inc/styles.css', true);
+	?>
+	<!--META_INCLUDES_GO_HERE--> <!-- DO NOT EDIT OR REMOVE THIS LINE !!! -->
 </head>
 <body>
-
-<?php
-	add_javascript(ENGINE_PATH_HTTP . 'node_modules/jquery/dist/jquery.min.js');
-	add_javascript(ENGINE_PATH_HTTP . 'node_modules/bootstrap/dist/js/bootstrap.min.js');
-	add_javascript(ENGINE_PATH_HTTP . 'node_modules/select2/dist/js/select2.full.min.js');
-	add_javascript(ENGINE_PATH_HTTP . 'node_modules/transliteration/lib/browser/transliteration.min.js');
-	add_javascript(ENGINE_PATH_HTTP . 'inc/dbweb.js', true);
-
-	add_stylesheet(bootstrap_css());
-	add_stylesheet(ENGINE_PATH_HTTP . 'node_modules/select2/dist/css/select2.min.css');
-	add_stylesheet(ENGINE_PATH_HTTP . 'node_modules/select2-bootstrap-theme/dist/select2-bootstrap.min.css');
-	add_stylesheet(ENGINE_PATH_HTTP . 'inc/styles.css', true);
-
-	check_pseudo_login_public_queryviz();
-	render_navigation_bar();
-?>
-
-<div id='main-container' class="container-fluid">
-<?php
-	$page_head = ob_get_contents();
-	ob_end_clean();
-
-	ob_start();
-	render_main_container();
-	$page_body = ob_get_contents();
-	ob_end_clean();
-
-	if(process_redirect())
-		exit;
-
-	echo str_replace(
-		'<!--META_INCLUDES_GO_HERE-->',
-		implode("\n", $META_INCLUDES),
-		$page_head);
-
-	render_messages();
-	if(isset($page_body) && $page_body != null)
-		echo $page_body;
-?>
-</div>
+	<?php
+		check_pseudo_login_public_queryviz();
+		render_navigation_bar();
+	?>
+	<div id='main-container' class="container-fluid">
+		<?php
+			$page_head = ob_get_contents();
+			ob_end_clean();
+			ob_start();
+			render_main_container();
+			$page_body = ob_get_contents();
+			ob_end_clean();
+			if(process_redirect())
+				exit;
+			echo str_replace('<!--META_INCLUDES_GO_HERE-->', implode("\n", $META_INCLUDES), $page_head);
+			render_messages();
+			if(isset($page_body) && $page_body != null)
+				echo $page_body;
+		?>
+	</div>
 </body>
 </html>
