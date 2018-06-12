@@ -88,9 +88,13 @@
 		echo '<input type="hidden" id="__table_name__" name="__table_name__" value="'. unquote($_GET['table']) .'"/>';
 		echo '<input type="hidden" id="__item_id__" name="__item_id__" value="'. ($_GET['mode'] == MODE_EDIT? unquote(first(array_values($edit_id))) : '') .'" />'; // do not remove this, it is referenced in other places!!!
 
-		$submit_button = "<div class='form-group'>\n".
-			"<div class='col-sm-offset-3 col-sm-9'>\n".
-			"<button type='submit' class='btn btn-primary'><span class='glyphicon glyphicon-floppy-disk space-right'></span>".l10n('new-edit.save-button')."</button>\n";
+		$submit_button = <<<HTML
+			<div class='form-group'>
+				<div class='col-sm-offset-3 col-sm-9'>
+					<button type='submit' class='btn btn-primary'><span class='glyphicon glyphicon-floppy-disk space-right'></span> %s</button>
+					<div class="help-block form-submitting hidden">%s</div>
+HTML;
+		$submit_button = sprintf($submit_button, l10n('new-edit.save-button'), l10n('new-edit.form-submitting'));
 
 		if($_GET['mode'] == MODE_EDIT && !is_inline())
 			echo $submit_button. '</div></div>';
@@ -225,7 +229,7 @@ EOT;
 		$table_js = json_encode($table);
 		return <<<JS
 			<script>
-				$('form').bind('submit', function () {
+				function validate_form_data() {
 					$('.validation-error').remove();
 					$('div.form-group').removeClass('has-error');
 					if(typeof {$table['validation_func']} !== 'function') {
@@ -250,6 +254,20 @@ EOT;
 						$(this).parents('div.form-group').addClass('has-error');
 					});
 					return false;
+				}
+				$(document).ready(function() {
+					$('form').bind('submit', function (submit_event) {
+						var valid = validate_form_data();
+						if(valid) {
+							$('body').addClass('wait');
+					        $('button[type=submit]').prop('disabled', true);
+					        $('.form-submitting').removeClass('hidden');
+						}
+						else {
+							submit_event.preventDefault();
+						}
+						return valid;
+					});
 				});
 			</script>
 JS;

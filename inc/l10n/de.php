@@ -452,6 +452,7 @@ HTML
         'new-edit.success-new' => 'Datensatz wurde in der Datenbank gespeichert.',
         'new-edit.success-edit' => 'Datensatz wurde in der Datenbank aktualisiert.',
         'new-edit.validation-error' => 'Die Formulareingaben sind fehlerhaft! Bitte korrigieren Sie die rot hervorgehobenen Formularfelder.',
+        'new-edit.form-submitting' => 'Formular wird übertragen. Bitte warten...',
 
         'querypage.sql-label' => 'SQL-Abfrage',
         'querypage.exec-button' => 'Ausführen',
