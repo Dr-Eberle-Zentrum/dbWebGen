@@ -419,6 +419,7 @@ HTML
         'lookup-field.linkage-assoc-delete-tooltip' => 'Beziehung zu diesem/r $1 entfernen',
         'lookup-field.linked-records-clipped-tooltip' => 'Text wegen Überlänge abgeschnitten. Klicke um gesamten Text einzublenden.',
         'lookup-field.linked-record-no-display-value' => 'Für diesen refernzierten Datensatz konnte keine Anzeigewert ermittelt werden, daher wird sein Identifikationswert dargestellt',
+        'lookup-field.max-async' => 'Es werden nur die ersten $1 Ergebnisse in der Auswahlliste angezeigt. Bitte verwenden Sie einen einschränkenderen Suchtext.',
 
         'main-page.html' => '<p>Wählen Sie eine Aktion aus dem Menü aus.</p>',
 

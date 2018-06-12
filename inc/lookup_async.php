@@ -7,8 +7,6 @@
 		global $APP;
 		header('Content-Type: application/json');
 
-		$result = array();
-
 		do // just so we can easily break out
 		{
 			if(   !isset($_REQUEST['val'])
@@ -43,15 +41,21 @@
 
 			$display_expr = resolve_display_expression($field['lookup']['display'], 't');
 
+			$limit = -1;
+			if(isset($field['lookup']['async']['max_results']))
+				$limit = intval($field['lookup']['async']['max_results']);
+
 			if($field['lookup']['field'] == $field['lookup']['display']) {
 				// look only in display field
-				$sql = sprintf("select %s id, %s \"label\" from %s t where ($string_trafo) like concat('%%',($string_trafo),'%%') order by 2",
-					db_esc($field['lookup']['field']), $display_expr, db_esc($field['lookup']['table']), $display_expr, '?');
+				$sql = sprintf("select %s id, %s \"label\" from %s t where ($string_trafo) like concat('%%',($string_trafo),'%%') order by 2 %s",
+					db_esc($field['lookup']['field']), $display_expr, db_esc($field['lookup']['table']), $display_expr, '?',
+					$limit > 0 ? ('LIMIT ' . strval($limit + 1)) : '');
 			}
 			else {
 				// look in display field and primary key field
-				$sql = sprintf("select %s id, %s \"label\" from %s t where concat(($string_trafo),($string_trafo)) like concat('%%',($string_trafo),'%%') order by 2",
-					db_esc($field['lookup']['field']), $display_expr, db_esc($field['lookup']['table']), $display_expr, db_esc($field['lookup']['field']), '?');
+				$sql = sprintf("select %s id, %s \"label\" from %s t where concat(($string_trafo),($string_trafo)) like concat('%%',($string_trafo),'%%') order by 2 %s",
+					db_esc($field['lookup']['field']), $display_expr, db_esc($field['lookup']['table']), $display_expr, db_esc($field['lookup']['field']), '?',
+					$limit > 0 ? ('LIMIT ' . strval($limit + 1)) : '');
 			}
 
 			$stmt = $db->prepare($sql);
@@ -68,12 +72,21 @@
 			if(null === ($cur_vals = json_decode($_REQUEST['val'])) || !is_array($cur_vals))
 			   $cur_vals = array();
 
+			$result = array(
+				'is_limited' => false,
+				'items' => array()
+			);
+
+			$c = 1;
 			while($row = $stmt->fetch(PDO::FETCH_OBJ)) {
 				if(in_array($row->id, $cur_vals))
 					continue;
-
+				if($limit > 0 && $c++ > $limit) {
+					$result['is_limited'] = true;
+					break;
+				}
 				$row->text = format_lookup_item_label($row->label, $field['lookup'], $row->id, 'plain');
-				$result[] = $row;
+				$result['items'][] = $row;
 			}
 
 		} while(false);

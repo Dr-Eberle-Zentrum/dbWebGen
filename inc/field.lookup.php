@@ -69,6 +69,16 @@
 			return isset($this->field['lookup']['async']);
 		}
 		//--------------------------------------------------------------------------------------
+		public function has_max_async_results() { // default: false
+		//--------------------------------------------------------------------------------------
+			return isset($this->field['lookup']['async']['max_results']);
+		}
+		//--------------------------------------------------------------------------------------
+		public function get_max_async_results() {
+		//--------------------------------------------------------------------------------------
+			return intval($this->field['lookup']['async']['max_results']);
+		}
+		//--------------------------------------------------------------------------------------
 		public function is_dropdown_hidden() { // default: false
 		//--------------------------------------------------------------------------------------
 			return isset($this->field['lookup']['hide_dropdown']) && $this->field['lookup']['hide_dropdown'] === true;
@@ -116,6 +126,13 @@
 		protected function /*string*/ render_internal(&$output_buf) {
 		// render_settings: --
 		//--------------------------------------------------------------------------------------
+			if($this->is_lookup_async() && $this->has_max_async_results()) {
+				$output_buf .= sprintf(
+					"<span data-for='%s_dropdown' class='help-block hidden'>%s</span>",
+					$this->get_control_id(),
+					l10n('lookup-field.max-async', $this->get_max_async_results())
+				);
+			}
 			if($this->get_cardinality() == CARDINALITY_SINGLE)
 				$this->render_cardinality_single($output_buf);
 			elseif($this->get_cardinality() == CARDINALITY_MULTIPLE)

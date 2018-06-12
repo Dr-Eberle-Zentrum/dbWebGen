@@ -411,6 +411,7 @@ HTML
         'lookup-field.linkage-assoc-delete-tooltip' => 'Remove The Association With This $1',
         'lookup-field.linked-records-clipped-tooltip' => 'Text clipped due to length. Click to show clipped text.',
         'lookup-field.linked-record-no-display-value' => 'There is no display value for this referenced record, so its identifier is displayed here',
+        'lookup-field.max-async' => 'Limiting the dropdown box to the first $1 options. Please use a more restrictive search term.',
 
         'main-page.html' => '<p>Choose an action from the top menu.</p>',
 
