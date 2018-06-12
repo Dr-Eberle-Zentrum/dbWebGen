@@ -26,6 +26,17 @@
 			return $this->field['lookup'];
 		}
 		//--------------------------------------------------------------------------------------
+		public function has_async_threshold() {
+		//--------------------------------------------------------------------------------------
+			return isset($this->field['lookup']) && isset($this->field['lookup']['async'])
+				&& isset($this->field['lookup']['async']['min_threshold']);
+		}
+		//--------------------------------------------------------------------------------------
+		public function get_async_threshold() {
+		//--------------------------------------------------------------------------------------
+			return intval($this->field['lookup']['async']['min_threshold']);
+		}
+		//--------------------------------------------------------------------------------------
 		public function get_lookup_table_name() {
 		//--------------------------------------------------------------------------------------
 			return $this->field['lookup']['table'];
@@ -64,9 +75,11 @@
 			return $this->field['allow_create'] === true;
 		}
 		//--------------------------------------------------------------------------------------
-		public function is_lookup_async() { // default: false
+		public function is_lookup_async($num_results = null) { // default: false
 		//--------------------------------------------------------------------------------------
-			return isset($this->field['lookup']['async']);
+			return $this->has_async_threshold() ?
+				($num_results === null ? true : $num_results >= $this->get_async_threshold())
+				: isset($this->field['lookup']['async']);
 		}
 		//--------------------------------------------------------------------------------------
 		public function has_max_async_results() { // default: false
@@ -216,32 +229,36 @@
 		//--------------------------------------------------------------------------------------
 		protected function render_cardinality_single(&$output_buf) {
 		//--------------------------------------------------------------------------------------
+			$db = db_connect();
+			if($db === false)
+				return proc_error(l10n('error.db-connect'));
+
+			$num_results = null;
+			if($this->has_async_threshold() && !db_get_single_val(sprintf('select count(*) c from %s', db_esc($this->get_lookup_table_name())), array(), $num_results, $db))
+				$num_results = null;
+
 			$output_buf .= sprintf(
 				"<select %s %s class='form-control %s' id='%s_dropdown' name='%s' data-table='%s' data-fieldname='%s' data-placeholder='%s' data-thistable='%s' %s %s %s data-lookuptype='single' %s %s title='%s'>\n",
 
 				$this->get_disabled_attr(),
 				$this->get_required_attr(),
-				$this->is_lookup_async() ? 'lookup-async' : '',
+				$this->is_lookup_async($num_results) ? 'lookup-async' : '',
 				$this->get_control_id(),
 				$this->get_control_name(),
 				$this->get_lookup_table_name(),
 				$this->field_name,
 				unquote($this->get_custom_placeholder(l10n('lookup-field.placeholder'))),
 				$this->table_name,
-				$this->is_lookup_async() ? sprintf("data-language='%s'", get_app_lang()) : '',
-				$this->is_lookup_async() ? sprintf("data-minimum-input-length='%s'", $this->get_async_min_input_len()) : '',
-				$this->is_lookup_async() && $this->has_async_delay() ? sprintf("data-asyncdelay='%s'", $this->get_async_delay()) : '',
+				$this->is_lookup_async($num_results) ? sprintf("data-language='%s'", get_app_lang()) : '',
+				$this->is_lookup_async($num_results) ? sprintf("data-minimum-input-length='%s'", $this->get_async_min_input_len()) : '',
+				$this->is_lookup_async($num_results) && $this->has_async_delay() ? sprintf("data-asyncdelay='%s'", $this->get_async_delay()) : '',
 				$this->is_required() ? '' : 'data-allow-clear=true',
 				$this->get_focus_attr(),
 				unquote($this->get_label())
 			);
 
-			$db = db_connect();
-			if($db === false)
-				return proc_error(l10n('error.db-connect'));
-
 			$where_clause = '';
-			if($this->is_lookup_async() && $this->has_submitted_value() && $this->get_submitted_value() != '') // NULL_OPTION
+			if($this->is_lookup_async($num_results) && $this->has_submitted_value() && $this->get_submitted_value() != '') // NULL_OPTION
 				$where_clause = sprintf('where %s = ?', db_esc($this->get_lookup_field_name()));
 
 			$sql = sprintf('select %s val, %s txt from %s t %s order by txt',
@@ -295,20 +312,30 @@
 			// fetch linked items
 			$linked_items = $this->get_linked_record_ids();
 
+			$db = db_connect();
+			if($db === false)
+				return proc_error(l10n('error.db-connect'));
+
+			$num_results = null;
+			if($this->has_async_threshold() && !db_get_single_val(sprintf('select count(*) c from %s', db_esc($this->get_lookup_table_name())), array(), $num_results, $db))
+				$num_results = null;
+			if($num_results !== null)
+				$num_results -= count($linked_items);
+
 			$output_buf .= sprintf(
 				"<select %s class='form-control multiple-select-dropdown %s' id='%s_dropdown' data-table='%s' data-thistable='%s' data-fieldname='%s' data-placeholder='%s' %s %s %s data-lookuptype='multiple' %s title='%s' data-maxnum='%s' data-initialcount='%s'>\n",
 
 				$this->get_disabled_attr(),
 				//$this->get_required_attr(),
-				$this->is_lookup_async() ? 'lookup-async' : '',
+				$this->is_lookup_async($num_results) ? 'lookup-async' : '',
 				$this->get_control_id(),
 				$this->get_lookup_table_name(),
 				$this->table_name,
 				$this->field_name,
 				unquote($this->get_custom_placeholder(l10n('lookup-field.placeholder'))),
-				$this->is_lookup_async() ? sprintf("data-language='%s'", get_app_lang()) : '',
-				$this->is_lookup_async() ? sprintf("data-minimum-input-length='%s'", $this->get_async_min_input_len()) : '',
-				$this->is_lookup_async() && $this->has_async_delay() ? sprintf("data-asyncdelay='%s'", $this->get_async_delay()) : '',
+				$this->is_lookup_async($num_results) ? sprintf("data-language='%s'", get_app_lang()) : '',
+				$this->is_lookup_async($num_results) ? sprintf("data-minimum-input-length='%s'", $this->get_async_min_input_len()) : '',
+				$this->is_lookup_async($num_results) && $this->has_async_delay() ? sprintf("data-asyncdelay='%s'", $this->get_async_delay()) : '',
 				$this->get_focus_attr(),
 				unquote($this->get_label()),
 				$this->get_linkage_maxnum(),
@@ -323,11 +350,7 @@
 
 			$table = &$TABLES[$this->table_name];
 
-			$db = db_connect();
-			if($db === false)
-				return proc_error(l10n('error.db-connect'));
-
-			if($this->is_lookup_async()) {
+			if($this->is_lookup_async($num_results)) {
 				// just prepare the list of already existing linked items
 				$existing_linkage = array();
 				$sql = sprintf('select %s val, %s txt from %s t where %s = ?',

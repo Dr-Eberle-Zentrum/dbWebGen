@@ -258,6 +258,8 @@
 						If set, this specifies the number of milliseconds to wait before sending an Ajax request after a user keystroke
 					- max_results: integer (optional)
 						If set, the number of results fetched from the async query is limited to this number. If the query would return more results, a notice is displayed to the user to make them aware of this fact
+					- min_threshold: integer (optional)
+					 	If set, the dropdown box will behave like a normal (non-async) control if less then the defined threshold number of options are available. Otherwise, if there are more options, or if this setting is not defined at all, the box will be an async lookup box.
 				- label_display_expr_only: boolean (optional) (default: false)
 					By default the label for lookup values is composed of the display expression and in parentheses the respective primary key name and value. If you wish to suppress the parentheses, set label_display_expr_only = true
 				- hide_dropdown: boolean (optional) (default: false)
