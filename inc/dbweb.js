@@ -147,6 +147,7 @@ function make_dropdowns_select2() {
 					url: '?mode=func&target=lookup_async',
 					type: 'POST',
 					data: function (params) {
+                        console.log('Searching for "' + params.term + '""');
                         show_hide_async_limit(box, false);
 						return {
 							q: params.term,
@@ -157,9 +158,9 @@ function make_dropdowns_select2() {
 					},
 					processResults: function (data) {
                         show_hide_async_limit(box, data.is_limited);
-						return { results: data.items };
+                        return { results: data.items };
 					},
-					delay: box.data('asyncdelay')
+					delay: box.data('asyncdelay') ? parseInt(box.data('asyncdelay')) : 0
 				}
 			}).on('select2:close', function() {
                 show_hide_async_limit(box, false);
@@ -314,11 +315,19 @@ function init_multilookup_dropdowns() {
             if(selected_value === null || selected_value === '')
                 return;
 
-            // need to extract the plain option text (without the key value in parentheses)
-            // in "normal" lookup boxes this is in the option's "data-label" attribute
-            // in "async" lookup boxes this is in the "label" attribute of the option's data object
-            var sel_option = $(dropdown_id + ' option:selected');
-            var label = typeof sel_option.data('data') === 'undefined' || typeof sel_option.data('data').label === 'undefined' ? sel_option.data('label') : sel_option.data('data').label;
+            // need to extract the plain option text label (without the key value in parentheses)
+            // in "normal" lookup boxes this is in the selected option's data label attribute
+            // the create new result in async boxes is also in the option's data label attribute
+            // in "async" lookup boxes this is in the "label" attribute of the select2's data object
+            var selected_option = $(dropdown_id + ' option:selected');
+            var label = selected_option.data('label');
+            if(typeof label === 'undefined') {
+                var data_arr = dropdown_box.select2('data');
+                if(Array.isArray(data_arr) && data_arr.length > 0)
+                    label = data_arr[0].label;
+            }
+            if(typeof label === 'undefined') // to be sure we find the culprit faster next time
+                console.error('Something wrong again with the way select2 stores the item label in the option data after processing the async lookup results!');
 
             // append selected item to bullet list
             $.get('', {
@@ -571,7 +580,9 @@ function remove_linked_item(e) {
 	// remove the list item
 	item_div.fadeOut(100, function() { item_div.remove() });
 
-	insert_option_sorted(dropdown_id, removed_id, label, removed_text, false);
+    // only need to insert in non-async boxes
+    if(!$('#' + dropdown_id).hasClass('lookup-async'))
+	   insert_option_sorted(dropdown_id, removed_id, label, removed_text, false);
 
     // ensure box and create new are enabled
     multi_lookup_field_allow(field, true);
