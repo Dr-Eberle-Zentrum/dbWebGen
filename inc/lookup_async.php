@@ -2,10 +2,15 @@
 	//------------------------------------------------------------------------------------------
 	function process_lookup_async() {
 	//------------------------------------------------------------------------------------------
-		$debug = isset($_GET['debug']);
 		global $TABLES;
 		global $APP;
 		header('Content-Type: application/json');
+
+		$result = array(
+			'error_message' => null,
+			'is_limited' => false,
+			'items' => array()
+		);
 
 		do // just so we can easily break out
 		{
@@ -22,13 +27,18 @@
 			   || mb_strlen($q = $_REQUEST['q']) < $field['lookup']['async']['min_input_len']
 			  )
 			{
-				if($debug) die('parameters error');
+				$result['error_message'] = l10n('error.lookup-async.invalid-params');
+				break;
+			}
+
+			if(mb_strlen($q = trim(preg_replace('/\s+/', '%', $_REQUEST['q']))) < $field['lookup']['async']['min_input_len']) {
+				$result['error_message'] = l10n('error.lookup-async.query-whitespace');
 				break;
 			}
 
 			$db = db_connect();
 			if($db === false) {
-				if($debug) die('cannot connect to db');
+				$result['error_message'] = l10n('error.lookup-async.connect-db');
 				break;
 			}
 
@@ -60,22 +70,18 @@
 
 			$stmt = $db->prepare($sql);
 			if($stmt === false) {
-				if($debug) die('cannot prepare stmt');
+				$result['error_message'] = l10n('error.lookup-async.stmt-error');
 				break;
 			}
 
 			if($stmt->execute(array($q)) === false) {
 				if($debug) die('cannot execute stmt');
+				$result['error_message'] = l10n('error.lookup-async.stmt-error');
 				break;
 			}
 
 			if(null === ($cur_vals = json_decode($_REQUEST['val'])) || !is_array($cur_vals))
 			   $cur_vals = array();
-
-			$result = array(
-				'is_limited' => false,
-				'items' => array()
-			);
 
 			$c = 1;
 			while($row = $stmt->fetch(PDO::FETCH_OBJ)) {

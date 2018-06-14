@@ -356,6 +356,10 @@ HTML
         'error.storedquery-invalid-sql' => 'Invalid SQL query. Only SELECT statements are allowed!',
         'error.storedquery-invalid-params' => 'Invalid table or field in parameterized query',
         'error.chart-duplicate-cols' => 'There is a problem with your query, most likely you have duplicate column names in your query result. Please use aliases in your query to disambiguate column names.',
+        'error.lookup-async.invalid-params' => 'Error during search: Invalid search parameters; please try again.',
+        'error.lookup-async.connect-db' => 'Error during search: Connecting to database failed.',
+        'error.lookup-async.stmt-error' => 'Error during search: Database could not be queried.',
+        'error.lookup-async.query-whitespace' => 'Error during search: The search term includes too many whitespace characters.',
 
         'geom-field.placeholder' => 'Enter WKT value or click "$1"',
         'geom-field.map-picker-button-label' => 'Map',

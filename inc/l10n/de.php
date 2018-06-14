@@ -364,6 +364,10 @@ HTML
         'error.storedquery-invalid-sql' => 'Ungültige Abfrage. Nur SELECT-Abfragen sind erlaubt!',
         'error.storedquery-invalid-params' => 'Ungültige Tabelle und/oder Feld in parametrisierter Abfrage.',
         'error.chart-duplicate-cols' => 'Die Abfrageergebnisse können nicht dargestellt werden. Vermutlich haben Sie mehrere Spalten mit dem gleichen Namen im Abfrageergebnis. Bitte verwenden Sie Aliase für Spalten, um dieses Problem zu lösen.',
+        'error.lookup-async.invalid-params' => 'Fehler bei der Suche: Ungültige Suchparameter.',
+        'error.lookup-async.connect-db' => 'Fehler bei der Suche: Verbindung zur Datenbank fehlgeschlagen.',
+        'error.lookup-async.stmt-error' => 'Fehler bei der Suche: Datenbank konnte nicht abgefragt werden.',
+        'error.lookup-async.query-whitespace' => 'Fehler bei der Suche: Der Suchbegriff enthält zu viele Leerzeichen.',
 
         'geom-field.placeholder' => 'WKT-Wert eingeben oder über "$1" auswählen',
         'geom-field.map-picker-button-label' => 'Karte',

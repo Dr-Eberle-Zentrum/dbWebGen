@@ -114,19 +114,18 @@ function set_logout_button_handler() {
 }
 
 //------------------------------------------------------------------------------------------
-function show_hide_async_limit(box, show) {
+function show_hide_async_alert(box, show, error_msg = null) {
 //------------------------------------------------------------------------------------------
+    $('#lookup-async-alert').remove();
     if(show) {
         var alert = $('#lookup-async-alert');
-        var text = box.prevAll('.help-block').text();
+        var text = error_msg ? error_msg : box.prevAll('.help-block').text();
         if(alert.length == 0 && typeof text === 'string' && text.length > 0) {
             $('#main-container').prepend($('<div/>').attr({
                 id: 'lookup-async-alert'
-            }).addClass('alert alert-danger fade in').text(text))
+            }).addClass('alert alert-'+ (error_msg? 'danger' : 'warning') +' fade in').text(text))
         }
     }
-    else
-        $('#lookup-async-alert').remove();
 }
 
 //------------------------------------------------------------------------------------------
@@ -137,7 +136,6 @@ function make_dropdowns_select2() {
         if(box.data('no-select2') == '1')
             return;
         var width = '100%';
-
 		if(box.hasClass('lookup-async')) {
 			box.select2({
 				// general select2 options are defined in the data-* attributes of the <select> element
@@ -147,8 +145,8 @@ function make_dropdowns_select2() {
 					url: '?mode=func&target=lookup_async',
 					type: 'POST',
 					data: function (params) {
-                        console.log('Searching for "' + params.term + '""');
-                        show_hide_async_limit(box, false);
+                        //console.log('Searching for "' + params.term + '"');
+                        show_hide_async_alert(box, false);
 						return {
 							q: params.term,
 							table: box.data('thistable'),
@@ -157,13 +155,13 @@ function make_dropdowns_select2() {
 						};
 					},
 					processResults: function (data) {
-                        show_hide_async_limit(box, data.is_limited);
+                        show_hide_async_alert(box, data.is_limited || data.error_message, data.error_message);
                         return { results: data.items };
 					},
 					delay: box.data('asyncdelay') ? parseInt(box.data('asyncdelay')) : 0
 				}
 			}).on('select2:close', function() {
-                show_hide_async_limit(box, false);
+                show_hide_async_alert(box, false);
             });
 		}
 		else {
