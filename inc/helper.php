@@ -864,6 +864,12 @@ STR;
 			else
 				$val = '';
 		}
+		else if($field['type'] == T_BOOLEAN) {
+			if($val == true)
+				$val = isset($field['options']) && isset($field['options']['on']) ? $field['options']['on'] : l10n('boolean-field.default.yes');
+			else
+				$val = isset($field['options']) && isset($field['options']['off']) ? $field['options']['off'] : l10n('boolean-field.default.no');
+		}
 		else {
 			if($_GET['mode'] == MODE_VIEW) {
 				$val = html($val, 0, false, true, $highlighter);

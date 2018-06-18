@@ -1,5 +1,8 @@
 <?php
     $_L10N = array(
+        'boolean-field.default.yes' => 'Ja',
+        'boolean-field.default.no' => 'Nein',
+
         'chart-type.annotated-timeline' => 'Zeitleiste annotiert',
         'chart-type.bar' => 'Balkendiagramm',
         'chart-type.candlestick' => 'Candlestick-Diagramm',

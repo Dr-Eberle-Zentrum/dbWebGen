@@ -228,6 +228,9 @@
 				Whether or not to show a checkbox allowing to explicitly set a NULL value for a non-required field (applies to input and textarea). Even if the checkbox is not shown, it is there and automatically checked/unchecked upon user input.
 			- default: string (optional)
 				Default value to set. All occurrences of REPLACE_DYNAMIC_* strings (see config/constants.php) are replaced with the current values.
+				For a T_BOOLEAN field, this must be either 'on' (=true) or 'off' (=false).
+			- options: array (optional)
+				Currently this is only relevant for T_BOOLEAN fields. This array is converted to a JSON object to initizalize the on/off toggle. All initialization options listed under http://www.bootstraptoggle.com/ can be provided. You should at least set the labels for 'on' and 'off' status of the toggle according to the purpose of this boolean field. If no options are provided here, the default labels for 'on' and 'off' states of the toggle are based on the localized strings boolean-field.default.yes and boolean-field.default.no, respectively.
 			- values: array (required only if type=T_ENUM)
 				Array of values for a T_ENUM type. An associative array with key reflecting the actual DB value, and value representing the label to display to the user, e.g. array(1 => 'January', 2 => 'February', ...)
 			- allow_create: boolean (default: true)

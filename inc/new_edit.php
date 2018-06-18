@@ -335,6 +335,9 @@ JS;
 			else
 				$_POST[$col] = $val;
 
+			if(isset($table['fields'][$col]) && $table['fields'][$col]['type'] == T_BOOLEAN)
+				$_POST[$col] = $val ? BooleanField::ON : BooleanField::OFF;
+
 			if(is_bool($_POST[$col]))
 				$_POST[$col] = $_POST[$col] ? 1 : 0; // handles the unforunate shit that strval(false) === ''
 
@@ -669,6 +672,10 @@ JS;
 
 				$columns[] = $field_name;
 				$values[] = isset($LOGIN['password_hash_func']) ? $LOGIN['password_hash_func']($_POST[$field_name]) : $_POST[$field_name];
+			}
+			else if($field_info['type'] == T_BOOLEAN) {
+				$columns[] = $field_name;
+				$values[] = db_boolean_literal($_POST[$field_name] == BooleanField::ON);
 			}
 			else {
 				$columns[] = $field_name;

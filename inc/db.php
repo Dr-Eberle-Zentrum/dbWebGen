@@ -167,4 +167,16 @@
                 return "cast($expr as char)";
         }
     }
+
+    //------------------------------------------------------------------------------------------
+    function db_boolean_literal($bool) {
+    //------------------------------------------------------------------------------------------
+        global $DB;
+        switch($DB['type']) {
+            case DB_POSTGRESQL:
+                return $bool ? 't' : 'f';
+            case DB_MYSQL:
+                return $bool;
+        }
+    }
 ?>

@@ -19,6 +19,7 @@
 	define('T_PASSWORD', 'T_Password');
 	define('T_UPLOAD', 'T_FileUpload');
 	define('T_POSTGIS_GEOM', 'T_PostgisGeometry'); // postgis only!
+	define('T_BOOLEAN', 'T_Boolean'); // beware: this is a yes/no toggle; there is no way to nullify this field! If null is needed as an option, use the T_ENUM type
 
 	// m:n and 1:n relationships for T_LOOKUP types
 	define('CARDINALITY_SINGLE', 'CARDINALITY_SINGLE');

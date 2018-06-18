@@ -27,6 +27,7 @@
 				case T_TEXT_AREA: return new TextAreaField($table_name, $field_name, $field);
 				case T_PASSWORD: return new PasswordField($table_name, $field_name, $field);
 				case T_POSTGIS_GEOM: return new PostgisGeomField($table_name, $field_name, $field);
+				case T_BOOLEAN: return new BooleanField($table_name, $field_name, $field);
 				default: return null;
 			}
 		}
