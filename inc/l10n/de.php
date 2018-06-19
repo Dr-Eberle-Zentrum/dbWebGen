@@ -460,6 +460,7 @@ HTML
         'new-edit.success-edit' => 'Datensatz wurde in der Datenbank aktualisiert.',
         'new-edit.validation-error' => 'Die Formulareingaben sind fehlerhaft! Bitte korrigieren Sie die rot hervorgehobenen Formularfelder.',
         'new-edit.form-submitting' => 'Formular wird übertragen. Bitte warten...',
+        'new-edit.form-loading' => 'Formular wird geladen...',
 
         'querypage.sql-label' => 'SQL-Abfrage',
         'querypage.exec-button' => 'Ausführen',

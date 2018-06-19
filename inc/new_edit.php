@@ -79,7 +79,13 @@
 		if(is_inline())
 			echo '<p>', l10n('new-edit.save-inline-hint'), "</p>\n";
 
-		echo "<form class='form-horizontal bg-gray' role='form' method='post' enctype='multipart/form-data' data-navigate-away-warning='true'><fieldset>\n";
+		echo <<<HTML
+			<div class='form-loading bg-gray'>
+				<span class="glyphicon glyphicon-hourglass"></span> Form Loading...
+			</div>
+			<form class='form-horizontal bg-gray form-loading' role='form' method='post' enctype='multipart/form-data' data-navigate-away-warning='true'>
+				<fieldset>
+HTML;
 
 		$form_tabs = new FormTabs($table);
 		echo $form_tabs->begin();
@@ -188,6 +194,21 @@ HTML;
 		echo implode($conditional_label_scripts);
 
 		echo get_form_validation_code($table_name, $table);
+
+		echo show_completed_form();
+	}
+
+	//------------------------------------------------------------------------------------------
+	function show_completed_form() {
+	//------------------------------------------------------------------------------------------
+		return <<<JS
+			<script>
+				$(window).on('load', function() {
+					$('div.form-loading').hide();
+					$('form.form-loading').show();
+				});
+			</script>
+JS;
 	}
 
 	//------------------------------------------------------------------------------------------

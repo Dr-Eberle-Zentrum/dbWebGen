@@ -188,6 +188,15 @@ span.required-indicator {
 	padding-right: .1em;
 }
 
+div.form-loading {
+	text-align: center;
+	font-size: larger;
+	padding: 2em 1em;
+}
+
+form.form-loading {
+	display: none;
+}
 
 form.bg-gray .form-group:last-child {
 	margin-bottom: 0;

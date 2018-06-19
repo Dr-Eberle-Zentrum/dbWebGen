@@ -2,7 +2,7 @@
     $_L10N = array(
         'boolean-field.default.yes' => 'Yes',
         'boolean-field.default.no' => 'No',
-        
+
         'chart-type.annotated-timeline' => 'Annotated Timeline',
         'chart-type.bar' => 'Bar Chart',
         'chart-type.candlestick' => 'Candlestick Chart',
@@ -452,6 +452,7 @@ HTML
         'new-edit.success-edit' => 'Record updated in the database.',
         'new-edit.validation-error' => 'The form includes errors! Please correct the values entered in the fields highlighted in red.',
         'new-edit.form-submitting' => 'Form is being submitted. Please wait ...',
+        'new-edit.form-loading' => 'Form Loading ...',
 
         'querypage.sql-label' => 'SQL Query',
         'querypage.exec-button' => 'Execute',
