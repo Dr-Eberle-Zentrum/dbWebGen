@@ -28,7 +28,7 @@
 			$visjs_options = <<<OPTIONS
 {
   "layout": {
-    "improvedLayout": true
+    "improvedLayout": false
   },
   "interaction": {
     "dragNodes": true,

@@ -6,7 +6,7 @@
     //--------------------------------------------------------------------------------------
         if(isset($_SESSION['l10n']))
             return; // nothing to do
-        require_once 'l10n/' . (defined('DBWEBGEN_LANG') ? DBWEBGEN_LANG : 'en') . '.php';
+        require_once (defined('DBWEBGEN_LANG') ? DBWEBGEN_LANG : 'en') . '.php';
         $_SESSION['l10n'] = $_L10N;
     }
 

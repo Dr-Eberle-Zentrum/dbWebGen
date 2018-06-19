@@ -876,8 +876,8 @@ STR;
 
 				if(trim($val) !== '' && $field['type'] == T_POSTGIS_GEOM) {
 					// append map button to show location
-					require_once 'field.base.php';
-					require_once 'field.postgisgeom.php';
+					require_once 'fields/field.base.php';
+					require_once 'fields/field.postgisgeom.php';
 					$field_obj = FieldFactory::create($_GET['table'], $col);
 					if($field_obj->has_map_picker()) {
 						$val = $field_obj->render_map_picker_button(

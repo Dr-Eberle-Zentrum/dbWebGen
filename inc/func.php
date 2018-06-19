@@ -92,8 +92,8 @@
 	//------------------------------------------------------------------------------------------
 	function visjs_network_cache_positions() {
 	//------------------------------------------------------------------------------------------
-		require_once 'chart.base.php';
-		require_once 'chart.network_visjs.php';
+		require_once 'charts/chart.base.php';
+		require_once 'charts/chart.network_visjs.php';
 		dbWebGenChart_network_visjs::cache_positions_async();
 	}
 

@@ -2,7 +2,7 @@
     //------------------------------------------------------------------------------------------
     function render_map_picker() {
     //------------------------------------------------------------------------------------------
-        require_once 'fields.php';
+        require_once 'fields/fields.php';
         $field_settings = FieldFactory::create($_GET['table'], $_GET['field']);
         if($field_settings === null)
             return proc_error('Invalid parameters.');

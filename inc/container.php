@@ -164,14 +164,14 @@
 			else {
 				switch($_GET['mode']) {
 					case MODE_NEW:
-						require_once ENGINE_PATH_LOCAL . 'inc/fields.php';
+						require_once ENGINE_PATH_LOCAL . 'inc/fields/fields.php';
 						require_once ENGINE_PATH_LOCAL . 'inc/new_edit.php';
 						process_form();
 						render_form();
 						break;
 
 					case MODE_EDIT:
-						require_once ENGINE_PATH_LOCAL . 'inc/fields.php';
+						require_once ENGINE_PATH_LOCAL . 'inc/fields/fields.php';
 						require_once ENGINE_PATH_LOCAL . 'inc/new_edit.php';
 						if(!process_form())
 							render_form();
@@ -188,7 +188,7 @@
 						break;
 
 					case MODE_QUERY:
-						require_once ENGINE_PATH_LOCAL . 'inc/fields.php';
+						require_once ENGINE_PATH_LOCAL . 'inc/fields/fields.php';
 						require_once ENGINE_PATH_LOCAL . 'inc/query.php';
 						$p = new QueryPage;
 						$p->render();

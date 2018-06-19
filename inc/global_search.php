@@ -215,7 +215,7 @@ HTML;
         public static function /*string*/ render_table_results($table_name, &$table, $transformed_search_term, &$num_results) {
         //--------------------------------------------------------------------------------------
             require_once 'record_renderer.php';
-            require_once 'fields.php';
+            require_once 'fields/fields.php';
 
             self::sanitize_search_term();
             $is_preview = self::is_preview();

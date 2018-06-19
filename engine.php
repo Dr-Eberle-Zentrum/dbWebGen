@@ -33,7 +33,7 @@
 		$_SESSION['msg'] = array();
 
 	// CORE INCLUDES
-	require_once ENGINE_PATH_LOCAL . 'inc/l10n.php';
+	require_once ENGINE_PATH_LOCAL . 'inc/l10n/l10n.php';
 	require_once ENGINE_PATH_LOCAL . 'inc/constants.php';
 	require_once ENGINE_PATH_LOCAL . 'inc/helper.php';
 	require_once ENGINE_PATH_LOCAL . 'inc/container.php';

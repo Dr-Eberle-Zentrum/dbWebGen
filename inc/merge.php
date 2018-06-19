@@ -1,6 +1,6 @@
 <?php
     require_once 'record_renderer.php';
-    require_once 'fields.php';
+    require_once 'fields/fields.php';
 
     //==========================================================================================
     class MergeRecordsPage extends dbWebGenPage

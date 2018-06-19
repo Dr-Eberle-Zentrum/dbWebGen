@@ -1,11 +1,11 @@
 <?php
 	if(!defined('QUERYPAGE_NO_INCLUDES')) {
-		require_once 'chart.base.php';
-		require_once 'chart.google.base.php';
+		require_once 'charts/chart.base.php';
+		require_once 'charts/chart.google.base.php';
 		if(isset($APP['register_custom_chart_type_func']))
 			$APP['register_custom_chart_type_func']();
 		foreach(array_keys(QueryPage::$chart_types) as $type)
-			require_once (isset(QueryPage::$chart_custom_file_locations[$type]) ? QueryPage::$chart_custom_file_locations[$type] : '') . "chart.$type.php";
+			require_once (isset(QueryPage::$chart_custom_file_locations[$type]) ? QueryPage::$chart_custom_file_locations[$type] : 'charts/') . "chart.$type.php";
 	}
 
 	//==========================================================================================
