@@ -232,7 +232,8 @@
 			- options: array (optional)
 				Currently this is only relevant for T_BOOLEAN fields. This array is converted to a JSON object to initizalize the on/off toggle. All initialization options listed under http://www.bootstraptoggle.com/ can be provided. You should at least set the labels for 'on' and 'off' status of the toggle according to the purpose of this boolean field. If no options are provided here, the default labels for 'on' and 'off' states of the toggle are based on the localized strings boolean-field.default.yes and boolean-field.default.no, respectively.
 			- values: array (required only if type=T_ENUM)
-				Array of values for a T_ENUM type. An associative array with key reflecting the actual DB value, and value representing the label to display to the user, e.g. array(1 => 'January', 2 => 'February', ...)
+				For a T_ENUM type: An associative array with key reflecting the actual DB value, and value representing the label to display to the user, e.g. array(1 => 'January', 2 => 'February', ...)
+				For a T_BOOLEAN type: This can be used to map 'on' and 'off' to other values than TRUE and FALSE, respectively; if provided, this must be an associative array with keys 'on' and 'off', e.g. array('on' => 'New Car', 'off' => 'Used Car'). Note that the values are sent to the DB, so they need to match the type of the column in the DB (in the example the target field could be a text column). It is recommended to provide custom values only for non-boolean columns.
 			- allow_create: boolean (default: true)
 				If set to false, suppresses the "Create New" button that is displayed next to T_LOOKUP boxes. Note: this setting might conflict with lookup/hide_dropdown setting
 			- lookup: array	(required only if type=T_LOOKUP)

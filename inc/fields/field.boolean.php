@@ -39,6 +39,37 @@
         }
 
         //--------------------------------------------------------------------------------------
+        public function get_display_value($onoff) {
+        //--------------------------------------------------------------------------------------
+            $default = $onoff == self::ON ? l10n('boolean-field.default.yes') : l10n('boolean-field.default.no');
+            if(!$this->has_init_options())
+                return $default;
+            $opt = $this->get_init_options();
+            return isset($opt[$onoff]) ? $opt[$onoff] : $default;
+        }
+
+        //--------------------------------------------------------------------------------------
+        public function get_toggle_status_from_custom_value($db_val) {
+        //--------------------------------------------------------------------------------------
+            foreach($this->field['values'] as $onoff => $custom_val)
+                if($custom_val === $db_val)
+                    return $onoff;
+            return $this->get_default_value(BooleanField::OFF); // not sure whether this fallback makes sense in all cases
+        }
+
+        //--------------------------------------------------------------------------------------
+        public function get_custom_value($onoff) {
+        //--------------------------------------------------------------------------------------
+            return $this->field['values'][$onoff];
+        }
+
+        //--------------------------------------------------------------------------------------
+        public function has_custom_values() {
+        //--------------------------------------------------------------------------------------
+            return isset($this->field['values']);
+        }
+
+        //--------------------------------------------------------------------------------------
         protected function /*string*/ render_internal(&$output_buf) {
         //--------------------------------------------------------------------------------------
             $output_buf .= sprintf(

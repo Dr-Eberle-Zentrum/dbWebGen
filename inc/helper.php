@@ -865,10 +865,14 @@ STR;
 				$val = '';
 		}
 		else if($field['type'] == T_BOOLEAN) {
-			if($val == true)
-				$val = isset($field['options']) && isset($field['options']['on']) ? $field['options']['on'] : l10n('boolean-field.default.yes');
+			require_once 'fields/field.base.php';
+			require_once 'fields/field.boolean.php';
+			$field_obj = FieldFactory::create($_GET['table'], $col);
+			if(($field_obj->has_custom_values() && $field_obj->get_custom_value(BooleanField::ON) == $val)
+			 	|| (!$field_obj->has_custom_values() && $val == true))
+				$val = $field_obj->get_display_value(BooleanField::ON);
 			else
-				$val = isset($field['options']) && isset($field['options']['off']) ? $field['options']['off'] : l10n('boolean-field.default.no');
+				$val = $field_obj->get_display_value(BooleanField::OFF);
 		}
 		else {
 			if($_GET['mode'] == MODE_VIEW) {

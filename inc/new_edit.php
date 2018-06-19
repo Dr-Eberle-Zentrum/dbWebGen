@@ -335,8 +335,15 @@ JS;
 			else
 				$_POST[$col] = $val;
 
-			if(isset($table['fields'][$col]) && $table['fields'][$col]['type'] == T_BOOLEAN)
-				$_POST[$col] = $val ? BooleanField::ON : BooleanField::OFF;
+			if(isset($table['fields'][$col]) && $table['fields'][$col]['type'] == T_BOOLEAN) {
+				require_once 'fields/field.base.php';
+				require_once 'fields/field.boolean.php';
+				$field_obj = FieldFactory::create($table_name, $col, $table['fields'][$col]);
+				if($field_obj->has_custom_values())
+					$_POST[$col] = $field_obj->get_toggle_status_from_custom_value($val);
+				else
+					$_POST[$col] = $val ? BooleanField::ON : BooleanField::OFF;
+			}
 
 			if(is_bool($_POST[$col]))
 				$_POST[$col] = $_POST[$col] ? 1 : 0; // handles the unforunate shit that strval(false) === ''
@@ -674,8 +681,13 @@ JS;
 				$values[] = isset($LOGIN['password_hash_func']) ? $LOGIN['password_hash_func']($_POST[$field_name]) : $_POST[$field_name];
 			}
 			else if($field_info['type'] == T_BOOLEAN) {
+				require_once 'fields/field.base.php';
+				require_once 'fields/field.boolean.php';
+				$field_obj = FieldFactory::create($table_name, $field_name, $field_info);
 				$columns[] = $field_name;
-				$values[] = db_boolean_literal($_POST[$field_name] == BooleanField::ON);
+				$values[] = $field_obj->has_custom_values() ?
+					$field_obj->get_custom_value($_POST[$field_name]) :
+					db_boolean_literal($_POST[$field_name] == BooleanField::ON);
 			}
 			else {
 				$columns[] = $field_name;
