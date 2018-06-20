@@ -93,16 +93,43 @@
                                 case 'OPERATOR_GREATER':
                                     cond_result = (field_val > cond.value);
                                     break;
-                                case 'OPERATOR_GREATER_OR_EQUAL':
+                                case 'OPERATOR_GREATER_OR_EQUALS':
                                     cond_result = (field_val >= cond.value);
                                     break;
                                 case 'OPERATOR_LOWER':
                                     cond_result = (field_val < cond.value);
                                     break;
-                                case 'OPERATOR_LOWER_OR_EQUAL':
+                                case 'OPERATOR_LOWER_OR_EQUALS':
                                     cond_result = (field_val <= cond.value);
                                     break;
                                 default:
+                                    if(cond.operator.startsWith('OPERATOR_ARRAY')) {
+                                        if(field_val === '')
+                                            field_val = "[]"; // need to fake empty array
+                                        var arr;
+                                        try {
+                                            arr = JSON.parse(field_val);
+                                            if(!arr || !$.isArray(arr))
+                                                throw '';
+                                        }
+                                        catch(e) {
+                                            console.error('Array operator "' + cond.operator + '" used when the field is not an array. Use only with CARDINALITY_MULTIPLE type T_LOOKUP fields!');
+                                            break;
+                                        }
+                                        switch(cond.operator) {
+                                            // indexOf does type sensitive search, we do findIndex for type-insensitive array search
+                                            case 'OPERATOR_ARRAY_CONTAINS': cond_result = arr.findIndex(e => e == cond.value) >= 0; break;
+                                            case 'OPERATOR_ARRAY_NOT_CONTAINS': cond_result = arr.findIndex(e => e == cond.value) == -1; break;
+                                            case 'OPERATOR_ARRAY_SIZE_EQUALS': cond_result = arr.length == cond.value; break;
+                                            case 'OPERATOR_ARRAY_SIZE_NOT_EQUALS': cond_result = arr.length != cond.value; break;
+                                            case 'OPERATOR_ARRAY_SIZE_GREATER': cond_result = arr.length > cond.value; break;
+                                            case 'OPERATOR_ARRAY_SIZE_GREATER_OR_EQUALS': cond_result = arr.length >= cond.value; break;
+                                            case 'OPERATOR_ARRAY_SIZE_LOWER': cond_result = arr.length < cond.value; break;
+                                            case 'OPERATOR_ARRAY_SIZE_LOWER_OR_EQUALS': cond_result = arr.length <= cond.value; break;
+                                        }
+                                        break;
+                                    }
+                                    // should not reach this
                                     console.error('Unknown operator "' + cond.operator + '" in conditional expression!');
                                     return cur_result;
                             }

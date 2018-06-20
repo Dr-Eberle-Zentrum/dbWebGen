@@ -415,7 +415,7 @@
 					- field: string
 						The other form field whose value is relevant for the expression
 					- operator: string
-						The operator to compare the other field's value; see the OPERATOR_* defined in constants.php; all of them are possible to use here, except OEPRATOR_AND, OPERATOR_OR, OPERATOR_GROUP_*
+						The operator to compare the other field's value; see the OPERATOR_* defined in constants.php; all of them are possible to use here, except OPERATOR_AND, OPERATOR_OR, OPERATOR_GROUP_*; if any of OPERATOR_ARRAY_* is used, the referenced field must be type T_LOOKUP with CARDINALITY_MULTIPLE, otherwise errors may occur.
 					- value: any
 						The value will be used as right hand operand of the expression. Its type should match the other field's type. For OPERATOR_EQUALS and OPERATOR_NOT_EQUALS, an array can be given here, testing for set membership (OPERATOR_EQUALS) or non-set membership (OPERATOR_NOT_EQUALS)
 				Expressions can be grouped and nested using OPERATOR_GROUP_OPEN (corresponds to an opening parenthesis) and OPERATOR_GROUP_CLOSE (corresponds to closing parenthesis).

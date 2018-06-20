@@ -341,7 +341,7 @@ function init_multilookup_dropdowns() {
                 // add selected item to hidden input
                 var list = parse_multiple_val($(hidden_input).val());
                 list.push(selected_value);
-                $(hidden_input).val(write_multiple_val(list));
+                $(hidden_input).val(write_multiple_val(list)).change();
 
                 // add item line to list of selected items
                 var linked_items = $(list_id);
@@ -573,7 +573,7 @@ function remove_linked_item(e) {
 			break;
 		}
 	}
-	$('input#' + field).val(write_multiple_val(list));
+	$('input#' + field).val(write_multiple_val(list)).change();
 
 	// remove the list item
 	item_div.fadeOut(100, function() { item_div.remove() });
