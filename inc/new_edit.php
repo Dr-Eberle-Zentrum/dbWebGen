@@ -1,4 +1,6 @@
 <?php
+	require_once 'conditional_field.php';
+
 	//------------------------------------------------------------------------------------------
 	function render_form() {
 	//------------------------------------------------------------------------------------------
@@ -194,6 +196,8 @@ HTML;
 		echo implode($conditional_label_scripts);
 
 		echo get_form_validation_code($table_name, $table);
+
+		echo ConditionalFieldDisplay::render($table);
 
 		echo show_completed_form();
 	}

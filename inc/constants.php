@@ -108,4 +108,17 @@
 	define('MODE_FUNC', 'func');
 	define('MODE_MAP_PICKER', 'map_picker');
 	define('MODE_PLUGIN', 'plugin'); // used to build the main page content in an external function
+
+	// operators for conditional display of fields in form:
+	define('OPERATOR_EQUALS', 'OPERATOR_EQUALS');
+	define('OPERATOR_NOT_EQUALS', 'OPERATOR_NOT_EQUALS');
+	define('OPERATOR_BETWEEN', 'OPERATOR_BETWEEN');
+	define('OPERATOR_GREATER', 'OPERATOR_GREATER');
+	define('OPERATOR_GREATER_OR_EQUAL', 'OPERATOR_GREATER_OR_EQUAL');
+	define('OPERATOR_LOWER', 'OPERATOR_LOWER');
+	define('OPERATOR_LOWER_OR_EQUAL', 'OPERATOR_LOWER_OR_EQUAL');
+	define('OPERATOR_GROUP_OPEN', 'OPERATOR_GROUP_OPEN');
+	define('OPERATOR_GROUP_CLOSE', 'OPERATOR_GROUP_CLOSE');
+	define('OPERATOR_AND', 'OPERATOR_AND');
+	define('OPERATOR_OR', 'OPERATOR_OR');
 ?>

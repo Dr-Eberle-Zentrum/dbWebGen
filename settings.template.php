@@ -409,6 +409,28 @@
 						'format' => 'YYYY-MM-DD', // include time, e.g. HH:mm to also enable time picker
 						'showTodayButton' => true
 					), ...
+			- conditional_display: array (optional)
+				This array controls the visibility of this field in the new/edit forms based on the value of other fields. The array consists of conditional expressions, optionally separated by logical operators OPERATOR_AND or OPERATOR_OR
+				Each conditional expression is a hash array that maps the following keys:
+					- field: string
+						The other form field whose value is relevant for the expression
+					- operator: string
+						The operator to compare the other field's value; see the OPERATOR_* defined in constants.php; all of them are possible to use here, except OEPRATOR_AND, OPERATOR_OR, OPERATOR_GROUP_*
+					- value: any
+						The value will be used as right hand operand of the expression. Its type should match the other field's type. For OPERATOR_EQUALS and OPERATOR_NOT_EQUALS, an array can be given here, testing for set membership (OPERATOR_EQUALS) or non-set membership (OPERATOR_NOT_EQUALS)
+				Expressions can be grouped and nested using OPERATOR_GROUP_OPEN (corresponds to an opening parenthesis) and OPERATOR_GROUP_CLOSE (corresponds to closing parenthesis).
+				Consider the following example:
+					'conditional_display' => array(
+						array('field' => 'name', 'operator' => OPERATOR_EQUALS, 'value' => array('Staatsoper', 'Empire State Building')),
+						OPERATOR_OR,
+						OPERATOR_GROUP_OPEN,
+							array('field' => 'location_id', 'operator' => OPERATOR_NOT_EQUALS, 'value' => ''),
+							OPERATOR_AND,
+							array('field' => 'nr', 'operator' => OPERATOR_BETWEEN, 'value' => array(3, 7)),
+						OPERATOR_GROUP_CLOSE
+					)
+					In this example, the field is displayed if the 'name' field either contains any of the values of "Staatsoper" or "Empire State Building", OR when both of the following conditions are met: field 'location_id' is not empty, and field 'nr' contains a number between 3 and 7.
+
 		- sort: array (optional)
 			Used for default sorting of tables in MODE_LIST. Associative array with key := fieldname (or SQL expression) and value := {'asc', 'desc'}
 			e.g. [ 'lastname' => 'asc, 'firstname' => 'asc' ]
