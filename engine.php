@@ -1,19 +1,16 @@
 <?php
-	/*
-		This is the main application engine that renders the user interface and
-		delegates the processing of every major action.
-	*/
+	// This is the main application engine that renders the user interface and delegates the processing of every major action.
 	mb_internal_encoding('UTF-8');
 	mb_http_output('UTF-8');
-
-	// append scripts using add_javascript() and add_stylesheet()
-	$META_INCLUDES = array();
 
 	// DEFINE LOCAL AND SERVED PATHS
 	if(!defined('ENGINE_PATH'))
 		die('This is the engine, you put your app into another directory and define ENGINE_PATH to point here. Note: ENGINE_PATH must end with a slash. See the README file for details.');
 	if(!defined('ENGINE_PATH_LOCAL')) define('ENGINE_PATH_LOCAL', ENGINE_PATH);
 	define('ENGINE_PATH_HTTP', ENGINE_PATH);
+
+	if(!file_exists('settings.php'))
+		die('You need to create a settings.php file, which contains the configuration of this dbWebGen instance, in your app directory. Look up settings.template.php in the dbWebGen directory for instructions, or run the <a href="' . ENGINE_PATH . 'settings.generator.php">Settings Generator</a> on your database to initialize settings.php.');
 
 	// SET CUSTOM TIMEZONE
 	if(isset($APP['timezone']))
@@ -40,6 +37,9 @@
 	require_once ENGINE_PATH_LOCAL . 'inc/login.php';
 	require_once ENGINE_PATH_LOCAL . 'inc/page.php';
 	require_once 'settings.php';
+
+	// for appending dependencies to the meta headers using add_javascript() and add_stylesheet()
+	$META_INCLUDES = array();
 
 	// LOAD PLUGINS
 	if(isset($APP['plugins']))
@@ -102,7 +102,7 @@
 		echo_stylesheet(ENGINE_PATH_HTTP . 'node_modules/bootstrap-toggle/css/bootstrap-toggle.min.css');
 		echo_stylesheet(ENGINE_PATH_HTTP . 'inc/styles.css', true);
 	?>
-	<!--META_INCLUDES_GO_HERE--> <!-- DO NOT EDIT OR REMOVE THIS LINE !!! -->
+	<!--META_INCLUDES_GO_HERE-->
 </head>
 <body>
 	<?php

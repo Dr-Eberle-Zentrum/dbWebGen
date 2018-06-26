@@ -94,7 +94,7 @@
 		$cache_control = false // only set this to true for local relative paths
 	) {
 	//------------------------------------------------------------------------------------------
-		add_meta_include("  <script type='text/javascript' src='%s'></script>", $src, $cache_control, true);
+		add_meta_include("  <script type='text/javascript' src='%s'></script>\n", $src, $cache_control, true);
 	}
 
 	//------------------------------------------------------------------------------------------
@@ -103,7 +103,7 @@
 		$cache_control = false // only set this to true for local relative paths
 	) {
 	//------------------------------------------------------------------------------------------
-		add_meta_include("  <link rel='stylesheet' href='%s' />", $src, $cache_control, true);
+		add_meta_include("  <link rel='stylesheet' href='%s' />\n", $src, $cache_control, true);
 	}
 
 	//------------------------------------------------------------------------------------------
