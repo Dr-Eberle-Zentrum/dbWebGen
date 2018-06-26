@@ -1,9 +1,9 @@
-# dbWebGen - Database Web Generator for PHP
+# dbWebGen - Database Web App Generator for PHP
 This PHP application automatically generates a responsive web app on top of your relational database. The app allows users to
 * Create and edit records via web forms, taking into account foreign keys and other constraints
 * View stored records along with related records from other tables
-* Browse and filter records in a table
-* Query the database, visualize the results, and share the visualizations. Currenty the engine offers various visualizations like tables, bar charts, sankeys, timelines, graphs/networks, geomaps and others.
+* Browse, search, and filter records in tables
+* Query the database, visualize the results, and share the visualizations. Currenty the engine offers various visualizations like tables, bar charts, leaflet maps, sankeys, timelines, graphs/networks, social network analysis, geomaps and others
 
 Developers may add custom functionality and extensions to the engine through hook functions in plugins, and admins may exploit an [extensive array of settings](settings.template.php) controlling the engine.
 
@@ -34,6 +34,22 @@ Developers may add custom functionality and extensions to the engine through hoo
 
 ## Example Database and App
 An example app using this engine can be seen in the [dbWebGen-demo](https://github.com/eScienceCenter/dbWebGen-demo) repository
+
+## Selected Features
+* Fully localized in English and German; other languages can be added easily
+* Access control via users table in database, custom authentication functions, or static user arrays
+* Paginated, searchable, sortable viewing of table contents
+* Viewing full details of single records
+* Single-page or tabbed record editing forms
+* Inline creation and editing of records referenced via foreign keys
+* Conditional display and labeling of record fields in editing forms
+* Grouped field display in editing forms (e.g. when date components are stored in separate columns)
+* Hyperlinked display of records linked via foreign keys
+* Record merging wizard
+* Global and table-local search, allowing custom search transformations (e.g. removing diacritics, unaccenting, etc.)
+* Custom menus, pages, and plugins with access to dbWebGen global objects, settings, and variables
+* Input controls for most important field types, e.g. dropdown boxes, date pickers, geomap pickers, boolean toggles, text boxes, file uploads
+* Custom JavaScript form validation
 
 ## Limitations
 The major limitation currently is that the table settings for composite primary keys (e.g. in N:M-tables where each primary key part is a foreign key) currently only support a maximum of two primary key columns per table. If a composite primary key in some table in your DB consists of more than two columns, the remedy would be to create an artificial single-column primary key with auto-increment value for such tables.
