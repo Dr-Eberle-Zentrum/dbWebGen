@@ -1,0 +1,48 @@
+{
+    "title": "Database Connection",
+    "description": "Provide here the connection details to connect to your database.",
+    "type": "object",
+    "properties": {
+        "type": {
+            "title": "Type",
+            "type": "string",
+            "required": true,
+            "description": "Select the database type",
+            "enum": [ "postgresql", "mysql" ],
+            "default": "postgresql"
+        },
+        "host": {
+            "title": "Host",
+            "type": "string",
+            "description": "Database server's IP address or hostname",
+            "required": true,
+            "default": "localhost"
+        },
+        "port": {
+            "title": "Port",
+            "type": "integer",
+            "description": "Port where the database server is listening for connections",
+            "required": true,
+            "default": 5432
+        },
+        "user": {
+            "title": "User Name",
+            "type": "string",
+            "description": "Database user name",
+            "required": true,
+            "default": "postgres"
+        },
+        "pass": {
+            "title": "Password",
+            "type": "string",
+            "description": "Database user's password",
+            "required": true
+        },
+        "db": {
+            "title": "Database",
+            "type": "string",
+            "description": "Name of database to connect to",
+            "required": true
+        }
+    }
+}
