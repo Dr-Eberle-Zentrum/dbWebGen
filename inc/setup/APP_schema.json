@@ -1,0 +1,245 @@
+{
+	"title": "App Settings",
+    "description": "The are the general settings that control the behavior of the engine.",
+	"type": "object",
+	"properties": {
+		"title": {
+			"title": "App Title",
+			"type": "string",
+			"description": "App title as displayed in header menu. If the 'Page Title' setting is not provided, this is also used as HTML <title> for the page.",
+			"required": true,
+			"minLength": 1
+		},
+		"page_title": {
+			"title": "Page Title",
+			"type": "string",
+			"description": "[optional] What to put in the HTML title element. If not provided, the 'App Title' setting is used.",
+			"required": false
+		},
+		"bootstrap_css": {
+			"title": "Bootstrap CSS",
+			"type": "string",
+			"description": "[optional] Specify a bootstrap CSS theme, if you do not want to use the default theme of Bootstrap v3.3.6",
+			"required": false
+		},
+		"page_icon": {
+			"title": "Page Icon",
+			"type": "string",
+			"description": "[optional] Specify a path to an web page icon (aka 'favicon').",
+			"required": false
+		},
+		"plugins": {
+			"title": "Plugins",
+			"format": "table",
+			"type": "array",
+			"description": "[optional] Specify the absolute or relative paths to custom PHP files that will be included using require_once(). These plugins can contain functions that can be referenced anywhere in this file where external procedures can be provided.",
+			"required": false,
+			"items": {
+				"title": "Plugin",
+				"type": "string",
+                "minLength": 1,
+                "required": true
+			}
+		},
+		"cache_dir": {
+			"title": "Cache Directory",
+			"type": "string",
+			"description": "[optional] Path to the directory where this app and its plugins can store their cache files. The path must not end with a trailing slash. The process that runs the PHP scripts on your server must have read and write access to this directory. If this setting is undefined, there will be no caching.",
+			"required": false
+		},
+		"page_size": {
+			"title": "Pagination: Page Size",
+			"type": "integer",
+			"description": "Pagination setting: max. number of items per page when listing table contents.",
+			"required": true,
+			"default": 10
+		},
+		"pages_prevnext": {
+			"title": "Pagination: Jump Limit",
+			"type": "integer",
+			"description": "Pagination setting: max. number of pages to display left and right to the current one for quick navigation.",
+			"required": true,
+			"default": 3
+		},
+		"max_text_len": {
+			"title": "Threshold for Text Clipping",
+			"type": "integer",
+			"description": "Maximum number of characters to display in table view before text content in cells gets clipped.",
+			"required": true,
+			"default": 200
+		},
+		"mainmenu_tables_autosort": {
+			"title": "Automatically Sort Main Menus?",
+			"type": "boolean",
+			"description": "Automatically sort the main menu entries alphabetically?",
+			"required": true,
+			"default": true
+		},
+        "view_display_null_fields": {
+			"title": "Display NULL Fields?",
+			"type": "boolean",
+			"description": "Specifies whether fields that have a NULL value should be displayed (true) or omitted (false) when viewing record details?",
+			"required": true,
+			"default": false
+		},
+        "search_lookup_resolve": {
+			"title": "Resolve Foreign Keys When Searching?",
+			"type": "boolean",
+			"description": "When searching a table, this specifies whether foreign keys should be resolved using their field's Display Expression setting, instead of including the mostly meaningless numeric foreign key values in the search.",
+			"required": true,
+			"default": true
+		},
+		"search_string_transformation": {
+			"title": "Search Term Transformation",
+			"type": "string",
+			"description": "Specify here an SQL expression to be used to define what transformation should happen both with the search term and the field before they are compared with each other during a search operation. The placeholder for the actual value is %s. This setting will typically be something like <code>lower(%s)</code>, or if languages with non-latin characters are used <code>unaccent(lower(%s))</code>. The default value is <code>%s</code>",
+			"required": true,
+            "default": "%s"
+		},
+		"null_label": {
+			"title": "NULL Label",
+			"type": "string",
+			"description": "Label for the checkbox in a new/edit record form that allows the user to explicitly set a NULL value for a non-required field. The default is <code>NULL</code>",
+			"required": true,
+            "default": "NULL"
+		},
+        "render_main_page_proc": {
+			"title": "Function for Rendering the Homepage",
+			"type": "string",
+			"description": "[optional] If specified, this is the name of a function to be called to render the main page after login. The function has no arguments.",
+			"required": false
+		},
+        "menu_complete_proc": {
+			"title": "Function Called When Main Menu Complete",
+			"type": "string",
+			"description": "[optional] If specified, this is the name of a function to be called when the engine has built the core main menu. This function can modify and extend the menu. The function has one parameter: <code>&$menu</code>, an associative array defining the main menu in the header of the page.",
+			"required": false
+		},
+        "custom_related_list_proc": {
+			"title": "Function To Extend Related Records Dropdown",
+			"type": "string",
+			"description": "[optional] If specified, function to call for extending the \"List Related\" dropdown in record view mode. This list of related records uses the search function to produce a list of records in a foreign table referencing the current one.<br>Function parameters:<ul><li><code>$table_name</code>: name of the current table</li><li><code>const &$table</code>: table settings - not to be modified!</li><li><code>const &$pk_vals</code>: hash with primary key values of currently viewed record</li><li><code>&$rel_list</code>: current array of related list links. This array can be extended with hash arrays containing values for the following keys: <code>table_name</code> (name of the related table), <code>field_name</code> (name of the field to search in the related table), <code>display_label</code> (item label to display in the dropdown menu)</li></ul>",
+			"required": false
+		},
+        "preprocess_html_func": {
+			"title": "Function For Preprocessing HTML",
+			"type": "string",
+			"description": "[optional] If specified, this is the name of a function to be called when to preprocess any HTML output representic record values before the HTML is written to the output buffer. For instance, this can be used to put a right-to-left reading <code>span</code> around the text for Arabic output. Argument: <code>$html</code> (string with current text); returns the preprocessed string. Note: providing this function will slow down record rendering.",
+			"required": false
+		},
+		"additional_callable_plugin_functions": {
+			"title": "Callable Plugin Functions",
+			"format": "table",
+			"type": "array",
+			"description": "[optional] List of function names that are allowed to be called via MODE_PLUGIN.",
+			"required": false,
+			"items": {
+				"title": "Function Name",
+				"type": "string",
+                "minLength": 1,
+                "required": true
+			}
+		},
+        "querypage_stored_queries_table": {
+			"title": "Table for Stored Queries",
+			"type": "string",
+			"description": "[optional] If this is set, users are allowed to store and share queries via the database in MODE_QUERY. This setting specifies the name of the table that will be created for this purpose in the database. If this is not set, users will not be able to store/share queries.",
+			"required": false
+		},
+        "querypage_permissions_func": {
+			"title": "Permission Function for Stored Queries",
+			"type": "string",
+			"description": "[optional] Name of a function that returns a boolean value indicating whether the current user is allowed to interact with the MODE_QUERY page.",
+			"required": false
+		},
+        "register_custom_chart_type_func": {
+			"title": "Function Registering Custom Chart Types",
+			"type": "string",
+			"description": "[optional] Name of a function that is called when the engine asks for custom query visualizations in MODE_QUERY. Typically this function will be in a plugin. In this function the <code>QueryPage::register_custom_chart_type()</code> function should be called for each custom chart type with three parameters:<ul><li><code>string $handle</code>: used for 2 purposes: filename must be <code>chart.$handle.php</code> and class name must be <code>dbWebGenChart_$handle</code></li><li><code>string $label</code>: to be displayed in the dropdown box in the query editor</li><li><code>string $directory</code> (optional, default = <code>''</code>): location of the file relative to the app directory</li></ul>",
+			"required": false
+		},
+        "preprocess_func": {
+			"title": "Preprocessing Function",
+			"type": "string",
+			"description": "[optional] Name of a function that will be called before any processing is performed by the engine. Check <code>engine.php</code> about available includes at this point.",
+			"required": false
+		},
+		"list_mincolwidth_max": {
+			"title": "Maximum Min-Width of Cell in Records Table",
+			"type": "integer",
+			"description": "When records are rendered as a table, the column width is determined by cell content and set using CSS <code>min-width</code>. Specify here the maximum <code>min-width</code> in pixels.",
+			"required": true,
+			"default": 300
+		},
+        "list_mincolwidth_pxperchar": {
+			"title": "Pixel Per Char for Calculating Cell Width",
+			"type": "integer",
+			"description": "When records are rendered as a table, the column width is determined by cell content and set using CSS <code>min-width</code>. Specify here the number of pixels used to calculate appropriate cell width distribution in the table.",
+			"required": true,
+			"default": 6
+		},
+        "lookup_allow_edit_default": {
+			"title": "Allowed to Edit Linked Record by Default?",
+			"type": "boolean",
+			"description": "Determines the default value for the field setting <code>Lookup > Allow Editing of Linked Record</code> for CARDINALITY_MULTIPLE lookup fields.",
+			"required": true,
+			"default": false
+		},
+        "global_search": {
+            "title": "Global Search Settings",
+            "type": "object",
+            "description": "[optional] If this setting is provided, global full text search in all configured tables is enabled. Settings indicated with an asterisk (*) can be overriden in table and even field settings by providing a custom a Global Search Setting object there.",
+            "required": false,
+            "properties": {
+                "include_table": {
+                    "title": "Include Table by Default?",
+                    "type": "boolean",
+                    "description": "Whether or not to include each table by default in the global search. If this is set to <code>false</code>, global search will only work if this is overriden with <code>true</code> in at least one table.",
+                    "required": true,
+                    "default": true
+                },
+                "min_search_len": {
+                    "title": "Minimum Search Term Length",
+                    "type": "integer",
+                    "description": "Minimum number of characters required in the search term.",
+                    "required": true,
+                    "default": 3
+                },
+                "max_preview_results_per_table": {
+                    "title": "Max. Preview Results Per Table in Search Result Overview",
+                    "type": "integer",
+                    "description": "Number of results to display in the overall preview.",
+                    "required": true,
+                    "default": 10
+                },
+                "max_detail_results": {
+                    "title": "Max. Preview Results in Table Search Result View",
+                    "type": "integer",
+                    "description": "Maximum number of results to display in detailed table view.",
+                    "required": true,
+                    "default": 100
+                },
+                "transliterator_rules": {
+                    "title": "Transliterator Rules",
+                    "type": "string",
+                    "description": "Rules to be used for PHP's <code>Transliterator::createFromRules</code> factory method.",
+                    "required": true,
+                    "default": ":: Any-Latin; :: Latin-ASCII;"
+                },
+                "cache_ttl": {
+                    "title": "Cache Time-To-Live",
+                    "type": "integer",
+                    "description": "Number of seconds to cache each search result. Note that this setting is only effective if the app's Cache Directory setting is set and valid. Set this to 0 to disable caching of global search results.",
+                    "required": true,
+                    "default": 3600
+                },
+                "search_string_transformation": {
+                    "title": "Search Term Transformation",
+                    "type": "string",
+                    "description": "[optional] Possibility to override the app's Search Term Transformation setting.",
+                    "required": false
+                }
+            }
+        }
+	}
+}
