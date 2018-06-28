@@ -1,19 +1,13 @@
 {
     "title": "Tables Settings",
-    "description": "For each table that you want users be able to view or edit in the app, configure the relevant fields.",
-    "type": "array",
-    "items": {
-        "type": "object",
+    "description": "For each table that you want users be able to view or edit in the app, add a property mapping the table name to a settings object",
+    "type": "object",
+    "description": "Provide settings for the table",
+    "additionalProperties": {
         "title": "Table",
-        "description": "Provide settings for the table",
+        "headerTemplate": "{{self.display_name}}",
+        "type": "object",
         "properties": {
-            "table_name": {
-                "title": "Table Name",
-                "description": "Name of the database table",
-                "type": "string",
-                "minLength": 1,
-                "required": true
-            },
             "display_name": {
                 "title": "Display Label",
                 "description": "Label used when displaying the table",
@@ -104,96 +98,69 @@
             },
             "sort": {
                 "title": "Default Sorting",
-                "description": "Used for default sorting of the table in list mode. Provide an ordered array of columns with sort information",
-                "type": "array",
-                "required": false,
-                "items": {
-                    "title": "Sort Column",
-                    "type": "object",
-                    "properties": {
-                        "column_name": {
-                            "title": "Column Name",
-                            "description": "Name of the column to sort",
-                            "type": "string",
-                            "minLength": 1,
-                            "required": true
-                        },
-                        "sort_dir": {
-                            "title": "Order",
-                            "description": "Specify the order as ascending (<code>asc</code>) or descending (<code>desc</code>)",
-                            "type": "string",
-                            "enum": [ "asc", "desc" ],
-                            "required": true
-                        }
-                    }
+                "description": "Used for default sorting of the table in list mode. Provide an object mapping a column name to a sort direction",
+                "type": "object",
+                "additionalProperties": {
+                    "description": "Specify the order as ascending (<code>asc</code>) or descending (<code>desc</code>)",
+                    "type": "string",
+                    "enum": [ "asc", "desc" ],
+                    "required": true
                 }
             },
             "hooks": {
                 "title": "Insert/Update Hooks",
-                "description": "Functions to call before/after certain events. For <code>after_*</code> hooks, the arguments are: (1) table name (2) table settings and (3) primary key/value array; for <code>before_*</code> hooks the arguments are (1) table name (2) table settings (3) column names array reference, (4) column values array reference",
-                "type": "array",
-                "required": false,
-                "items": {
-                    "title": "Hook Function",
-                    "type": "object",
-                    "properties": {
-                        "event": {
-                            "title": "Event",
-                            "description": "Event for which a hook function exists",
-                            "type": "string",
-                            "enum": [ "after_insert", "after_update", "before_insert", "before_update" ],
-                            "required": true
-                        },
-                        "function": {
-                            "title": "Function",
-                            "description": "Name of the function to invoke for the event. ",
-                            "type": "string",
-                            "required": true,
-                            "minLength": 1
-                        }
+                "description": "This object maps events to function names; Functions to call before/after certain events. For after hooks, the arguments are: (1) table name (2) table settings and (3) primary key/value array; for before hooks the arguments are (1) table name (2) table settings (3) column names array reference, (4) column values array reference",
+                "type": "object",
+                "properties": {
+                    "after_insert": {
+                        "title": "After Insert Hook Function",
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "after_update": {
+                        "title": "After Update Hook Function",
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "before_insert": {
+                        "title": "Before Insert Hook Function",
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "before_update": {
+                        "title": "Before Update Hook Function",
+                        "type": "string",
+                        "minLength": 1
                     }
                 }
             },
             "additional_steps": {
                 "title": "Linkage Shortcuts",
-                "description": "Linkage shortcuts offered to be performed after a new record was created or a record is being viewed to link this record with others via separate linkage tables",
-                "type": "array",
+                "description": "Linkage shortcuts offered to be performed after a new record was created or a record is being viewed to link this record with others via separate linkage tables. This object maps table names to shortcut settings",
+                "type": "object",
                 "required": false,
-                "items": {
+                "additionalProperties": {
                     "title": "Linkage Shortcut",
+                    "headerTemplate": "Shortcut \"{{self.label}}\"",
                     "type": "object",
                     "properties": {
-                        "table_name": {
-                            "title": "Table Name",
-                            "description": "Name of the Linked Table",
+                        "label": {
+                            "title": "Label",
+                            "description": "Label to be displayed in the shortcuts dropdown menu",
                             "type": "string",
                             "minLength": 1,
                             "required": true
                         },
-                        "shortcut": {
-                            "title": "Shortcut Details",
-                            "description": "Display and linkage details of the shortcut",
-                            "type": "object",
-                            "required": true,
-                            "properties": {
-                                "label": {
-                                    "title": "Label",
-                                    "description": "Label to be displayed in the shortcuts dropdown menu",
-                                    "type": "string",
-                                    "minLength": 1,
-                                    "required": true
-                                },
-                                "foreign_key": {
-                                    "title": "Foreign Key",
-                                    "description": "Foreign key field in this database table",
-                                    "type": "string",
-                                    "minLength": 1,
-                                    "required": true
-                                }
-                            }
+                        "foreign_key": {
+                            "title": "Foreign Key",
+                            "description": "Foreign key field in this database table",
+                            "type": "string",
+                            "minLength": 1,
+                            "required": true
                         }
                     }
                 }
+
             },
             "custom_actions": {
                 "title": "Custom Record Actions",
@@ -323,22 +290,15 @@
             },
             "fields": {
                 "title": "Fields",
-                "description": "Define the settings for each relevant field in this table",
-                "type": "array",
-                "minItems": 1,
+                "description": "Define the settings for each relevant field in this table by mapping field names to settings objects",
+                "type": "object",
                 "required": true,
-                "items": {
+                "additionalProperties": {
                     "type": "object",
                     "title": "Field",
-                    "headerTemplate": "{{self.field_name}}",
-                    "required": [ "field_name", "label", "type"],
+                    "headerTemplate": "{{self.label}}",
+                    "required": [ "label", "type"],
                     "properties": {
-                        "field_name" : {
-                            "title": "Name",
-                            "description": "Name of the field in the database",
-                            "type": "string",
-                            "minLength": 1
-                        },
                         "label": {
                             "title": "Label",
                             "description": "Display label for this field",
