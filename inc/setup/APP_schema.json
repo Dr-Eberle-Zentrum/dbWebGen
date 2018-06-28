@@ -179,7 +179,7 @@
 			"default": 6
 		},
         "lookup_allow_edit_default": {
-			"title": "Allowed to Edit Linked Record by Default?",
+			"title": "Allow Editing Linked Records by Default?",
 			"type": "boolean",
 			"description": "Determines the default value for the field setting <code>Lookup > Allow Editing of Linked Record</code> for CARDINALITY_MULTIPLE lookup fields.",
 			"required": true,
