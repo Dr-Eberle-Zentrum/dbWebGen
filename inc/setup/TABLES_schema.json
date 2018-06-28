@@ -263,13 +263,66 @@
                 }
             },
             "form_tabs": {
-
+                "title": "Tabulated Forms",
+                "description": "If tabbed record editing and viewing form is desired, these settings need to be filled.",
+                "type": "object",
+                "required": false,
+                "properties": {
+                    "tabs": {
+                        "title": "Tabs",
+                        "description": "Specify any number of tabs and their details",
+                        "type": "array",
+                        "minimum": 1,
+                        "required": true,
+                        "items": {
+                            "title": "Tab",
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "title": "ID",
+                                    "description": "Identifier of the tab, to be used in the 'tab' setting of the table's fields.",
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "required": true
+                                },
+                                "label": {
+                                    "title": "Label",
+                                    "description": "Label to display on the tab",
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "required": true
+                                },
+                                "intro": {
+                                    "title": "Intro Text",
+                                    "description": "If specified, any information (HTML encoded) that should be displayed at the top of the form tab",
+                                    "type": "string",
+                                    "required": false
+                                }
+                            }
+                        }
+                    },
+                    "restrict_modes": {
+                        "title": "Restricted Views",
+                        "description": "By default, the tabs are shown on <code>new</code>, <code>edit</code>, and <code>view</code> forms. You may restrict the forms here",
+                        "type": "array",
+                        "uniqueItems": true,
+                        "required": false,
+                        "items": {
+                            "title": "View",
+                            "type": "string",
+                            "enum": [ "edit",  "new", "view" ]
+                        }
+                    }
+                }
             },
             "validation_func": {
-
+                "title": "Form Validation Function",
+                "description": "Allows naming a validation function that is invoked upon submission of the <code>new</code> and <code>edit</code> forms. This function needs to be implemented in JavaScript; the file in which it is implemented needs to be included via the <code>add_javascript()</code> helper function; the best place to do this in most circumstances is the <i>Preprocessing Function</i> defined in <i>App Settings</i>.<br>The function is called with three arguments: <ul><li><code>table_name</code>: string (the current table)</li><li><code>table_settings</code>: object (a JS object representing the table's settings from settings.php)</li><li><code>values</code>: object (for each column this object maps the column name to the value entered in the form)</li></ul>Expected return values are: if there are validation errors in the form, the function must return a JSON object that maps each erroneous form field to an error message to be displayed next to the form field; if there are no errors in the form, the function must return <code>null</code>",
+                "type": "string",
+                "required": false
             },
             "fields": {
-
+                
             }
         }
     }
