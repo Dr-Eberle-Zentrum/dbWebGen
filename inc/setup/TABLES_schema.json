@@ -78,7 +78,7 @@
                         "type": "array",
                         "format": "table",
                         "uniqueItems": true,
-                        "minimum": 1,
+                        "minItems": 1,
                         "required": true,
                         "items": {
                             "title": "Primary Key Column",
@@ -272,7 +272,7 @@
                         "title": "Tabs",
                         "description": "Specify any number of tabs and their details",
                         "type": "array",
-                        "minimum": 1,
+                        "minItems": 1,
                         "required": true,
                         "items": {
                             "title": "Tab",
@@ -322,7 +322,407 @@
                 "required": false
             },
             "fields": {
-                
+                "title": "Fields",
+                "description": "Define the settings for each relevant field in this table",
+                "type": "array",
+                "minItems": 1,
+                "required": true,
+                "items": {
+                    "type": "object",
+                    "title": "Field",
+                    "headerTemplate": "{{self.field_name}}",
+                    "required": [ "field_name", "label", "type"],
+                    "properties": {
+                        "field_name" : {
+                            "title": "Name",
+                            "description": "Name of the field in the database",
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "label": {
+                            "title": "Label",
+                            "description": "Display label for this field",
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "type": {
+                            "title": "Type",
+                            "description": "Type of the field. Determines the control used in editing form",
+                            "type": "string",
+                            "enum": [ "T_TextLine", "T_Number", "T_TextArea", "T_Enum", "T_ForeignKeyLookup", "T_Password", "T_FileUpload", "T_PostgisGeometry", "T_Boolean" ]
+                        },
+                        "len": {
+                            "title": "Maximum Length",
+                            "description": "Maximal number of characters that the input control can hold. Relevant only for <code>T_TextLine</code>, <code>T_TextArea</code>, and <code>T_Password</code>. If this is set, it can be used in combination with the <i>Display Remaining Character Count</i> setting",
+                            "type": "integer",
+                            "minimum": 1
+                        },
+                        "display_remaining_chars": {
+                            "title": "Display Remaining Character Count?",
+                            "description": "If there is a character limit (see <i>Maximum Length</i> setting) and this setting is <code>true</code>, the remaining character count will be displayed once the user focuses on the control.",
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "required": {
+                            "title": "Required Field?",
+                            "description": "Whether or not a value is required for this field (i.e., there is a <code>NOT NULL</code> constraint)",
+                            "type": "boolean",
+                            "required": true,
+                            "default": false
+                        },
+                        "editable": {
+                            "title": "Editable Field?",
+                            "description": "Whether or not this field should be offered in the new/edit forms. For an automatically generated primary key field or some computed field, this should be set to <code>false</code>. Even with then, the field will be displayed in <code>list</code> and <code>view</code> modes. If it is desired to completely hide this field from the user, the field itself should not be defined as a field at all.",
+                            "type": "boolean",
+                            "default": true
+                        },
+                        "width_columns": {
+                            "title": "Width",
+                            "description": "Specifies the number of columns in the bootstrap grid occupied by the input control. If this is not set, the width is calculated automatically for T_TextLine, otherwise the default is 7. Value must be between 1 and 9",
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 9
+                        },
+                        "height_rows": {
+                            "title": "Textarea Rows",
+                            "description": "Specifies the number of rows to be offered by the input control. Only applicable to <code>T_TextArea</code> fields",
+                            "type": "integer",
+                            "minimum": 1,
+                            "default": 5
+                        },
+                        "resizeable": {
+                            "title": "Textarea Resizable?",
+                            "description": "Controls whether the text area control is vertically resizeable. Only applicable to <code>T_TextArea</code> fields.",
+                            "type": "boolean",
+                            "default": true
+                        },
+                        "help": {
+                            "title": "Help Text",
+                            "description": "Help text to display about this field in the new/edit forms when the user clicks on the help icon. Can contain HTML.",
+                            "type": "string"
+                        },
+                        "show_setnull": {
+                            "title": "Show Set Null Checkbox?",
+                            "description": "Whether or not to show a checkbox allowing to explicitly set a <code>NULL</code> value for a non-required field (applies to input and textarea fields). Even if the checkbox is not shown, it is invisibly there and automatically checked/unchecked upon user input.",
+                            "type": "boolean",
+                            "default": false
+                        },
+                        "default": {
+                            "title": "Default Value",
+                            "description": "Default value to set for the field's control when creating a new record. Occurrences of <code>%SESSION_USER%</code> in this string are replace with the current user's ID. For a <code>T_Boolean</code> field, this can be either <code>'on'</code> (=true) or <code>'off'</code> (=false)",
+                            "type": "string"
+                        },
+                        "options": {
+                            "title": "Options",
+                            "description": "Currently this is only relevant for <code>T_Boolean</code> fields. The properties you define here are converted to a JSON object to initizalize the on/off toggle. All initialization options listed under <a href='http://www.bootstraptoggle.com/'>http://www.bootstraptoggle.com/</a> can be provided. You should at least set the labels for 'on' and 'off' status of the toggle according to the purpose of this boolean field. If no options are provided here, the default labels for 'on' and 'off' states of the toggle are based on the localized strings <code>boolean-field.default.yes</code> and <code>boolean-field.default.no</code>, respectively.",
+                            "type": "object"
+                        },
+                        "values": {
+                            "title": "Values",
+                            "description": "Define values by adding properties to this setting. <ul><li>For <code>T_Enum</code> type: An object with properties reflecting the actual DB value, and value representing the label to display to the user, e.g. '1': 'January', '2': 'February', ...</li><li>For a <code>T_Boolean</code> type: This can be used to map 'on' and 'off' to other values than <code>true</code> and <code>false</code>, respectively; if provided, this must be an object with properties 'on' and 'off', e.g. 'on': 'New Car', 'off': 'Used Car'. Note that the values are sent to the DB, so they need to match the type of the column in the DB (in the example the target field could be a text column). It is recommended to provide custom values only for non-boolean columns.",
+                            "type": "object"
+                        },
+                        "allow_create": {
+                            "title": "Allow Creating Linked Records?",
+                            "description": "If set to <code>false</code>, it suppresses the \"Create New\" button that is displayed next to lookup boxes. Note: this setting might conflict with the <i>Lookup</i> seetting <i>Hide Dropdown</i>",
+                            "type": "boolean",
+                            "default": true
+                        },
+                        "lookup": {
+                            "title": "Lookup",
+                            "description": "Required for <code>T_Lookup</code> fields. Details of the foreign key relationship with another table to support filling of foreign key dropdown boxes",
+                            "type": "object",
+                            "required": [ "cardinality", "table", "field", "display" ],
+                            "properties": {
+                                "cardinality": {
+                                    "title": "Cardinality",
+                                	"description": "Whether this field is a foreign key in this very table (<code>CARDINALTY_SINGLE</code>), reflecting a 1:n relationship, or whether this relationship is actually represented in a separate table reflecting an m:n relationship (<code>CARDINALITY_MULTIPLE</code>). In the latter case, the <i>Linkage</i> settings must be provided",
+                                	"type": "string",
+                                    "enum": ["CARDINALITY_SINGLE", "CARDINALITY_MULTIPLE"]
+                                },
+                                "table": {
+                                    "title": "Table",
+                                	"description": "Name of the table referenced by this foreign key field",
+                                	"type": "string"
+                                },
+                                "field": {
+                                    "title": "Field",
+                                	"description": "Field in the table referenced by this foreign key field (typically the primary key of the other table)",
+                                	"type": "string"
+                                },
+                                "display": {
+                                    "title": "Display Expression",
+                                	"description": "Since the foreign key is typically a numeric key, this setting can be used to define what to display to the user. Can be either a string literal representing a field name in the referenced table; or it can be an object specifying the columns used in an expression.",
+                                	"oneOf": [
+                                        {
+                                            "type": "string",
+                                            "title": "Field Name",
+                                            "description": "Specify the name of the field in the lookup table to be displayed in the dropdown box"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "title": "Expression",
+                                            "description": "Provide columns and an expression to display to the user.",
+                                            "required": ["columns", "expression"],
+                                            "properties": {
+                                                "columns": {
+                                                    "type": "array",
+                                                    "title": "Columns",
+                                                    "format": "table",
+                                                    "description": "Specify the columns used in the <i>Expression</i>",
+                                                    "minItems": 1,
+                                                    "items": {
+                                                        "type": "string",
+                                                        "title": "Column",
+                                                        "minLength": 1
+                                                    }
+                                                },
+                                                "expression": {
+                                                    "type": "string",
+                                                    "title": "SQL Expression",
+                                                    "description": "The SQL expression may refer to indexes in specified in the <i>Columns</i> by their index as <code>%1</code>, <code>%2</code>, etc.",
+                                                    "minLength": 1
+                                                }
+                                            }
+                                        }
+                                    ]
+                                },
+                                "sort": {
+                                    "title": "Sort By Display Expression",
+                                	"description": "In case of multiple lookup values, this setting determines whether the linked records are sorted using the <i>Display Expression</i>. Only relevant for <code>CARDINALITY_MULTIPLE</code>.",
+                                	"type": "boolean",
+                                    "default": true
+                                },
+                                "default": {
+                                    "title": "Default Value",
+                                	"description": "Default option for this foreign key reference to pick from the dropdown when creating a new record. This type should be automatically convertible to text"
+                                },
+                                "related_label": {
+                                    "title": "Label in Referenced Records",
+                                	"description": "Text to display in the \"List Related\" dropdown when viewing any record of the table referenced by this field (e.g. \"Cars Sold By This Agent\"). If missing, the label will be constructed automatically from the table's <i>Display Name</i> and the field's <i>Label</i>, (e.g. \"Cars Sales (As Agent)\")",
+                                	"type": "string"
+                                },
+                                "async": {
+                                    "title": "Asnychronous Fetching of Matching Records",
+                                	"description": "When provided, specifies how to dynamically fetch records into the dropdown box based on keyboard input. This is handy if the linked table holds many records",
+                                	"type": "object",
+                                    "required": ["min_input_len", "delay"],
+                                    "properties": {
+                                        "min_input_len": {
+                                            "title": "Minimum Input Length",
+                                        	"description": "Minimum number of characters the user has to type before matching records are fetched",
+                                        	"type": "integer"
+                                        },
+                                        "delay": {
+                                            "title": "Delay",
+                                        	"description": "Number of milliseconds to wait before sending an Ajax request after a user keystroke",
+                                        	"type": "integer",
+                                            "default": 0,
+                                            "minimum": 0
+                                        },
+                                        "max_results": {
+                                            "title": "Maximum Number of Results to Fetch",
+                                        	"description": "If set, the number of results fetched from the async query is limited to this number. If the query would return more results, a notice is displayed to the user to make them aware of this fact",
+                                        	"type": "integer",
+                                            "minimum": 1
+                                        },
+                                        "min_threshold": {
+                                            "title": "Threshold",
+                                        	"description": "The dropdown box will behave like a normal (non-async) control if less then the defined threshold number of options are available. Otherwise, if there are more options, or if this setting is not defined at all, the box will be an async lookup box.",
+                                        	"type": "integer",
+                                            "minimum": 1
+                                        }
+                                    }
+                                },
+                                "label_display_expr_only": {
+                                    "title": "Only Display Expression as Label?",
+                                	"description": "By default the label for lookup values is composed of the display expression and in parentheses the respective primary key name and value. If you wish to suppress the parentheses, and only use the <i>Display Expression</i> result, set this to <code>true</code>",
+                                	"type": "boolean",
+                                    "default": false
+                                },
+                                "hide_dropdown": {
+                                    "title": "Hide Dropdown Box?",
+                                	"description": "In some cases it might be useful to allow only the creation of new associations using \"Create New\" button, and not by selecting existing records through the dropdown box. If this is set to <code>true</code>, the dropdown box will not be shown. If the field is <code>CARDINALITY_SINGLE</code> and disabled for some reason, the dropdown will be shown regardless of this setting. Note: this setting might conflict with the <i>Allow Creating Linked Records</i> setting of the field. If dropdown is to be hidden, the <i>Allow Creating Linked Records</i> must be enabled as well, otherwise nothing will be shown.",
+                                	"type": "boolean",
+                                    "default": false
+                                },
+                                "create_new_label": {
+                                    "title": "Button Label for Creating Linked Records",
+                                	"description": "Label for the button next to the dropdown box, which allows users to add new records to the linked table",
+                                	"type": "string",
+                                    "default": "Create New"
+                                },
+                                "allow_edit": {
+                                    "title": "Allow Editing Linked Records?",
+                                	"description": "Whether to allow the user to edit the associated record from the lookup table. Note that enabling this will only have an effect if the lookup table is configured as a table, and if <code>edit</code> is an allowed action there. If this setting is not provided, the default value will be taken from the <i>Allow Editing Linked Records by Default</i> in the App settings",
+                                	"type": "boolean"
+                                },
+                                "predefined_values": {
+                                    "title": "Predefined Values",
+                                	"description": "Object mapping fieldnames to their predefined values, which will be used when the user creates a new record using the \"Create New\" button, e.g. <pre>\"name\": \"Barles Chronson\", // string value\n\"height\": 1.78, // numeric value\n\"enemies\": [3,77] // foreign keys for T_LOOKUP/CARDINALITY multiple field\n\"mother\": { \"field\": \"name\" }</pre>",
+                                	"type": "object"
+                                },
+                                "field_settings_override": {
+                                    "title": "Field Settings Override",
+                                	"description": "Object mapping fieldnames to settings that override those in defined for the lookup table or the current context. This object will be used when the user creates a new record using the \"Create New\" button. Use this with caution, since it may contradict the constraints in the DB or the dbWebGen logic. Each value is either <code>h</code> (hide the control) or any contextually meaningful combination of<ul><li><code>e</code> ... enable the control</li><li><code>d</code> ... disable the control</li><li><code>r</code> ... make field required</li><li><code>o</code> ... make field optional</li><li><code>s</code> ... show the control if hidden</li></ul>",
+                                	"type": "object",
+                                    "format": "grid",
+                                    "additionalProperties": { "type" : "string" }
+                                },
+                                "no_link": {
+                                    "title": "Suppress Hyperlinks?",
+                                	"description": "Whether to suppress the rendering of a hyperlink to the linked records when viewing and listing records",
+                                	"type": "boolean",
+                                    "default": false
+                                }
+                            }
+                        },
+                        "linkage": {
+                            "title": "Linkage",
+                            "description": "If <i>cardinality</i> was set to <code>CARDINALITY_MULTIPLE</code>, you need to define here the m:n relationship table that links records from this table (via <i>Foreign Key (Self)<i>) with records of the other table (via <i>Foreign Key (Other)<i>)",
+                            "type": "object",
+                            "required": [ "table", "fk_self", "fk_other" ],
+                            "properties": {
+                                "table": {
+                                    "title": "Table",
+                                	"description": "Name of the linkage table",
+                                	"type": "string"
+                                },
+                                "fk_self": {
+                                    "title": "Foreign Key (Self)",
+                                	"description": "Name of the foreign key in the linkage <i>Table<i> which references the present table",
+                                	"type": "string"
+                                },
+                                "fk_other": {
+                                    "title": "Foreign Key (Other)",
+                                	"description": "Name of the foreign key in the linkage <i>Table<i> which references the other table",
+                                	"type": "string"
+                                },
+                                "defaults": {
+                                    "title": "Default Values",
+                                	"description": "Object defining field defaults for non-key fields when creating a new linked record. For each field, occurrences of <code>%SESSION_USER%</code> in the default values will be replaced with the current user's ID",
+                                	"type": "object"
+                                },
+                                "render_func": {
+                                    "title": "Rendering Function",
+                                	"description": "By default, multiple records are simple separated by a bullet character. By providing a custom function name here, you can change the default behavior for rendering the linkage to be applied when viewing a record. The function takes the following arguments:<ul><li><code>&$field</code> is the field settings array</li><li><code>$item_html</code> is the HTML code for the linked item</li><li><code>$index</code> is the item's index in the list</li><li><code>$total_num_items</code> is the total number of items in the list</li><li><code>&$params</code> is reserved for future use; currently the engine will pass a reference to an empty array</li></ul>The function must return the HTML to be rendered for the current item",
+                                	"type": "string"
+                                },
+                                "max_num": {
+                                    "title": "Limit",
+                                	"description": "If a number greater than zero is provided here, the number of linked records will be limited to this number. When the limit is reached, the dropdown and the Create New button will be disabled. This setting is only considered if cardinality is <code>CARDINALITY_MULTIPLE</code>",
+                                	"type": "integer",
+                                    "default": 0
+                                }
+                            }
+                        },
+                        "SRID": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "min_len": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "max_size": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "location": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "store": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "allowed_ext": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "post_proc": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "reset": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "min": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "max": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "step": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "conditional_form_label": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "list_hide": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "sort_expr": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "max_decimals": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "tab": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "map_picker": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "placeholder": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "field_groups": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "datetime_picker": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        },
+                        "conditional_display": {
+                            "title": "",
+                        	"description": "",
+                        	"type": ""
+                        }
+                    }
+                }
             }
         }
     }
