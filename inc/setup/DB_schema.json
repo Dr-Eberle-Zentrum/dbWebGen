@@ -2,6 +2,11 @@
     "title": "Database Connection",
     "description": "Provide here the connection details to connect to your database.",
     "type": "object",
+    "required": [ "type", "host", "port", "user", "pass", "db" ],
+    "options": {
+        "disable_collapse": true,
+        "disable_properties": true
+    },
     "properties": {
         "type": {
             "title": "Type",
@@ -9,6 +14,7 @@
             "required": true,
             "description": "Select the database type",
             "enum": [ "postgresql", "mysql" ],
+            "options": { "enum_titles": [ "PostgreSQL Database", "MySQL/MariaDB Database" ] },
             "default": "postgresql"
         },
         "host": {
@@ -16,33 +22,38 @@
             "type": "string",
             "description": "Database server's IP address or hostname",
             "required": true,
-            "default": "localhost"
+            "default": "localhost",
+            "minLength": 1
         },
         "port": {
             "title": "Port",
             "type": "integer",
             "description": "Port where the database server is listening for connections",
             "required": true,
-            "default": 5432
+            "default": 5432,
+            "minimum": 1
         },
         "user": {
             "title": "User Name",
             "type": "string",
             "description": "Database user name",
             "required": true,
+            "minLength": 1,
             "default": "postgres"
         },
         "pass": {
             "title": "Password",
             "type": "string",
             "description": "Database user's password",
-            "required": true
+            "required": true,
+            "minLength": 1
         },
         "db": {
             "title": "Database",
             "type": "string",
             "description": "Name of database to connect to",
-            "required": true
+            "required": true,
+            "minLength": 1
         }
     }
 }

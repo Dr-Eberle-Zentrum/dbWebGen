@@ -2,6 +2,9 @@
 	"title": "App Settings",
     "description": "The are the general settings that control the behavior of the engine.",
 	"type": "object",
+    "options": {
+        "disable_collapse": true
+    },
 	"properties": {
 		"title": {
 			"title": "App Title",

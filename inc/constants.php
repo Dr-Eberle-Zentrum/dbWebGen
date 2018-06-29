@@ -99,6 +99,7 @@
 	define('MODE_MERGE', 'merge'); // table-level action
 	define('MODE_QUERY', 'query');
 	define('MODE_GLOBALSEARCH', 'search');
+	define('MODE_SETUP', 'setup');
 
 	// pseudo modes
 	define('MODE_LINK', 'link'); // table-level action, providing a link for rendering the actual object, not the record

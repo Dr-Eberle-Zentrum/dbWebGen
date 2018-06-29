@@ -1,52 +1,48 @@
 {
     "title": "Login Method",
-    "description": "[optional] Define here how access to the app is controlled. Login works with user records found in a database table or with a predefined list of users. If this setting is omitted, everyone is allowed to use the app without loggin in.",
+    "description": "Optionally define here how access to the app is controlled, by adding properties. Login works with user records found in a database table or with a predefined list of users. If this setting is omitted, everyone is allowed to use the app without loggin in.",
     "type": "object",
-    "required": false,
+    "options": {
+        "disable_collapse": true
+    },
     "properties": {
         "users_table": {
             "title": "Users",
             "description": "Either provide the name of a users table in the database, or predefine a list of users with their details.",
-            "required": true,
-            "anyOf": [
+            "oneOf": [
                 {
-                    "title": "Users Table in DB",
-                    "description": "Provide the name of the table that holds the user details",
                     "type": "string",
-                    "minLength": 1
+                    "title": "Users Table in DB",
+                    "description": "Provide the name of the table that holds the user details"
                 },
                 {
                     "title": "Predefined Users",
                     "description": "Provide the user details",
                     "type": "array",
                     "format": "table",
-                    "minimum": 1,
                     "items": {
                         "type": "object",
                         "title": "User",
+                        "required": ["id", "name", "username", "password"],
                         "properties": {
                             "id": {
                                 "title": "ID",
                                 "type": "string",
-                                "required": true,
                                 "minLength": 1
                             },
                             "name": {
                                 "title": "Full Name",
                                 "type": "string",
-                                "required": true,
                                 "minLength": 1
                             },
                             "username": {
                                 "title": "Login Name",
                                 "type": "string",
-                                "required": true,
                                 "minLength": 1
                             },
                             "password": {
                                 "title": "Password",
                                 "type": "string",
-                                "required": true,
                                 "minLength": 1
                             }
                         }
@@ -58,7 +54,6 @@
             "title": "Primary Key Column",
             "description": "Name of the primary key field in the user details table",
             "type": "string",
-            "required": true,
             "minLength": 1,
             "default": "id"
         },
@@ -66,7 +61,6 @@
             "title": "Full Name Column",
             "description": "Name of the full name field in the user details table",
             "type": "string",
-            "required": true,
             "minLength": 1,
             "default": "name"
         },
@@ -74,7 +68,6 @@
             "title": "Login Name Column",
             "description": "Name of the login name field in the user details table",
             "type": "string",
-            "required": true,
             "minLength": 1,
             "default": "username"
         },
@@ -82,7 +75,6 @@
             "title": "Password Column",
             "description": "Name of the password field in the user details table",
             "type": "string",
-            "required": true,
             "minLength": 1,
             "default": "password"
         },
@@ -90,19 +82,17 @@
             "title": "Login Form Labels",
             "description": "Define the labels used for username and password in the login form",
             "type": "object",
-            "required": true,
+            "required": ["username", "password"],
             "properties": {
                 "username": {
                     "title": "User Name Label",
                     "type": "string",
-                    "required": true,
                     "minLength": 1,
                     "default": "User Name"
                 },
                 "password": {
                     "title": "Password Label",
                     "type": "string",
-                    "required": true,
                     "minLength": 1,
                     "default": "Password"
                 }
@@ -112,38 +102,32 @@
             "title": "Allow Users to Change Their Passwords?",
             "description": "[optional] Whether or not to allow each user to change their password. This is only applicable if the users are stored in the database, otherwise this setting is ignored.",
             "type": "boolean",
-            "required": true,
             "default": true
         },
         "password_hash_func": {
             "title": "Password Hashing Function",
             "description": "[optional] Name of the function to be used for password hashing, e.g. <code>md5</code>, <code>sha1</code>, etc. - Works only with functions that take a single mandatory argument (the password)",
-            "type": "string",
-            "required": false
+            "type": "string"
         },
         "password_verify_func": {
             "title": "Password Verification Function",
             "description": "[optional] Name of the function that compares the hash value with the plain text password. If not set, this will simply compare for equality of hash values. If a function is provided here, it needs to return <code>true</code> (password correct) or <code>false</code> (password incorrect).<br /> Signature: <code>bool password_verify_func($plain, $hash)</code>",
-            "type": "string",
-            "required": false
+            "type": "string"
         },
         "login_success_proc": {
             "title": "Function Called after Login",
             "description": "[optional] Called after successful login. No arguments; no return value expected.",
-            "type": "string",
-            "required": false
+            "type": "string"
         },
         "initializer_proc": {
             "title": "Initializer Function",
             "description": "[optional; <b>deprecated</b>] Name of a function called at the very beginning of processing. The function is called only when there is a logged in user. No arguments. <b>NOTE</b>: in some cases this function is NOT allowed to write anything to the output buffer!",
-            "type": "string",
-            "required": false
+            "type": "string"
         },
         "guest_user": {
             "title": "Guest User Name",
             "description": "[optional] Allows specifying a guest user account, which needs to have an empty password. If this setting is provided, the login form will have a button to log in as the guest user.",
-            "type": "string",
-            "required": false
+            "type": "string"
         }
     }
 }

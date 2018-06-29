@@ -2,6 +2,9 @@
     "title": "Tables Settings",
     "description": "For each table that you want users be able to view or edit in the app, add a property mapping the table name to a settings object",
     "type": "object",
+    "options": {
+        "disable_collapse": true
+    },
     "description": "Provide settings for the table",
     "additionalProperties": {
         "title": "Table",
@@ -309,11 +312,14 @@
                             "title": "Type",
                             "description": "Type of the field. Determines the control used in editing form",
                             "type": "string",
-                            "enum": [ "T_TextLine", "T_Number", "T_TextArea", "T_Enum", "T_ForeignKeyLookup", "T_Password", "T_FileUpload", "T_PostgisGeometry", "T_Boolean" ]
+                            "enum": [ "T_TextLine", "T_Number", "T_TextArea", "T_Enum", "T_ForeignKeyLookup", "T_Password", "T_FileUpload", "T_PostgisGeometry", "T_Boolean" ],
+                            "options": {
+                                "enum_titles": [ "Text Line", "Number", "Text Area", "Enum", "Lookup", "Password", "File Upload", "PostGIS Geometry", "Boolean" ]
+                            }
                         },
                         "len": {
                             "title": "Maximum Length",
-                            "description": "Maximal number of characters that the input control can hold. Relevant only for <code>T_TextLine</code>, <code>T_TextArea</code>, and <code>T_Password</code>. If this is set, it can be used in combination with the <i>Display Remaining Character Count</i> setting",
+                            "description": "Maximal number of characters that the input control can hold. Relevant only for <i>Text Line</i>, <i>Text Area</i>, and <i>Password</i> fields. If this is set, it can be used in combination with the <i>Display Remaining Character Count</i> setting",
                             "type": "integer",
                             "minimum": 1
                         },
@@ -338,21 +344,21 @@
                         },
                         "width_columns": {
                             "title": "Width",
-                            "description": "Specifies the number of columns in the bootstrap grid occupied by the input control. If this is not set, the width is calculated automatically for T_TextLine, otherwise the default is 7. Value must be between 1 and 9",
+                            "description": "Specifies the number of columns in the bootstrap grid occupied by the input control. If this is not set, the width is calculated automatically for <i>Text Line</i> fields, otherwise the default is 7. Value must be between 1 and 9",
                             "type": "integer",
                             "minimum": 1,
                             "maximum": 9
                         },
                         "height_rows": {
                             "title": "Textarea Rows",
-                            "description": "Specifies the number of rows to be offered by the input control. Only applicable to <code>T_TextArea</code> fields",
+                            "description": "Specifies the number of rows to be offered by the input control. Only applicable to <i>Text Area</i> fields",
                             "type": "integer",
                             "minimum": 1,
                             "default": 5
                         },
                         "resizeable": {
                             "title": "Textarea Resizable?",
-                            "description": "Controls whether the text area control is vertically resizeable. Only applicable to <code>T_TextArea</code> fields.",
+                            "description": "Controls whether the text area control is vertically resizeable. Only applicable to <i>Text Area</i> fields.",
                             "type": "boolean",
                             "default": true
                         },
@@ -369,17 +375,17 @@
                         },
                         "default": {
                             "title": "Default Value",
-                            "description": "Default value to set for the field's control when creating a new record. Occurrences of <code>%SESSION_USER%</code> in this string are replace with the current user's ID. For a <code>T_Boolean</code> field, this can be either <code>'on'</code> (=true) or <code>'off'</code> (=false)",
+                            "description": "Default value to set for the field's control when creating a new record. Occurrences of <code>%SESSION_USER%</code> in this string are replace with the current user's ID. For a <i>Boolean</i> field, this can be either <code>'on'</code> (=true) or <code>'off'</code> (=false)",
                             "type": "string"
                         },
                         "options": {
                             "title": "Options",
-                            "description": "Currently this is only relevant for <code>T_Boolean</code> fields. The properties you define here are converted to a JSON object to initizalize the on/off toggle. All initialization options listed under <a href='http://www.bootstraptoggle.com/'>http://www.bootstraptoggle.com/</a> can be provided. You should at least set the labels for 'on' and 'off' status of the toggle according to the purpose of this boolean field. If no options are provided here, the default labels for 'on' and 'off' states of the toggle are based on the localized strings <code>boolean-field.default.yes</code> and <code>boolean-field.default.no</code>, respectively.",
+                            "description": "Currently this is only relevant for <i>Boolean</i> fields. The properties you define here are converted to a JSON object to initizalize the on/off toggle. All initialization options listed under <a href='http://www.bootstraptoggle.com/'>http://www.bootstraptoggle.com/</a> can be provided. You should at least set the labels for 'on' and 'off' status of the toggle according to the purpose of this boolean field. If no options are provided here, the default labels for 'on' and 'off' states of the toggle are based on the localized strings <code>boolean-field.default.yes</code> and <code>boolean-field.default.no</code>, respectively.",
                             "type": "object"
                         },
                         "values": {
                             "title": "Values",
-                            "description": "Define values by adding properties to this setting. <ul><li>For <code>T_Enum</code> type: An object with properties reflecting the actual DB value, and value representing the label to display to the user, e.g. '1': 'January', '2': 'February', ...</li><li>For a <code>T_Boolean</code> type: This can be used to map 'on' and 'off' to other values than <code>true</code> and <code>false</code>, respectively; if provided, this must be an object with properties 'on' and 'off', e.g. 'on': 'New Car', 'off': 'Used Car'. Note that the values are sent to the DB, so they need to match the type of the column in the DB (in the example the target field could be a text column). It is recommended to provide custom values only for non-boolean columns.",
+                            "description": "Define values by adding properties to this setting. <ul><li>For <i>Enum</i> type: An object with properties reflecting the actual DB value, and value representing the label to display to the user, e.g. '1': 'January', '2': 'February', ...</li><li>For a <i>Boolean</i> type: This can be used to map 'on' and 'off' to other values than <code>true</code> and <code>false</code>, respectively; if provided, this must be an object with properties 'on' and 'off', e.g. 'on': 'New Car', 'off': 'Used Car'. Note that the values are sent to the DB, so they need to match the type of the column in the DB (in the example the target field could be a text column). It is recommended to provide custom values only for non-boolean columns.",
                             "type": "object"
                         },
                         "allow_create": {
@@ -390,7 +396,7 @@
                         },
                         "lookup": {
                             "title": "Lookup",
-                            "description": "Required for <code>T_Lookup</code> fields. Details of the foreign key relationship with another table to support filling of foreign key dropdown boxes",
+                            "description": "Required for <i>Lookup</i> fields. Details of the foreign key relationship with another table to support filling of foreign key dropdown boxes",
                             "type": "object",
                             "required": [ "cardinality", "table", "field", "display" ],
                             "properties": {
@@ -524,7 +530,7 @@
                                 },
                                 "predefined_values": {
                                     "title": "Predefined Values",
-                                	"description": "Object mapping fieldnames to their predefined values, which will be used when the user creates a new record using the \"Create New\" button, e.g. <pre>\"name\": \"Barles Chronson\", // string value\n\"height\": 1.78, // numeric value\n\"enemies\": [3,77] // foreign keys for T_LOOKUP/CARDINALITY multiple field\n\"mother\": { \"field\": \"name\" }</pre>",
+                                	"description": "Object mapping fieldnames to their predefined values, which will be used when the user creates a new record using the \"Create New\" button, e.g. <pre>\"name\": \"Barles Chronson\", // string value\n\"height\": 1.78, // numeric value\n\"enemies\": [3,77] // foreign keys for Lookup/CARDINALITY_MULTIPLE field\n\"mother\": { \"field\": \"name\" }</pre>",
                                 	"type": "object"
                                 },
                                 "field_settings_override": {
@@ -587,24 +593,24 @@
                         },
                         "SRID": {
                             "title": "Spacial Reference ID",
-                        	"description": "Spatial Reference ID of the PostGIS geometry; applicable only to <code>T_PostgisGeometry</code> fields",
+                        	"description": "Spatial Reference ID of the PostGIS geometry; applicable only to <i>PostGIS Geometry</i> fields",
                         	"type": "integer"
                         },
                         "min_len": {
                             "title": "Minimum Password Length",
-                        	"description": "This setting is only ueful for type <code>T_Password</code>. If it is set, users will have to provide a password of this minimum length",
+                        	"description": "This setting is only ueful for type <i>Password</i>. If it is set, users will have to provide a password of this minimum length",
                         	"type": "integer",
                             "minimum": 0
                         },
                         "max_size": {
                             "title": "File Upload: Maximum Size",
-                        	"description": "Only evaluated for type <code>T_FileUpload</code>, to limit the file size for uploads",
+                        	"description": "Only evaluated for <i>File Upload</i> fields, to limit the file size for uploads",
                         	"type": "integer",
                             "minimum": 1
                         },
                         "location": {
                             "title": "File Upload: Target Location",
-                        	"description": "Required for <code>T_FileUpload</code>, to specify the server side subfolder where to store uploaded files",
+                        	"description": "Required for <i>File Upload</i> fields, to specify the server side subfolder where to store uploaded files",
                         	"type": "string",
                             "minLength": 1
                         },
@@ -654,7 +660,7 @@
                         },
                         "conditional_form_label": {
                             "title": "Conditional Field Label",
-                        	"description": "In editing forms, this controls the field's label based on the value of another field (currently the other field must be <code>T_Enum</code> or <code>T_ForeignKeyLookup</code>)",
+                        	"description": "In editing forms, this controls the field's label based on the value of another field (currently the other field must be of type <i>Enum</i> or <i>Lookup</i>)",
                         	"type": "object",
                             "required": [ "controlled_by", "mapping" ],
                             "properties": {
@@ -744,7 +750,7 @@
                         },
                         "placeholder": {
                             "title": "Placeholder",
-                        	"description": "Force a particular placeholder text to be displayed in the respective form control during record editing. By default, no placeholders are displayed, except for <code>T_Enum</code> and <code>T_ForeignKeyLookup</code> fields, which will display a hint to click the dropdown. Setting a placeholder is particularly useful when the form control is part of a group of fields (see setting <i>Field Groups</i>).",
+                        	"description": "Force a particular placeholder text to be displayed in the respective form control during record editing. By default, no placeholders are displayed, except for <i>Enum</i> and <i>Lookup</i> fields, which will display a hint to click the dropdown. Setting a placeholder is particularly useful when the form control is part of a group of fields (see setting <i>Field Groups</i>).",
                         	"type": "string",
                             "minLength": 1
                         },
@@ -788,7 +794,7 @@
                         },
                         "datetime_picker": {
                             "title": "Date/Time Picker",
-                        	"description": "For <code>T_TextLine</code> fields, use this to attach a datetime picker to this field (useful e.g. for timestamp, time or date fields in the DB). The settings object can include any of the settings allowed by eonasdan's bootstrap-datetimepicker at initialization (ee <a href='http://eonasdan.github.io/bootstrap-datetimepicker/Options/' target='_blank'>http://eonasdan.github.io/bootstrap-datetimepicker/Options/</a>). Note that the <code>showClear</code> setting will be autoamtically set based on whether the field is required or not; and the <code>defaultDate</code> setting only has an effect if the field has no value yet in the DB. Additional to the picker options you can add a setting <code>mainIcon</code> to this object, which will control the icon displayed in the input control; use any glyphicon class, by default <code>glyphicon glyphicon-calendar</code> will be used.",
+                        	"description": "For <i>Text Line</i> fields, use this to attach a datetime picker to this field (useful e.g. for timestamp, time or date fields in the DB). The settings object can include any of the settings allowed by eonasdan's bootstrap-datetimepicker at initialization (ee <a href='http://eonasdan.github.io/bootstrap-datetimepicker/Options/' target='_blank'>http://eonasdan.github.io/bootstrap-datetimepicker/Options/</a>). Note that the <code>showClear</code> setting will be autoamtically set based on whether the field is required or not; and the <code>defaultDate</code> setting only has an effect if the field has no value yet in the DB. Additional to the picker options you can add a setting <code>mainIcon</code> to this object, which will control the icon displayed in the input control; use any glyphicon class, by default <code>glyphicon glyphicon-calendar</code> will be used.",
                         	"type": "object"
                         },
                         "conditional_display": {
@@ -819,7 +825,7 @@
                                             },
                                             "operator": {
                                                 "title": "Operator",
-                                            	"description": "The operator to compare the other field's value; if any of <code>OPERATOR_ARRAY_*</code> is used, the referenced field must be type <code>T_ForeignKeyLookup</code> with <code>CARDINALITY_MULTIPLE</code>, otherwise errors may occur.",
+                                            	"description": "The operator to compare the other field's value; if any of <code>OPERATOR_ARRAY_*</code> is used, the referenced field must be type <i>Lookup</i> with <code>CARDINALITY_MULTIPLE</code>, otherwise errors may occur.",
                                             	"type": "string",
                                                 "enum": ["OPERATOR_EQUALS", "OPERATOR_NOT_EQUALS", "OPERATOR_BETWEEN", "OPERATOR_GREATER", "OPERATOR_GREATER_OR_EQUALS", "OPERATOR_LOWER", "OPERATOR_LOWER_OR_EQUALS", "OPERATOR_ARRAY_CONTAINS", "OPERATOR_ARRAY_SIZE_LOWER", "OPERATOR_ARRAY_SIZE_EQUALS", "OPERATOR_ARRAY_NOT_CONTAINS", "OPERATOR_ARRAY_SIZE_GREATER", "OPERATOR_ARRAY_SIZE_NOT_EQUALS", "OPERATOR_ARRAY_SIZE_LOWER_OR_EQUALS", "OPERATOR_ARRAY_SIZE_GREATER_OR_EQUALS"]
                                             },

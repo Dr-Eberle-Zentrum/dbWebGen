@@ -440,7 +440,7 @@
 	function bootstrap_css() {
 	//------------------------------------------------------------------------------------------
 		global $APP;
-		return isset($APP['bootstrap_css']) ? $APP['bootstrap_css'] :
+		return isset($APP) && isset($APP['bootstrap_css']) ? $APP['bootstrap_css'] :
 			(ENGINE_PATH_HTTP . 'node_modules/bootstrap/dist/css/bootstrap.min.css');
 	}
 
