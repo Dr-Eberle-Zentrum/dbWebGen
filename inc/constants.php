@@ -44,6 +44,7 @@
 	define('VISJS_NETWORK_CACHE_POSITIONS', 'visjs_network_cache_positions');
 	define('LOOKUP_ASYNC', 'lookup_async');
 	define('POSTGIS_TRANSFORM_WKT', 'postgis_transform_wkt');
+	define('SETUPWIZARD_SAVE_SETTINGS', 'setupwizard_save_settings');
 
 	// search options
 	define('SEARCH_ANY', 'any');

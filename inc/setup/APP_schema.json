@@ -243,6 +243,15 @@
                     "required": false
                 }
             }
-        }
+        },
+		"super_users": {
+			"type": "array",
+			"title": "Super Users",
+			"description": "Provide a list of usernames. These users will be allowed to configure the dbWebGen settings using the settings wizard",
+			"items": {
+				"title": "User",
+				"type": "string"
+			}
+		}
 	}
 }

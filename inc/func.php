@@ -30,6 +30,10 @@
 			case POSTGIS_TRANSFORM_WKT:
 				postgis_transform_wkt_proxy();
 				return;
+
+			case SETUPWIZARD_SAVE_SETTINGS:
+				setupwizard_save_settings();
+				return;
 		}
 
 		if(!isset($APP['additional_callable_plugin_functions'])
@@ -105,5 +109,13 @@
 			echo $target_wkt;
 		else
 			echo l10n('error.invalid-wkt-input');
+	}
+
+	//------------------------------------------------------------------------------------------
+	function setupwizard_save_settings() {
+	//------------------------------------------------------------------------------------------
+		header('Content-Type: text/plain');
+		require_once 'setup/wizard.php';
+		echo SetupWizard::save_settings();
 	}
 ?>

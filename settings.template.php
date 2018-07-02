@@ -79,6 +79,8 @@
 				Rules to be used for PHP's Transliterator::createFromRules factory method.
 			- cache_ttl: int (optional) (default: 3600)
 				Number of seconds to cache each search result. Default is one hour. Note that this setting is only effective if $APP/cache_dir is set and valid. If you set this to 0, there will be no caching of global search results.
+		- super_users: array (optional)
+			You may provide an array of user names here, who will be allowed to configure the dbWebGen settings using the settings wizard
 
 	======================================================================================================== */
 	$APP = array(

@@ -9,8 +9,8 @@
 	if(!defined('ENGINE_PATH_LOCAL')) define('ENGINE_PATH_LOCAL', ENGINE_PATH);
 	define('ENGINE_PATH_HTTP', ENGINE_PATH);
 
-	if(!file_exists('settings.php'))
-		die('You need to create a settings.php file, which contains the configuration of this dbWebGen instance, in your app directory. Look up settings.template.php in the dbWebGen directory for instructions, or run the <a href="' . ENGINE_PATH . 'settings.generator.php">Settings Generator</a> on your database to initialize settings.php.');
+	/*if(!file_exists('settings.php'))
+		die('You need to create a settings.php file, which contains the configuration of this dbWebGen instance, in your app directory. Look up settings.template.php in the dbWebGen directory for instructions, or run the <a href="' . ENGINE_PATH . 'settings.generator.php">Settings Generator</a> on your database to initialize settings.php.');*/
 
 	// SET CUSTOM TIMEZONE
 	if(isset($APP['timezone']))
@@ -51,41 +51,40 @@
 			$APP['preprocess_func'](); // allow the app to do some initialization
 		if(isset($LOGIN['initializer_proc']) && function_exists($LOGIN['initializer_proc']))
 			call_user_func($LOGIN['initializer_proc']); // allow the app to do some initialization (legacy)
+	}
+	// SPECIAL MODES PROCESSING
+	if(!$settings_exist || is_logged_in()) switch(safehash($_GET, 'mode', '')) {
+		case MODE_DELETE:
+			require_once ENGINE_PATH_LOCAL . 'inc/delete.php';
+			if(!process_delete())
+				render_messages();
+			exit;
 
-		// SPECIAL MODES PROCESSING
-		if(is_logged_in()) switch(safehash($_GET, 'mode', '')) {
-			case MODE_DELETE:
-				require_once ENGINE_PATH_LOCAL . 'inc/delete.php';
-				if(!process_delete())
-					render_messages();
+		case MODE_CREATE_DONE:
+			require_once ENGINE_PATH_LOCAL . 'inc/create_new_done.php';
+			process_create_new_done();
+			exit;
+
+		case MODE_LOGOUT:
+			session_logout();
+			exit;
+
+		case MODE_FUNC:
+			require_once ENGINE_PATH_LOCAL . 'inc/func.php';
+			process_func();
+			exit;
+
+		case MODE_MERGE:
+			require_once ENGINE_PATH_LOCAL . 'inc/merge.php';
+			if(MergeRecordsPage::process_ajax())
 				exit;
+			break;
+	}
 
-			case MODE_CREATE_DONE:
-				require_once ENGINE_PATH_LOCAL . 'inc/create_new_done.php';
-				process_create_new_done();
-				exit;
-
-			case MODE_LOGOUT:
-				session_logout();
-				exit;
-
-			case MODE_FUNC:
-				require_once ENGINE_PATH_LOCAL . 'inc/func.php';
-				process_func();
-				exit;
-
-			case MODE_MERGE:
-				require_once ENGINE_PATH_LOCAL . 'inc/merge.php';
-				if(MergeRecordsPage::process_ajax())
-					exit;
-				break;
-		}
-
+	if($settings_exist)
 		require_once ENGINE_PATH_LOCAL . 'inc/global_search.php';
-	}
-	else {
+	else
 		$_GET['mode'] = MODE_SETUP;
-	}
 
 	ob_start();
 ?>
@@ -101,7 +100,7 @@
 		echo_javascript(ENGINE_PATH_HTTP . 'node_modules/select2/dist/js/select2.full.min.js');
 		echo_javascript(ENGINE_PATH_HTTP . 'node_modules/transliteration/lib/browser/transliteration.min.js');
 		echo_javascript(ENGINE_PATH_HTTP . 'node_modules/bootstrap-toggle/js/bootstrap-toggle.min.js');
-		if($settings_exist && safehash($_GET, 'mode') != MODE_SETUP)
+		//if($settings_exist && safehash($_GET, 'mode') != MODE_SETUP)
 			echo_javascript(ENGINE_PATH_HTTP . 'inc/dbweb.js', true);
 		echo_stylesheet(bootstrap_css());
 		echo_stylesheet(ENGINE_PATH_HTTP . 'node_modules/select2/dist/css/select2.min.css');
@@ -129,7 +128,7 @@
 			else {
 				require_once ENGINE_PATH_LOCAL . 'inc/setup/wizard.php';
 				$w = new SetupWizard;
-				echo $w->render();
+				echo $w->render(true);
 			}
 			$page_body = ob_get_contents();
 			ob_end_clean();

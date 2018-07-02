@@ -2,10 +2,11 @@
     "title": "Tables Settings",
     "description": "For each table that you want users be able to view or edit in the app, add a property mapping the table name to a settings object",
     "type": "object",
+    "minProperties": 1,
     "options": {
         "disable_collapse": true
     },
-    "description": "Provide settings for the table",
+    "description": "Provide settings for the database tables by adding a property for each table.",
     "additionalProperties": {
         "title": "Table",
         "headerTemplate": "{{self.display_name}}",
@@ -73,7 +74,6 @@
                         "title": "Columns",
                         "description": "List all columns that are part of the primary key",
                         "type": "array",
-                        "format": "table",
                         "uniqueItems": true,
                         "minItems": 1,
                         "required": true,
@@ -295,7 +295,6 @@
                 "title": "Fields",
                 "description": "Define the settings for each relevant field in this table by mapping field names to settings objects",
                 "type": "object",
-                "required": true,
                 "additionalProperties": {
                     "type": "object",
                     "title": "Field",
@@ -437,7 +436,6 @@
                                                 "columns": {
                                                     "type": "array",
                                                     "title": "Columns",
-                                                    "format": "table",
                                                     "description": "Specify the columns used in the <i>Expression</i>",
                                                     "minItems": 1,
                                                     "items": {
@@ -537,7 +535,6 @@
                                     "title": "Field Settings Override",
                                 	"description": "Object mapping fieldnames to settings that override those in defined for the lookup table or the current context. This object will be used when the user creates a new record using the \"Create New\" button. Use this with caution, since it may contradict the constraints in the DB or the dbWebGen logic. Each value is either <code>h</code> (hide the control) or any contextually meaningful combination of<ul><li><code>e</code> ... enable the control</li><li><code>d</code> ... disable the control</li><li><code>r</code> ... make field required</li><li><code>o</code> ... make field optional</li><li><code>s</code> ... show the control if hidden</li></ul>",
                                 	"type": "object",
-                                    "format": "grid",
                                     "additionalProperties": { "type" : "string" }
                                 },
                                 "no_link": {
@@ -801,7 +798,6 @@
                             "title": "Conditional Display",
                         	"description": "This array controls the visibility of this field in the new/edit forms based on the value of other fields. The array consists of conditional expressions, optionally separated by logical operators <code>OPERATOR_AND</code> or <code>OPERATOR_OR</code>. Expressions can be grouped and nested using <code>OPERATOR_GROUP_OPEN</code> (corresponds to an opening parenthesis) and <code>OPERATOR_GROUP_CLOSE</code> (corresponds to closing parenthesis)",
                         	"type": "array",
-                            "format": "table",
                             "items": {
                                 "title": "Operator/Condition",
                                 "oneOf": [

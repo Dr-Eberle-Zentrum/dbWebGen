@@ -90,12 +90,19 @@
 					));
 				}
 
+				require_once 'setup/wizard.php';
+				$setup_icon = SetupWizard::is_allowed() ? sprintf(
+					'<li><a href="?mode=%s" id="setup-mode" title="%s"><span class="glyphicon glyphicon-wrench"></span></a></li>',
+					MODE_SETUP, l10n('setup.heading')
+				): '';
+
 				echo '<ul class="nav navbar-nav navbar-right"><li>'.
 				($user_details_href? '<a name="" href="'. $user_details_href .'">' : '<a>').
 				'<span class="glyphicon glyphicon-user"></span> '.
 				(isset($LOGIN['name_field']) ? $_SESSION['user_data'][$LOGIN['name_field']] : '') .
 				'</a></li>'.
-				'<li><a href="#" id="logout"><span class="glyphicon glyphicon-log-out"></span> '.l10n('login.logout-navbar-label').'</a></li></ul>';
+				'<li><a href="javascript:void(0)" id="logout"><span class="glyphicon glyphicon-log-out"></span> '.l10n('login.logout-navbar-label').'</a></li>'.
+				$setup_icon . '</ul>';
 			}
 		}
 
