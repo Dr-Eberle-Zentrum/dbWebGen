@@ -50,29 +50,35 @@
 HTML;
             }
             $out .= <<<HTML
-                <p>
-                    <ul class="margin-top nav nav-tabs">
-                        <li class="active"><a data-toggle="tab" href="#db">Database Connection</a></li>
-                        <li><a data-toggle="tab" href="#login">Login Method</a></li>
-                        <li><a data-toggle="tab" href="#app">App Settings</a></li>
-                        <li><a data-toggle="tab" href="#tables">Tables Settings</a></li>
-                    </ul>
-                </p>
-                <div class="tab-content">
-                  <div id="db" class="tab-pane fade in active">
-                    <div id="db-editor"></div>
-                  </div>
-                  <div id="login" class="tab-pane fade">
-                    <div id="login-editor"></div>
-                  </div>
-                  <div id="app" class="tab-pane fade">
-                    <div id="app-editor"></div>
-                  </div>
-                  <div id="tables" class="tab-pane fade">
-                    <div id="tables-editor"></div>
-                  </div>
+                <style>
+                    #setup-container { display: none }
+                </style>
+                <p id="loading">Loading...</p>
+                <div id="setup-container">
+                    <p>
+                        <ul class="margin-top nav nav-tabs">
+                            <li class="active"><a data-toggle="tab" href="#db">Database Connection</a></li>
+                            <li><a data-toggle="tab" href="#login">Login Method</a></li>
+                            <li><a data-toggle="tab" href="#app">App Settings</a></li>
+                            <li><a data-toggle="tab" href="#tables">Tables Settings</a></li>
+                        </ul>
+                    </p>
+                    <div class="tab-content">
+                      <div id="db" class="tab-pane fade in active">
+                        <div id="db-editor"></div>
+                      </div>
+                      <div id="login" class="tab-pane fade">
+                        <div id="login-editor"></div>
+                      </div>
+                      <div id="app" class="tab-pane fade">
+                        <div id="app-editor"></div>
+                      </div>
+                      <div id="tables" class="tab-pane fade">
+                        <div id="tables-editor"></div>
+                      </div>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="save"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
                 </div>
-                <button type="button" class="btn btn-primary" id="save"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
 
 HTML;
             $out .= $this->render_script();
@@ -82,23 +88,25 @@ HTML;
         // -------------------------------------------------------------------------------------
         protected function render_script() {
         // -------------------------------------------------------------------------------------
-            $db_schema = file_get_contents(ENGINE_PATH_HTTP . 'inc/setup/DB_schema.json');
-            $app_schema = file_get_contents(ENGINE_PATH_HTTP . 'inc/setup/APP_schema.json');
-            $login_schema = file_get_contents(ENGINE_PATH_HTTP . 'inc/setup/LOGIN_schema.json');
-            $tables_schema = file_get_contents(ENGINE_PATH_HTTP . 'inc/setup/TABLES_schema.json');
-            $db_value = json_encode($this->db_settings);
-            $app_value = json_encode($this->app_settings);
-            $login_value = json_encode($this->login_settings);
-            $tables_value = json_encode($this->tables_settings);
+            $config_parts = array('db', 'app', 'login', 'tables');
+            $schemas = array();
+            $values = array();
+            foreach($config_parts as $what) {
+                $schemas[$what] = file_get_contents(ENGINE_PATH_HTTP . "inc/setup/{$what}_schema.json");
+                $values[$what] = $this->{$what . '_settings'};
+            }
+            $config_parts_js = json_encode($config_parts);
+            $schemas_js = json_encode($schemas);
+            $values_js = json_encode($values);
             $out = <<<JS
             <script>
                 function db_type_changed() {
                     var db_dropdown = $(this);
-                    if(db_dropdown.val() == 'postgresql' && !window.db_editor.generate_settings_box.is(':visible')) {
-                        $('#db div.form-group').first().append(window.db_editor.generate_settings_box);
+                    if(db_dropdown.val() == 'postgresql' && !window.editor['db'].generate_settings_box.is(':visible')) {
+                        $('#db div.form-group').first().append(window.editor['db'].generate_settings_box);
                     }
-                    else if(db_dropdown.val() != 'postgresql' && window.db_editor.generate_settings_box.is(':visible')) {
-                        window.db_editor.generate_settings_box.remove();
+                    else if(db_dropdown.val() != 'postgresql' && window.editor['db'].generate_settings_box.is(':visible')) {
+                        window.editor['db'].generate_settings_box.remove();
                     }
                 }
                 $(function() {
@@ -110,16 +118,29 @@ HTML;
                         show_errors: "always",
                         keep_oneof_values: false
                     };
-                    window.db_editor = new JSONEditor(document.getElementById('db-editor'), $.extend(options, { schema: $db_schema }));
-                    window.db_editor.setValue($db_value);
-                    window.app_editor = new JSONEditor(document.getElementById('app-editor'), $.extend(options, { schema: $app_schema }));
-                    window.app_editor.setValue($app_value);
-                    window.login_editor = new JSONEditor(document.getElementById('login-editor'), $.extend(options, { schema: $login_schema }));
-                    window.login_editor.setValue($login_value);
-                    window.tables_editor = new JSONEditor(document.getElementById('tables-editor'), $.extend(options, { schema: $tables_schema }));
-                    window.tables_editor.setValue($tables_value);
 
-                    window.db_editor.generate_settings_box = $('<div/>').append(
+                    var config_parts = $config_parts_js;
+                    var schemas = $schemas_js;
+                    var values = $values_js;
+
+                    window.editor = {};
+                    var ready_count = 0;
+                    for(var i = 0; i < config_parts.length; i++) {
+                        window.editor[config_parts[i]] = new JSONEditor(
+                            document.getElementById(config_parts[i] + '-editor'),
+                            $.extend(options, {
+                                schema: JSON.parse(schemas[config_parts[i]])
+                            }));
+                        window.editor[config_parts[i]].on('ready', function() {
+                            if(++ready_count == config_parts.length) {
+                                $('#loading').fadeOut();
+                                $('#setup-container').fadeIn();
+                            }
+                        });
+                        window.editor[config_parts[i]].setValue(values[config_parts[i]]);
+                    }
+
+                    window.editor['db'].generate_settings_box = $('<div/>').append(
                         $('<label/>').addClass('space-left').append(
                             $('<input/>').attr({
                                 type: 'checkbox',
