@@ -29,7 +29,7 @@
 			whether to lookup foreign key values instead of the FKs themselves
 		- search_string_transformation: string (optional) (default: '%s')
 			SQL expression used to define what transformation should happen both with the search query and the field before they are compared with each other. The placeholder for the argument is %s. This setting will typically be something like 'lower(%s)', or if languages with non latin characters are used 'unaccent(lower(%s))'.
-		- null_label: string
+		- null_label: string (default: 'NULL')
 			label for the checkbox that allows explicit setting of a NULL value for a non-required field
 		- render_main_page_proc: string (optional)
 			called to render the main page after login.
@@ -79,6 +79,8 @@
 				Rules to be used for PHP's Transliterator::createFromRules factory method.
 			- cache_ttl: int (optional) (default: 3600)
 				Number of seconds to cache each search result. Default is one hour. Note that this setting is only effective if $APP/cache_dir is set and valid. If you set this to 0, there will be no caching of global search results.
+		- super_users: array (optional)
+			You may provide an array of user names here, who will be allowed to configure the dbWebGen settings using the settings wizard
 
 	======================================================================================================== */
 	$APP = array(
@@ -100,7 +102,7 @@
 		- type: { DB_POSTGRESQL, DB_MYSQL }
 			Database type, currently only postgres and mysql supported
 		- host: string
-			Database server (IP oder hostname)
+			Database server (IP or hostname)
 		- port: int
 			Post number
 		- user: string
@@ -231,7 +233,7 @@
 				For a T_BOOLEAN field, this must be either 'on' (=true) or 'off' (=false).
 			- options: array (optional)
 				Currently this is only relevant for T_BOOLEAN fields. This array is converted to a JSON object to initizalize the on/off toggle. All initialization options listed under http://www.bootstraptoggle.com/ can be provided. You should at least set the labels for 'on' and 'off' status of the toggle according to the purpose of this boolean field. If no options are provided here, the default labels for 'on' and 'off' states of the toggle are based on the localized strings boolean-field.default.yes and boolean-field.default.no, respectively.
-			- values: array (required only if type=T_ENUM)
+			- values: array (required only if type=T_ENUM or T_BOOLEAN)
 				For a T_ENUM type: An associative array with key reflecting the actual DB value, and value representing the label to display to the user, e.g. array(1 => 'January', 2 => 'February', ...)
 				For a T_BOOLEAN type: This can be used to map 'on' and 'off' to other values than TRUE and FALSE, respectively; if provided, this must be an associative array with keys 'on' and 'off', e.g. array('on' => 'New Car', 'off' => 'Used Car'). Note that the values are sent to the DB, so they need to match the type of the column in the DB (in the example the target field could be a text column). It is recommended to provide custom values only for non-boolean columns.
 			- allow_create: boolean (default: true)
@@ -458,7 +460,7 @@
 				- handler: string
 					Name of a handler function that will be called for the current record. Arguments: (1) name of the current table (2) table info from this settings file (3) the record retrieved from the database using PDO::FETCH_ASSOC and (4) this very custom action hash, which means that any additional key/value pairs you add to this array will get passed to the handler function.
 		- show_in_related: bool (optional) (default: true)
-			In MODE_VIEW, there is a dropdown linking to tables where the current record is linked through a foreign key (T_LOOKUP). If you do not want this table to appear in this list at all, set this to true.
+			In MODE_VIEW, there is a dropdown linking to tables where the current record is linked through a foreign key (T_LOOKUP). If you do not want this table to appear in this list at all, set this to false.
 		- render_links: array (optional)
 			If MODE_LINK and MODE_LIST are allowed in this table, then there will be an extra icon in the table in MODE_LIST for each record that allows to view the actual object represented by the record. An associative array has to be provided for each entry in this array:
 				- icon: string

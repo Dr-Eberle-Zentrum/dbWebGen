@@ -131,6 +131,8 @@ function show_hide_async_alert(box, show, error_msg = null) {
 //------------------------------------------------------------------------------------------
 function make_dropdowns_select2() {
 //------------------------------------------------------------------------------------------
+    if(!window.jQuery.fn.select2)
+        return;
     $('select').each(function() {
 		var box = $(this);
         if(box.data('no-select2') == '1')

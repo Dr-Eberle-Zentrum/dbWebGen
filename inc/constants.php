@@ -44,6 +44,7 @@
 	define('VISJS_NETWORK_CACHE_POSITIONS', 'visjs_network_cache_positions');
 	define('LOOKUP_ASYNC', 'lookup_async');
 	define('POSTGIS_TRANSFORM_WKT', 'postgis_transform_wkt');
+	define('SETUPWIZARD_SAVE_SETTINGS', 'setupwizard_save_settings');
 
 	// search options
 	define('SEARCH_ANY', 'any');
@@ -99,6 +100,7 @@
 	define('MODE_MERGE', 'merge'); // table-level action
 	define('MODE_QUERY', 'query');
 	define('MODE_GLOBALSEARCH', 'search');
+	define('MODE_SETUP', 'setup');
 
 	// pseudo modes
 	define('MODE_LINK', 'link'); // table-level action, providing a link for rendering the actual object, not the record

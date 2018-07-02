@@ -504,6 +504,10 @@ HTML
         'search.no-results' => 'No records found.',
         'search.num-indicator' => 'Displaying search results <b>$1</b>&ndash;<b>$2</b> of <b>$3</b>',
 
+        'setup.wizard.save-success' => 'Settings were successfully saved to the settings file.',
+        'setup.wizard.save-error-file' => 'Settings could not be saved to settings file. Make sure the file is creatable and writable by the web server process.',
+        'setup.heading' => 'Settings',
+
         'text-field.remaining-chars' => 'character(s) remaining.',
 
         'upload-field.browse' => 'Browse',

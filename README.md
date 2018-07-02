@@ -29,8 +29,7 @@ Developers may add custom functionality and extensions to the engine through hoo
      include ENGINE_PATH . 'engine.php';
   ?>
   ```
-* Copy `settings.template.php` into your app folder, rename it to `settings.php`, and fill the file with settings that reflect your app and database structure. Alternatively, for PostgreSQL only, you can use `settings.generator.php` to create a starting point for your settings file from your database.
-* Direct your web browser to the app folder and be happy.
+* Direct your web browser to the app folder. Upon first visit, a setup wizward will allow you to specify all app settings, which will be stored in a file called `settings.php`. If you encounter any issues or somehow misconfigure your app, you can also manually edit the `settings.php` file with explanations provided in [settings.template.php](settings.template.php)
 
 ## Example Database and App
 An example app using this engine can be seen in the [dbWebGen-demo](https://github.com/eScienceCenter/dbWebGen-demo) repository

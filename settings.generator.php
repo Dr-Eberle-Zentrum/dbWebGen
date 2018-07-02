@@ -5,6 +5,11 @@
 	note: the db user you use with this script needs to have read permission on the target schema and on the information_schema
 */
 
+	$tables_setup_json = isset($_GET['special']) && $_GET['special'] === 'tables_setup';
+	if($tables_setup_json)
+		header('Content-Type: application/json; charset=utf8');
+	$json_ret = array();
+
 	foreach(array('host' => 'localhost', 'port' => 5432, 'name' => '', 'user' => 'postgres', 'pass' => '', 'name' => '', 'schema' => 'public') as $k => $v)
 		${'db_' . $k} = isset($_POST[$k]) ? $_POST[$k] : $v;
 
@@ -44,7 +49,10 @@
 FORM;
 
 	if(count($_POST) == 0) {
-		print $form;
+		if($tables_setup_json)
+			echo json_encode(array('error' => 'Cannot connect to database.'));
+		else
+			print $form;
 		exit;
 	}
 
@@ -52,8 +60,12 @@ FORM;
 		$db = new PDO("pgsql:dbname={$db_name};host={$db_host};port={$db_port};options='--client_encoding=UTF8'", $db_user, $db_pass);
 	}
 	catch(PDOException $e) {
-		echo "<h2>ERROR: Cannot connect to database</h2>";
-		echo $form;
+		if($tables_setup_json)
+			echo json_encode(array('error' => 'Cannot connect to database.'));
+		else {
+			echo "<h2>ERROR: Cannot connect to database</h2>";
+			echo $form;
+		}
 		exit;
 	}
 
@@ -65,7 +77,9 @@ FORM;
 		return $stmt;
 	}
 
-	header('Content-Type: text/plain; charset=utf8');
+	if(!$tables_setup_json)
+		header('Content-Type: text/plain; charset=utf8');
+
 	include 'inc/constants.php';
 	include 'settings.template.php';
 
@@ -453,6 +467,11 @@ SQL;
 	// append n:m lookup fields to end of field list for each table
 	foreach($cardinal_mult as $table_name => $fields) {
 		$TABLES[$table_name]['fields'] += $fields;
+	}
+
+	if($tables_setup_json) {
+		echo json_encode(array('tables' => $TABLES));
+		exit;
 	}
 
 	// ================================================

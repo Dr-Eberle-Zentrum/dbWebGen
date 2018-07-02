@@ -512,6 +512,10 @@ HTML
         'search.no-results' => 'Keine Suchergebnisse gefunden.',
         'search.num-indicator' => 'Zeige Suchergebnisse <b>$1</b>&ndash;<b>$2</b> von <b>$3</b>',
 
+        'setup.wizard.save-success' => 'Einstellungen wurden erfolgreich gespeichert!',
+        'setup.wizard.save-error-file' => 'Einstellungen konnten nicht gespeichert werden. Stellen Sie sicher, dass der Webserver-Prozess auf Dateiebene Schreibrechte auf der Einstellungsdatei hat bzw. die Datei erzeugen darf.',
+        'setup.heading' => 'Einstellungen',
+
         'text-field.remaining-chars' => 'Zeichen übrig.',
 
         'upload-field.browse' => 'Durchsuchen',
