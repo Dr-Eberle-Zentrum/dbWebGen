@@ -62,6 +62,9 @@
             if($initial_setup)
                 $out .= "<p>This dbWebGen app has not been set up yet. Here you can define all necessary settings.</p>";
 
+            $exit_button = $initial_setup ? sprintf(
+                '<button type="button" class="btn btn-default hidden" id="exit"><span class="glyphicon glyphicon-exit"></span> Exit Setup - Go To App Home</button>'
+            ) : '';
             $out .= <<<HTML
                 <style>
                     #setup-container { display: none }
@@ -69,7 +72,8 @@
                 </style>
                 <p id="loading">Loading...</p>
                 <div id="setup-container">
-                    <button type="button" class="btn btn-primary btn-block" id="save"><span class="glyphicon glyphicon-floppy-disk"></span> Save All Settings</button>
+                    <button type="button" class="btn btn-primary" id="save"><span class="glyphicon glyphicon-floppy-disk"></span> Save All Settings</button>
+                    $exit_button
                     <p>
                         <ul class="margin-top nav nav-tabs">
                             <li class="active"><a data-toggle="tab" href="#db">Database Connection</a></li>
@@ -240,7 +244,11 @@ HTML;
                         $.post('?mode=func&target=setupwizard_save_settings', post_params, function(data) {
                             console.log(data);
                             alert(data);
+                            $('#exit').removeClass('hidden');
                         });
+                    });
+                    $('#exit').click(function() {
+                        location.href = '?';
                     });
                 });
             </script>

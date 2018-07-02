@@ -92,7 +92,7 @@
 
 				require_once 'setup/wizard.php';
 				$setup_icon = SetupWizard::is_allowed() ? sprintf(
-					'<li><a href="?mode=%s" id="setup-mode" title="%s"><span class="glyphicon glyphicon-wrench"></span></a></li>',
+					'<li><a href="?mode=%s" id="setup-mode" title="%s"><span class="glyphicon glyphicon-cog"></span></a></li>',
 					MODE_SETUP, l10n('setup.heading')
 				): '';
 
