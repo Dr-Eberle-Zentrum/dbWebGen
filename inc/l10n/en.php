@@ -438,6 +438,7 @@ HTML
         'merge.button-cancel' => 'Cancel',
         'merge.nothing-to-do' => 'Using the selected values in the table, the master record would remain unchanged. Therefore the merge operation is obsolete.',
         'merge.record-pushed' => 'This $1 was selected for merging with another $1. Please select the other $1 to be merged with this one by navigating to the other $1 and clicking the "Merge" button there. You will then be able to define exactly which parts of the two records shall be merged.',
+        'merge.list-of-referencing-records' => 'The slave record is referenced from the following records in other tables. If you check this box, the references from these records will be changed to reference the master record in the above table.',
 
         'new-edit.heading-new' => 'New $1',
         'new-edit.heading-edit' => 'Edit $1',
