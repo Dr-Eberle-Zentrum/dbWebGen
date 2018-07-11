@@ -615,6 +615,7 @@ JS;
                 l10n('merge.button-cancel')
             );
             $str_button_merge = $this->merge_success ? l10n('merge.button-merge-again') : l10n('merge.button-merge');
+            $str_button_swap = l10n('merge.button-swap');
 
             $related_records = $this->get_related_records_of_slave();
             #debug_log($related_records);
@@ -648,6 +649,14 @@ JS;
 HTML;
             }
 
+            $swappy = array();
+            foreach($_GET as $p => $v) {
+                if(preg_match('/^(?<N>1|2)_(?<L>.+)$/', $p, $match))
+                    $p = ($match['N'] == '1' ? '2' : '1') . '_' . $match['L'];
+                $swappy[$p] = $v;
+            }
+            $swapped_url = json_encode('?' . http_build_query($swappy));
+
             $ret = <<<HTML
                 <style>
                     #master-slave-table input {
@@ -661,6 +670,7 @@ HTML;
                     $related_records_div
                     <div class="form-group">
                         <button type="submit" name="do_merge" value="1" class="btn btn-primary"><span class="glyphicon glyphicon-transfer"> $str_button_merge</button>
+                        <button id='swap-master-slave' class="btn btn-basic"><span class="glyphicon glyphicon-sort"> $str_button_swap</button>
                         $str_button_cancel
                     </div>
                 </form>
@@ -671,6 +681,10 @@ HTML;
                     $(document).ready(function() {
                         $('#rewire-references').change(sync_rewire_checkboxes);
                         sync_rewire_checkboxes();
+                        $('#swap-master-slave').click(function(e) {
+                            e.preventDefault();
+                            location = $swapped_url;
+                        });
                         var merge_infos = $merge_infos_js;
                         var table = $('#master-slave-table table tbody');
                         var master_row = table.find('tr:nth-child(1)').first();
