@@ -58,7 +58,7 @@
 
 			if($this->is_stored_query() && !$this->fetch_stored_query()) {
 				$this->sql = null;
-				$this->error_msg = l10n('error.query-fetch');
+				$this->error_msg = l10n('error.storedquery-fetch');
 			}
 			else {
 				$this->sql = trim($this->get_post(QUERYPAGE_FIELD_SQL, ''));
