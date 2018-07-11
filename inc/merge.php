@@ -7,11 +7,13 @@
     //==========================================================================================
     {
         protected $table_name, $table, $merge_success = false;
+        protected $db;
 
         //--------------------------------------------------------------------------------------
         public function render() {
         //--------------------------------------------------------------------------------------
             global $TABLES;
+            $this->db = db_connect();
             $this->table_name = $this->get_urlparam('table');
             if(!$this->table_name || !isset($TABLES[$this->table_name]))
                 return proc_error(l10n('error.invalid-table', $this->table_name ? $this->table_name : ''));
@@ -351,22 +353,92 @@ JS;
                         break;
                 }
             }
+
+            if(isset($_POST['rewire-references']) && $_POST['rewire-references'] == 1) {
+                $delete_slave_reference_if_master_reference_already_exists = isset($_POST['rewire-delete-slave']) && $_POST['rewire-delete-slave'] == 1;
+                $related_records = $this->get_related_records_of_slave();
+                foreach($related_records as $table_name => $related) {
+                    foreach($related['records'] as $referencing_record) {
+                        // check whether the foreign key is part of a composite primary key;
+                        // if so, we need to check whether the new foreign key (to the master)
+                        // does not already exist
+                        $table_pk = $TABLES[$table_name]['primary_key']['columns'];
+                        if(count($table_pk) > 1 && in_array($related['fk_field'], $table_pk)) {
+                            $where_conds = array();
+                            $params = array();
+                            foreach($table_pk as $pk) {
+                                $where_conds[] = sprintf("%s = ?", db_esc($pk));
+                                if($pk == $related['fk_field'])
+                                    $params[] = $this->get_primary_key_value('master');
+                                else
+                                    $params[] = $referencing_record[$pk];
+                            }
+                            $sql = sprintf(
+                                'select count(*) from %s where %s',
+                                db_esc($table_name),
+                                join(' and ', $where_conds)
+                            );
+                            #debug_log($sql, $params);
+                            if(db_get_single_val($sql, $params, $count, $this->db) && $count > 0) {
+                                // the master is already referenced
+                                if(!$delete_slave_reference_if_master_reference_already_exists)
+                                    continue;
+                                // delete record
+                                $where_conds = array();
+                                $params = array();
+                                foreach($referencing_record as $key_name => $key_val) {
+                                    $where_conds[] = sprintf('%s = ?', db_esc($key_name));
+                                    $params[] = $key_val;
+                                }
+                                $queries[] = array(
+                                    'sql' => sprintf(
+                                        'delete from %s where %s',
+                                        db_esc($table_name),
+                                        join(' and ', $where_conds)
+                                    ),
+                                    'params' => $params
+                                );
+                                continue;
+                            }
+                        }
+                        $where_conds = array();
+                        $params = array();
+                        foreach($referencing_record as $key_name => $key_val) {
+                            $where_conds[] = sprintf('%s = ?', db_esc($key_name));
+                            $params[] = $key_val;
+                        }
+                        $queries[] = array(
+                            'sql' => sprintf(
+                                'update %s set %s = ? where %s',
+                                db_esc($table_name),
+                                db_esc($related['fk_field']),
+                                join(' and ', $where_conds)
+                            ),
+                            'params' => array_merge(
+                                array($this->get_primary_key_value('master')),
+                                $params
+                            )
+                        );
+                    }
+                }
+            }
+
+            #debug_log($queries);
+            #return;
+
             if(count($queries) == 0) {
                 proc_info(l10n('merge.nothing-to-do'));
                 return '';
             }
-            $db = db_connect();
-            if($db === false)
-                return proc_error(l10n('error.db-connect'));
             $begin_trans = false;
             try {
-                $begin_trans = $db->beginTransaction();
+                $begin_trans = $this->db->beginTransaction();
             } catch(Exception $e) {
             }
             foreach($queries as $query) {
-                if(!db_prep_exec($query['sql'], $query['params'], $stmt, $db)) {
+                if(!db_prep_exec($query['sql'], $query['params'], $stmt, $this->db)) {
                     try {
-                        if($begin_trans && $db->rollBack()) {
+                        if($begin_trans && $this->db->rollBack()) {
                             proc_info(l10n('merge.info-rollback'));
                         }
                     } catch(Exception $e) {
@@ -375,7 +447,7 @@ JS;
                 }
             }
             try {
-                if($begin_trans && !$db->commit())
+                if($begin_trans && !$this->db->commit())
                     throw new Exception('');
             } catch(Exception $e) {
                 proc_error(l10n('merge.fail'));
@@ -389,8 +461,79 @@ JS;
         }
 
         //--------------------------------------------------------------------------------------
+        protected function get_related_records_of_slave() {
+        //--------------------------------------------------------------------------------------
+            global $TABLES;
+            $related_records = array();
+            foreach($TABLES as $table_name => $table_settings) {
+                if($table_name == $this->table_name || ends_with('_history', $table_name))
+                    continue;
+                foreach($table_settings['fields'] as $field_name => $field_settings) {
+                    if($field_settings['type'] != T_LOOKUP)
+                        continue;
+                    if($field_settings['lookup']['table'] != $this->table_name)
+                        continue;
+                    // now we have a lookup field in another table that references this table
+                    if($field_settings['lookup']['cardinality'] === CARDINALITY_SINGLE) {
+                        $pk_fields = array();
+                        foreach($table_settings['primary_key']['columns'] as $pk_field)
+                            $pk_fields[] = db_esc($pk_field);
+                        $pk_fields = join(', ', $pk_fields);
+                        $sql = sprintf(
+                            "select %s from %s where %s = ?",
+                            $pk_fields,
+                            db_esc($table_name),
+                            db_esc($field_name)
+                        );
+                        $params = array(
+                            $this->get_primary_key_value('slave')
+                        );
+                    }
+                    else { // CARDINALITY_MULTIPLE
+                        // check whether this N:M field is not also linked from this table; if so, ignore!
+                        $ignore = false;
+                        foreach($this->table['fields'] as $fn => $f) {
+                            if($f['type'] == T_LOOKUP
+                                && $f['lookup']['cardinality'] == CARDINALITY_MULTIPLE
+                                && $f['linkage']['table'] == $field_settings['linkage']['table']
+                                && $f['linkage']['fk_self'] == $field_settings['linkage']['fk_other']
+                                && $f['linkage']['fk_other'] == $field_settings['linkage']['fk_self']
+                            ) {
+                                $ignore = true;
+                                break;
+                            }
+                        }
+                        if($ignore)
+                            continue;
+                        $sql = sprintf(
+                            "select %s from %s where %s = ?",
+                            db_esc($field_settings['linkage']['fk_self']),
+                            db_esc($field_settings['linkage']['table']),
+                            db_esc($field_settings['linkage']['fk_other'])
+                        );
+                        $params = array(
+                            $this->get_primary_key_value('slave')
+                        );
+                    }
+                    $related_records[$table_name] = array(
+                        'fk_field' => $field_name,
+                        'records' => array()
+                    );
+                    db_prep_exec($sql, $params, $stmt, $this->db);
+                    while($row = $stmt->fetch(PDO::FETCH_ASSOC))
+                        $related_records[$table_name]['records'][] = $row;
+                    if(count($related_records[$table_name]['records']) == 0)
+                         unset($related_records[$table_name]);
+                }
+            }
+            return $related_records;
+        }
+
+        //--------------------------------------------------------------------------------------
         public function display_form() {
         //--------------------------------------------------------------------------------------
+            global $TABLES;
+            #debug_log($_POST);
             $primary_keys = array();
             $where_conditions = array();
             $exec_params = array();
@@ -459,7 +602,7 @@ JS;
                 $where_conditions[1]
             );
 
-            db_prep_exec($sql, $exec_params, $stmt);
+            db_prep_exec($sql, $exec_params, $stmt, $this->db);
             $rr = new RecordRenderer($this->table_name, $this->table, $display_fields, $stmt, true, false, null);
             $merge_infos_js = json_encode($merge_infos);
 
@@ -473,6 +616,38 @@ JS;
             );
             $str_button_merge = $this->merge_success ? l10n('merge.button-merge-again') : l10n('merge.button-merge');
 
+            $related_records = $this->get_related_records_of_slave();
+            #debug_log($related_records);
+            $total_related = 0;
+            $related_records_div = '';
+            foreach($related_records as $table_name => $related) {
+                $related_records_div .= sprintf(
+                    "<li>%s: %s</li>\n",
+                    $TABLES[$table_name]['display_name'], count($related['records'])
+                );
+            }
+            if($related_records_div != '') {
+                $checkbox_text = l10n('merge.list-of-referencing-records');
+                $delete_text = l10n('merge.delete-slave-if-master-referenced');
+                $related_records_div = <<<HTML
+                    <div class="form-group">
+                        <input type='hidden' name='rewire-references' value='0' />
+                        <input type='hidden' name='rewire-delete-slave' value='0' />
+                        <label>
+                            {$this->render_checkbox('rewire-references', '1', true)}
+                            $checkbox_text
+                            <ul>
+                                $related_records_div
+                            </ul>
+                        </label>
+                        <ul><label>
+                            {$this->render_checkbox('rewire-delete-slave', '1', true)}
+                            $delete_text
+                        </label></ul>
+                    </div>
+HTML;
+            }
+
             $ret = <<<HTML
                 <style>
                     #master-slave-table input {
@@ -483,13 +658,19 @@ JS;
                 <p>$str_intro</p>
                 <form id='master-slave-table' class="col-sm-12" role="form" method="post">
                     {$rr->html()}
+                    $related_records_div
                     <div class="form-group">
                         <button type="submit" name="do_merge" value="1" class="btn btn-primary"><span class="glyphicon glyphicon-transfer"> $str_button_merge</button>
                         $str_button_cancel
                     </div>
                 </form>
                 <script>
+                    function sync_rewire_checkboxes() {
+                        $('#rewire-delete-slave').prop('disabled', !$('#rewire-references').is(':checked'));
+                    }
                     $(document).ready(function() {
+                        $('#rewire-references').change(sync_rewire_checkboxes);
+                        sync_rewire_checkboxes();
                         var merge_infos = $merge_infos_js;
                         var table = $('#master-slave-table table tbody');
                         var master_row = table.find('tr:nth-child(1)').first();

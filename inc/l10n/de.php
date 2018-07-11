@@ -446,6 +446,8 @@ HTML
         'merge.button-cancel' => 'Abbrechen',
         'merge.nothing-to-do' => 'Durch die in der Tabelle ausgewählten Werte würde sich der Master-Datensatz nicht verändern. Es ist daher keine Zusammenführung nötig.',
         'merge.record-pushed' => 'Dieser $1-Datensatz wurde als Ziel für eine Zusammenführung ausgewählt. Bitte navigieren Sie nun zu dem anderen für die Zusammenführung relevanten $1-Datensatz und starten Sie dort die Zusammenführung durch Drücken des Knopfes "Zusammenführung". Vor der Zusammenführung können Sie dann noch auswählen, welche Daten genau übernommen werden sollen.',
+        'merge.list-of-referencing-records' => 'Der Slave-Datensatz wird von den folgend gelisteten Datensätzen aus anderen Tabellen referenziert. Wenn Sie das Häkchen hier setzen, werden diese Referenzen angepasst, um auf den Master-Datensatz zu referenzieren.',
+        'merge.delete-slave-if-master-referenced' => 'Wenn einer der Datensätze dieser Liste bereits eine Referenz zum Master-Datensatz hat, so können die Referenzen auf den Slave-Record entweder gelöscht oder beibehalten werden. Ticken Sie diese Box, um in diesem Falle die Referenzen auf den Slave-Datensatz zu löschen. (Diese Option ist nur relevant wenn das vorige Häkchen gesetzt wurde)',
 
         'new-edit.heading-new' => 'Neu: $1',
         'new-edit.heading-edit' => 'Bearbeiten: $1',
