@@ -131,11 +131,16 @@
 			return !isset($this->render_settings['null_option_allowed']) || $this->render_settings['null_option_allowed'] === true;
 		}
 		//--------------------------------------------------------------------------------------
+		public function has_array_value() {
+		//--------------------------------------------------------------------------------------
+			return false;
+		}
+		//--------------------------------------------------------------------------------------
 		public function get_submitted_value($value_if_missing = null) {
 		//--------------------------------------------------------------------------------------
 			$n = $this->get_control_name();
 			$a = $this->get_form_method() == 'POST' ? $_POST : $_GET;
-			return isset($a[$n]) ? strval($a[$n]) : $value_if_missing;
+			return isset($a[$n]) ? ($this->has_array_value() ? $a[$n] : strval($a[$n])) : $value_if_missing;
 		}
 		//--------------------------------------------------------------------------------------
 		public function has_submitted_value() {

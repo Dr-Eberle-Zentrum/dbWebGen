@@ -67,6 +67,11 @@
 			return $this->field['linkage'];
 		}
 		//--------------------------------------------------------------------------------------
+		public function has_array_value() {
+		//--------------------------------------------------------------------------------------
+			return $this->is_multi_select();
+		}
+		//--------------------------------------------------------------------------------------
 		public function is_allowed_create_new() { // default: true
 		//--------------------------------------------------------------------------------------
 			if(!isset($this->field['allow_create']))
@@ -105,6 +110,12 @@
 		public function get_async_min_input_len() {
 		//--------------------------------------------------------------------------------------
 			return $this->field['lookup']['async']['min_input_len'];
+		}
+		//--------------------------------------------------------------------------------------
+		public function is_multi_select() {
+		//--------------------------------------------------------------------------------------
+			return isset($this->render_settings['multi_select'])
+				&& $this->render_settings['multi_select'] === true;
 		}
 		//--------------------------------------------------------------------------------------
 		public function get_cardinality() {
@@ -238,13 +249,14 @@
 				$num_results = null;
 
 			$output_buf .= sprintf(
-				"<select %s %s class='form-control %s' id='%s_dropdown' name='%s' data-table='%s' data-fieldname='%s' data-placeholder='%s' data-thistable='%s' %s %s %s data-lookuptype='single' %s %s title='%s'>\n",
+				"<select %s %s class='form-control %s' id='%s_dropdown' name='%s%s' data-table='%s' data-fieldname='%s' data-placeholder='%s' data-thistable='%s' %s %s %s data-lookuptype='single' %s %s title='%s' %s>\n",
 
 				$this->get_disabled_attr(),
 				$this->get_required_attr(),
 				$this->is_lookup_async($num_results) ? 'lookup-async' : '',
 				$this->get_control_id(),
 				$this->get_control_name(),
+				$this->is_multi_select() ? '[]' : '',
 				$this->get_lookup_table_name(),
 				$this->field_name,
 				unquote($this->get_custom_placeholder(l10n('lookup-field.placeholder'))),
@@ -254,7 +266,8 @@
 				$this->is_lookup_async($num_results) && $this->has_async_delay() ? sprintf("data-asyncdelay='%s'", $this->get_async_delay()) : '',
 				$this->is_required() ? '' : 'data-allow-clear=true',
 				$this->get_focus_attr(),
-				unquote($this->get_label())
+				unquote($this->get_label()),
+				$this->is_multi_select() ? 'multiple' : ''
 			);
 
 			$where_clause = '';
@@ -275,7 +288,10 @@
 
 			$selection_done = '';
 			while($obj = $stmt->fetch(PDO::FETCH_OBJ)) {
-				if($selection_done != 'done') {
+				if($this->is_multi_select()) {
+					$sel = ($this->has_submitted_value() && is_array($this->get_submitted_value()) && in_array($obj->val, $this->get_submitted_value()) ? ' selected="selected" ' : '');
+				}
+				else if($selection_done != 'done') {
 					$sel = ($this->has_submitted_value() && $this->get_submitted_value() == strval($obj->val) ? ' selected="selected" ' : '');
 					if($sel != '')
 						$selection_done = 'done';

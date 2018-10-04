@@ -168,7 +168,7 @@ function make_dropdowns_select2() {
 		}
 		else {
 			// display search box in dropdown if more than 5 options available
-			if(box.children('option').length > 5)
+            if(box.children('option').length > 5)
 				box.select2({ theme: 'bootstrap', width: width });
 			else
 				box.select2({ theme: 'bootstrap', width: width, minimumResultsForSearch: Infinity });

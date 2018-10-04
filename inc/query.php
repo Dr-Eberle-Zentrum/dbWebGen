@@ -474,6 +474,7 @@ HTML;
 						'id_attr' => $param_name,
 						'null_option_allowed' => false,
 						'force_cardinality_single' => true,
+						'multi_select' => isset($this->query_info['flags'][':'.$param_name]) && in_array('multi', $this->query_info['flags'][':'.$param_name])
 					);
 					return $f->render_control($render_options);
 					break;
@@ -551,7 +552,7 @@ HTML;
 					// render form for parameters:
 					$str_refresh = l10n('querypage.param-query-refresh');
 					$this->viz_ui .= <<<HTML
-					<p><form class='form-inline param-query-form' method='get'>
+					<p><form class='form-inline param-query-form hidden' method='get'>
 						{$param_fields} <button class='btn btn-default hidden-print' type='submit'><span class="glyphicon glyphicon-refresh"></span> $str_refresh</button>
 					</form></p>
 HTML;
@@ -582,7 +583,11 @@ HTML;
 				if($stmt === false)
 					return proc_error(l10n('error.db-prepare'), $this->db);
 
-				if($stmt->execute($this->query_info['params']) === false)
+				$all_params = array_merge($this->query_info['params'], $this->query_info['multiparams']);
+				foreach($all_params as $p => $v)
+					if(is_array($v))
+						unset($all_params[$p]);
+				if($stmt->execute($all_params) === false)
 					return proc_error(l10n('error.db-execute'), $stmt);
 
 				$js = $this->chart->get_js($stmt);
@@ -669,11 +674,14 @@ JS;
 				<script>
 					$(document).ready(function() {
 						$('form.param-query-form select').change(function() {
+							/*let box = $(this);
 							// submit form, but only if selection different than initial
-							if($(this).find('option:selected').attr('selected') === 'selected')
+							if(box.prop('multiple') === true || box.find('option:selected').attr('selected') === 'selected')
 								return;
 							$(this).parents('form').first().submit();
+							*/
 						})
+						$('form.param-query-form').removeClass('hidden');
 					});
 					$download_js
 				</script>
@@ -687,38 +695,106 @@ JS;
 			$retval = array(
 				'sql' => $this->sql,
 				'params' => array(),
+				'multiparams' => array(),
 				'lookups' => array(),
-				'labels' => array()
+				'labels' => array(),
+				'flags' => array()
 			);
 
-			// extract parameters
-			//if(preg_match_all('/#{(?P<params>\\w+)\\|(?P<defvals>[^}|]*)(\\|(?P<lookups>[^}]*))?}/', $this->sql, $matches) > 0) {
-				//debug_log($matches);
-			if(preg_match_all('/#{(?P<params>\w+)(:(?P<labels>[^|]+))?\|(?P<defvals>[^}|]*)(\|(?P<lookups>[^}]*))?}/', $this->sql, $matches) > 0) {
+			// FIXME: right now, infos paramters that occur multiple times are overwritten each time, so only the last one counts
+
+			if(preg_match_all(
+				'/#{' .
+				'(?P<params>\w+)(:(?P<labels>[^|]+))?\|' .
+				'(?P<defvals>[^}|]*)' .
+				'(\|(?P<lookups>[^}|]*))?' .
+				'(\|flags:(?P<flags>[^}|]*))?' .
+				'(\|expr:(?P<expr>[^}|]*))?' .
+				'(\|op:(?P<op>[^}]*))?' .
+				'}/',
+				$this->sql, $matches) > 0
+			) {
 				for($i = 0; $i < count($matches['params']); $i++) {
+					$key = ':' . $matches['params'][$i];
+
+					if(trim($matches['flags'][$i]) !== '')
+						$retval['flags'][$key] = explode(',', $matches['flags'][$i]);
+
+					if(trim($matches['expr'][$i]) !== '')
+						$retval['expr'][$key] = $matches['expr'][$i];
+
+					if(trim($matches['op'][$i]) !== '')
+						$retval['op'][$key] = $matches['op'][$i];
+
 					// prefer to take value from GET parameters e.g ...&p:xxx=blah
 					$val = isset($_GET['p:' . $matches['params'][$i]]) ? $_GET['p:' . $matches['params'][$i]] : $matches['defvals'][$i];
 
 					// replace this stuff in the sql statement
-					$retval['sql'] = preg_replace(
-						'/#{' . $matches['params'][$i] . '(:[^|]+)?\|[^}]*}/',
-						':' . $matches['params'][$i],
-						$retval['sql']);
+					// check if we have a multi param
+					if(isset($retval['flags'][$key])
+						&& in_array('multi', $retval['flags'][$key])
+					) {
+						// empty multi select box delivers array with one item that has empty string as value
+						if(!is_array($val) || (count($val) === 1 && $val[0] === ''))
+							$val = array();
 
-					// set param for query
-					$retval['params'][':' . $matches['params'][$i]] = $val;
+						// multi param => expr must be present
+						if(!isset($retval['expr'][$key]))
+							debug_log('Contact your admin: Missing expression in multi-select parameter!');
+
+						$retval['params'][$key] = $val;
+
+						if(count($val) === 0) {
+							// no constraints selected => just true
+							$retval['sql'] = preg_replace(
+								'/#{' . $matches['params'][$i] . '(:[^|]+)?\|[^}]*}/',
+								'(' . $key . ')',
+								$retval['sql']);
+
+							$retval['params'][$key] = true;
+						}
+						else {
+							$placeholders = array();
+							for($j = 0; $j < count($val); $j++) {
+								$param_name = $key . 'EFFZEH' . $j;
+								$placeholders[] = $param_name;
+								$retval['multiparams'][$param_name] = $val[$j];
+							}
+							// currently we only have the "in" operator, so no need to diversify yet
+							$retval['sql'] = preg_replace(
+								'/#{' . $matches['params'][$i] . '(:[^|]+)?\|[^}]*}/',
+								sprintf(
+									'(%s in (%s))',
+									$retval['expr'][$key],
+									join(', ', $placeholders)
+								),
+								$retval['sql']
+							);
+						}
+					}
+					else {
+						// simple param
+						$retval['sql'] = preg_replace(
+							'/#{' . $matches['params'][$i] . '(:[^|]+)?\|[^}]*}/',
+							'(' . $key . ')',
+							$retval['sql']);
+
+						// set param for query
+						$retval['params'][$key] = $val;
+					}
 
 					// set lookup info
 					if(mb_strlen($lookup = trim($matches['lookups'][$i])) > 0)
-						$retval['lookups'][':' . $matches['params'][$i]] = $lookup;
+						$retval['lookups'][$key] = $lookup;
 
 					// set label info
 					if(mb_strlen($label = trim($matches['labels'][$i])) > 0)
-						$retval['labels'][':' . $matches['params'][$i]] = $label;
+						$retval['labels'][$key] = $label;
 				}
 			}
 
-			//debug_log($retval);
+			//debug_log($retval['sql']);
+			//debug_log($retval['params']);
 			return $retval;
 		}
 
