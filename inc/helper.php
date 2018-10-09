@@ -1260,6 +1260,20 @@ STR;
 	}
 
 	//------------------------------------------------------------------------------------------
+	function get_sort_field_name(&$table, $field_name) {
+	//------------------------------------------------------------------------------------------
+		if(isset($table['sort_lookup_raw'])
+			&& $table['sort_lookup_raw'] == true
+			&& $table['fields'][$field_name]['type'] == T_LOOKUP
+			&& $table['fields'][$field_name]['lookup']['cardinality'] == CARDINALITY_SINGLE
+		) {
+			return db_postfix_fieldname($field_name, FK_FIELD_POSTFIX, true);
+		}
+
+		return db_esc($field_name);
+	}
+
+	//------------------------------------------------------------------------------------------
 	function build_query($table_name, $table, $offset, $mode, $more_params, &$out_params) {
 	//------------------------------------------------------------------------------------------
 		global $APP;
@@ -1379,13 +1393,12 @@ STR;
 				$dir = isset($_GET['dir']) ? $_GET['dir'] : 'asc';
 				if($dir != 'asc' && $dir != 'desc')
 					$dir = 'asc';
-
-				$order_by[] = sprintf(get_field_sort_expression($table['fields'][$_GET['sort']]), db_esc($_GET['sort'])) . " $dir";
+				$order_by[] = sprintf(get_field_sort_expression($table['fields'][$_GET['sort']]), get_sort_field_name($table, $_GET['sort'])) . " $dir";
 			}
 
 			if(count($order_by) == 0 && isset($table['sort']) && is_array($table['sort']) && count($table['sort']) > 0 ) {
 				foreach($table['sort'] as $field_name => $dir) {
-					$order_by[] = sprintf(get_field_sort_expression($table['fields'][$field_name]), db_esc($field_name)) . " $dir";
+					$order_by[] = sprintf(get_field_sort_expression($table['fields'][$field_name]), get_sort_field_name($table, $field_name)) . " $dir";
 
 					// fake the $_GET for later
 					$_GET['sort'] = $field_name;
@@ -1399,7 +1412,7 @@ STR;
 			$q .= " LIMIT ". $APP['page_size'] . " OFFSET $offset";
 		}
 
-#		debug_log($q);
+		#debug_log($q);
 		return $q;
 	}
 

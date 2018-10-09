@@ -202,6 +202,8 @@
 			- sequence_name: string (required only if auto=true)
 				if auto = true, this becomes required and must reflect the sequence name that generates the new primary key value.
 				If auto=false, this setting is ignored.
+		- sort_lookup_raw: bool (default: false)
+			Whether to perform an ORDER BY in list view based on the resolved display expressions of CARDINALITY_SINGLE lookups or based on their raw foreign key values. Setting this to true will speed up the sorting of very large tables by single lookup fields.
 		- fields: array
 			Associative array with settings for each field. The key reflects the column name in the DB. The value is an array with several settings:
 			- label: string
