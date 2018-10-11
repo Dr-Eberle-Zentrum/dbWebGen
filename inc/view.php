@@ -132,7 +132,10 @@
 						'table_label' => $ti['display_name'],
 						'field_name' => $fn,
 						'field_label' => $fi['label'],
-						'display_label' => isset($fi['lookup']['related_label']) ? $fi['lookup']['related_label'] : null);
+						'display_label' => isset($fi['lookup']['related_label']) ? $fi['lookup']['related_label'] : null,
+						'search_type' => $fi['lookup']['cardinality'] == CARDINALITY_MULTIPLE ? SEARCH_WORD : SEARCH_EXACT,
+						'raw_fk' => $fi['lookup']['cardinality'] == CARDINALITY_SINGLE ? 1 : 0
+					);
 				}
 			}
 		}
@@ -149,9 +152,10 @@
 				$q = http_build_query(array(
 					'table' => $rel['table_name'],
 					'mode' => MODE_LIST,
-					SEARCH_PARAM_OPTION => SEARCH_WORD,
+					SEARCH_PARAM_OPTION => $rel['search_type'],
 					SEARCH_PARAM_FIELD => $rel['field_name'],
-					SEARCH_PARAM_QUERY => $record[$table['primary_key']['columns'][0]]
+					SEARCH_PARAM_QUERY => $record[$table['primary_key']['columns'][0]],
+					'raw_fk' => $rel['raw_fk'] // speeds up search since we know
 				));
 				$label = ($rel['display_label'] !== null ?
 					$rel['display_label']

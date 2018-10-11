@@ -312,7 +312,11 @@
 		$query_trafo = 'concat(' . $pre_term_op . $query_trafo_without_ops . $post_term_op . ')';
 		#debug_log($query_trafo);
 
-		if($APP['search_lookup_resolve'] && $fields[$search_field]['type'] == T_LOOKUP && $fields[$search_field]['lookup']['cardinality'] == CARDINALITY_SINGLE) {
+		if($APP['search_lookup_resolve']
+			&& $fields[$search_field]['type'] == T_LOOKUP
+			&& $fields[$search_field]['lookup']['cardinality'] == CARDINALITY_SINGLE
+			&& !(isset($_GET['raw_fk']) && $_GET['raw_fk'] == 1)
+		) {
 			$lookup = $fields[$search_field]['lookup'];
 
 			$field_trafo = str_replace('%s', db_cast_text('%s'), $string_trafo);
