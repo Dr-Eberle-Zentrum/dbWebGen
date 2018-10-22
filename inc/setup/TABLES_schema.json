@@ -6,10 +6,10 @@
     "options": {
         "disable_collapse": true
     },
-    "description": "Provide settings for the database tables by adding a property for each table.",
     "additionalProperties": {
         "title": "Table",
         "headerTemplate": "{{self.display_name}}",
+        "description": "Provide settings for the database tables by adding a property for each table.",
         "type": "object",
         "properties": {
             "display_name": {
@@ -290,6 +290,13 @@
                 "type": "string",
                 "required": false,
                 "minLength": 1
+            },
+            "sort_lookup_raw": {
+                "title": "Sort By Raw Values",
+                "description": "Whether to perform sorting in list view based on the resolved display expressions of foreign key lookups or based on their raw foreign key values. Setting this to true will speed up the sorting of very large tables by single lookup fields.",
+                "type": "boolean",
+                "default": false,
+                "required": false
             },
             "fields": {
                 "title": "Fields",
