@@ -397,7 +397,7 @@
 					db_esc($this->get_lookup_field_name()),
 					resolve_display_expression($this->get_lookup_display(), 't'),
 					db_esc($this->get_lookup_table_name()));
-
+				
 				$res = $db->query($q);
 				// fill dropdown and linked fields list
 				while($obj = $res->fetchObject()) {

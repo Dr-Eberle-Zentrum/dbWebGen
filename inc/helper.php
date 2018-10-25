@@ -779,7 +779,32 @@ STR;
 			$val = $highlighter->highlight(html($field['values'][$val]));
 		}
 		else if($field['type'] == T_NUMBER && $val !== NULL) {
-			if(isset($field['max_decimals'])) {
+			if(isset($field['number_format'])) {
+				$fmt = $field['number_format'];
+				$plus = isset($fmt['plus_sign']) ? $fmt['plus_sign'] : '+';
+				$minus = isset($fmt['minus_sign']) ? $fmt['minus_sign'] : '-';				
+				$disp = '';
+				for($i = 0; $i < strlen($fmt['template']); $i++) {
+					$flag = $fmt['template'][$i];
+					switch($flag) {
+						case 'a': $disp .= $fmt['after']; break;
+						case 'b': $disp .= $fmt['before']; break;
+						case 'c': $disp .= $fmt['currency']; break;
+						case 'm': $disp .= $val < 0 ? $minus : ''; break;
+						case 's': $disp .= $val == 0 ? '' : ($val > 0 ? $plus : $minus); break;
+						case 'n': $disp .= number_format(abs($val), $fmt['decimals'], $fmt['dec_point'], $fmt['thousands_sep']); break;
+						case ' ': $disp .= $flag; break;
+						case 'e'; $disp .= '&nbsp;';
+					}
+				}
+				if($val >= 0 && isset($fmt['color_pos']))
+					$val = sprintf('<span style="color:%s">%s</span>', $fmt['color_pos'], $disp);
+				else if($val < 0 && isset($fmt['color_neg']))
+					$val = sprintf('<span style="color:%s">%s</span>', $fmt['color_neg'], $disp);
+				else
+					$val = $disp;		
+			}
+			else if(isset($field['max_decimals'])) {
 				if(is_array($field['max_decimals'])) {
 					if(isset($field['max_decimals'][$_GET['mode']]))
 						$val = (float) number_format($val, $field['max_decimals'][$_GET['mode']], '.', '');

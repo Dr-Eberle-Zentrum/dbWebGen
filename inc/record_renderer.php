@@ -118,8 +118,12 @@
                     if(isset($_GET[SEARCH_PARAM_FIELD]) && $_GET[SEARCH_PARAM_FIELD] === $col)
                         $css = 'class="bg-success"';
 
+                    $style = '';
+                    if(isset($this->fields[$col]['cell_css']))
+                        $style = sprintf(' style="%s"', $this->fields[$col]['cell_css']);
+
                     $val = prepare_field_display_val($this->table, $record, $this->fields[$col], $col, $val, $this->html_highlighter);
-                    $table_body .= "<td $css>$val</td>\n";
+                    $table_body .= "<td $css$style>$val</td>\n";
 
                     // determine max cell len
                     $textlen = mb_strlen(strip_tags($val));

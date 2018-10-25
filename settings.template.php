@@ -348,6 +348,23 @@
 				for T_NUMBER, define the maximum value for the field
 			- step: number or string (optional) (default: 1)
 				for T_NUMBER, define the step size for up/down (e.g. 3 or 0.01). If not restricted, use 'any'
+			- cell_css: string (optional) (default: none)
+				any value will be set as the CSS style of the table cell in list view
+			- number_format: array (optional)
+				for T_NUMBER, a hash array with the following keys
+					* template (string): a string specifying a combination of the following number components:
+						a ... text to display after (specified by key 'after')
+						b ... text to display before (specified by key 'before')
+						c ... currency (specified by key 'currency')
+						m ... sign: - only
+						n ... the actual number (formatted according to settings below)
+						s ... sign: + or -
+					* decimals (int): number of decimals
+					* dec_point (string): decimal point character
+					* thousands_sep (string): thousands separator character
+					* before (string): text to display before
+					* after (string): text to display after
+				Note: if number_format is provided, the setting max_decimals is ignored
 			- conditional_form_label: array (optional)
 				In MODE_NEW & MODE_EDIT forms, this controls field labels based on the value of another field (currently the other field must be T_ENUM or T_LOOKUP).
 				- controlled_by: string
@@ -364,6 +381,7 @@
 				If an integer is provided, this will be the maximum number of digits (e.g. 'max_decimals' => 5 will limit to 5 decimal digits)
 				If an array is provided, the array keys map the MODE_* to the maximum number of digits to show in this view (e.g. 'max_decimals' => array(MODE_VIEW => 5) will limit the display to 5 decimal digits only in MODE_VIEW)
 				If this setting is not provided, any T_NUMBER value will be rendered after it has been cast to float
+				Note: if number_format is provided, the setting max_decimals is ignored
 			- tab: string (optional)
 				If the form_tabs setting was provided for this table, refer the identifier of the tab to which this field belongs. In a tabbed form, if the field's tab identifier is missing, it is assumed that the field belongs to the first tab.
 			- map_picker: array (optional)
