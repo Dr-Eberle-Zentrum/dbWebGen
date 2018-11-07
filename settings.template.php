@@ -356,14 +356,16 @@
 						a ... text to display after (specified by key 'after')
 						b ... text to display before (specified by key 'before')
 						c ... currency (specified by key 'currency')
+						e ... non-breaking space
 						m ... sign: - only
 						n ... the actual number (formatted according to settings below)
 						s ... sign: + or -
 					* decimals (int): number of decimals
 					* dec_point (string): decimal point character
 					* thousands_sep (string): thousands separator character
-					* before (string): text to display before
-					* after (string): text to display after
+					* currency (string): currency symbol (required only if "c" part of template)
+					* before (string): text to display before (required only if "b" part of template)
+					* after (string): text to display after (required only if "a" part of template)
 				Note: if number_format is provided, the setting max_decimals is ignored
 			- conditional_form_label: array (optional)
 				In MODE_NEW & MODE_EDIT forms, this controls field labels based on the value of another field (currently the other field must be T_ENUM or T_LOOKUP).

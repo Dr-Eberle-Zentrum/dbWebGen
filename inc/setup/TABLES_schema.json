@@ -662,6 +662,66 @@
                         	"description": "Define the step size for up/down (e.g. 3 or 0.01) of number fields. If not restricted, set string to <code>any</code>",
                         	"type": [ "number", "string" ]
                         },
+                        "cell_css": {
+                            "title": "Cell CSS",
+                        	"description": "This will be set as the style of the table cell in list view in the <code>style</code> attribute",
+                            "type": "string",
+                            "required": false
+                        },
+                        "number_format": {
+                            "title": "Number Formatting",
+                            "type": "object",
+                            "description": "[optional] For number fields, these settings determine how the number will be displayed in list view.",
+                            "required": false,
+                            "properties": {
+                                "template": {
+                                    "title": "Format Template",
+                                    "type": "string",
+                                    "description": "Specify a combination of the following characters:<ul><li><code>a</code> ... insert text after the number (see setting below)</li><li><code>b</code> ... insert text before the number (see setting below)</li><li><code>c</code> ... insert currency symbol (see setting below)</li><li><code>e</code> ... insert non-breaking space</li><li><code>m</code> ... insert a minus sign if number is negative</li><li><code>n</code> ... insert the actual number</li><li><code>s</code> ... insert a plus sign if number is positive, or a minus sign if number is negative</li></ul>",
+                                    "required": true,
+                                    "default": "mn"
+                                },
+                                "decimals": {
+                                    "title": "Decimals",
+                                    "description": "Number of decimal digits to display",
+                                    "type": "number",
+                                    "required": true,
+                                    "default": 2
+                                },
+                                "dec_point": {
+                                    "title": "Decimals",
+                                    "description": "Decimal point character",
+                                    "type": "string",
+                                    "required": true,
+                                    "default": "."
+                                },
+                                "thousands_sep": {
+                                    "title": "Thousands Separator",
+                                    "description": "Thousands separator character",
+                                    "type": "string",
+                                    "required": true,
+                                    "default": ","
+                                },
+                                "currency": {
+                                    "title": "Currency Symbol",
+                                    "description": "Currency symbol, only if <code>c</code> is included in the format template",
+                                    "type": "string",
+                                    "required": false
+                                },
+                                "before": {
+                                    "title": "Text Before",
+                                    "description": "Text to display before the number, only if <code>b</code> is included in the format template",
+                                    "type": "string",
+                                    "required": false
+                                },
+                                "after": {
+                                    "title": "Text After",
+                                    "description": "Text to display after the number, only if <code>a</code> is included in the format template",
+                                    "type": "string",
+                                    "required": false
+                                }
+                            }
+                        },
                         "conditional_form_label": {
                             "title": "Conditional Field Label",
                         	"description": "In editing forms, this controls the field's label based on the value of another field (currently the other field must be of type <i>Enum</i> or <i>Lookup</i>)",
