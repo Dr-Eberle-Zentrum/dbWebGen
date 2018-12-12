@@ -81,7 +81,12 @@
 				Number of seconds to cache each search result. Default is one hour. Note that this setting is only effective if $APP/cache_dir is set and valid. If you set this to 0, there will be no caching of global search results.
 		- super_users: array (optional)
 			You may provide an array of user names here, who will be allowed to configure the dbWebGen settings using the settings wizard
-
+		- custom_query_data_provider: string (optional)
+			In the query builder it is possible to reference a custom data provider instead of executing an SQL query, e.g. "{mydata}". When executing the query, the result data table is then fetched from the function referenced by this setting.
+			The function receives two arguments:
+				- $key: the key defined in the query string, in the example above: "mydata"
+				- $params: a key/value array with parameters and their values, if the query is parameterized
+			The engine expects this function to return an instance of PDOStatement. If this is not possible, e.g. when the resulting data is not coming from a PDO query, then the function may also return an instance of class PDOStatementEmulator (defined in /inc/db.php), which basically allows to create synthetic query results.
 	======================================================================================================== */
 	$APP = array(
 		'plugins' => array(),

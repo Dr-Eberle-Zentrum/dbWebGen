@@ -179,4 +179,71 @@
                 return $bool;
         }
     }
+
+    //==========================================================================================
+  	// To fake query results for chart building (see setting $APP/custom_query_data_provider)
+  	class PDOStatementEmulator {
+  	//==========================================================================================
+  		protected $table = array();
+      protected $column_meta = array();
+  		protected $cur_row = 0;
+  		protected $num_rows = 0;
+
+      //--------------------------------------------------------------------------------------
+      // $column_meta is an ordered array, each item specifying column name (key 'name') and
+      // type (key 'js_type', one of { string, number, boolean, date, datetime, timeofday })
+      public function __construct($column_meta) {
+      //--------------------------------------------------------------------------------------
+        $this->column_meta = $column_meta;
+      }
+
+      //--------------------------------------------------------------------------------------
+      public function columnCount() {
+      //--------------------------------------------------------------------------------------
+        return count($this->column_meta);
+      }
+
+  		//--------------------------------------------------------------------------------------
+      // add $row in key => value style, for PDO::FETCH_ASSOC to work
+  		public function add_row($row) {
+  		//--------------------------------------------------------------------------------------
+  			$this->table[] = $row;
+  			$this->num_rows++;
+  		}
+
+  		//--------------------------------------------------------------------------------------
+      // fetch_style is ignored, returns what was fed by add_row()
+  		public function fetch($fetch_style) {
+  		//--------------------------------------------------------------------------------------
+  			if($this->cur_row >= $this->num_rows)
+  				return false;
+        return $this->table[$this->cur_row++];
+  		}
+
+  		//--------------------------------------------------------------------------------------
+      // sort by column
+  		public function sort($column, $asc) {
+  		//--------------------------------------------------------------------------------------
+  			usort($this->table, function($row1, $row2) use ($column, $asc) {
+  				if($row1[$column] == $row2[$column]) return 0;
+  				return $row1[$column] < $row2[$column] ? ($column ? -1 : 1) : ($column ? 1 : -1);
+  			});
+  		}
+
+  		//--------------------------------------------------------------------------------------
+      // only call *after* $table was populated
+  		public function limit($n) {
+  		//--------------------------------------------------------------------------------------
+  			if($n >= $this->num_rows)
+  				return;
+  			array_splice($this->table, $n);
+  			$this->num_rows = $n;
+  		}
+
+      //--------------------------------------------------------------------------------------
+      public function getColumnMeta($column) {
+      //--------------------------------------------------------------------------------------
+        return $this->column_meta[$column];
+      }
+    }
 ?>

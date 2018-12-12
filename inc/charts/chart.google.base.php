@@ -67,27 +67,31 @@
 				// type can be 'string', 'number', 'boolean', 'date', 'datetime', and 'timeofday'
 				$col_info = $stmt->getColumnMeta($i);
 				#debug_log($col_info);
-				switch($col_info['native_type']) {
-					case 'int': case 'int2': case 'int4': case 'int8': case 'numeric': case 'float4': case 'float8':
-						$col_info['js_type'] = 'number'; break;
+				// we could be dealing with a PDOStatementEmulator instance (see class in db.php),
+				// then the js_type is already set
+				if(!isset($col_info['js_type'])) {
+					switch($col_info['native_type']) {
+						case 'int': case 'int2': case 'int4': case 'int8': case 'numeric': case 'float4': case 'float8':
+							$col_info['js_type'] = 'number'; break;
 
-					case 'text': case 'varchar': case 'bpchar':
-						$col_info['js_type'] = 'string'; break;
+						case 'text': case 'varchar': case 'bpchar':
+							$col_info['js_type'] = 'string'; break;
 
-					case 'bool':
-						$col_info['js_type'] = 'boolean'; break;
+						case 'bool':
+							$col_info['js_type'] = 'boolean'; break;
 
-					case 'date':
-						$col_info['js_type'] = 'date'; break;
+						case 'date':
+							$col_info['js_type'] = 'date'; break;
 
-					case 'timestamp': case 'timestamptz':
-						$col_info['js_type'] = 'datetime'; break;
+						case 'timestamp': case 'timestamptz':
+							$col_info['js_type'] = 'datetime'; break;
 
-					case 'time': case 'timetz':
-						$col_info['js_type'] = 'timeofday'; break;
+						case 'time': case 'timetz':
+							$col_info['js_type'] = 'timeofday'; break;
 
-					default:
-						$col_info['js_type'] = 'string';
+						default:
+							$col_info['js_type'] = 'string';
+					}
 				}
 
 				$col_info['index'] = $i;

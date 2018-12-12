@@ -224,7 +224,10 @@ SQL;
 			$this->store_ui = '';
 
 			if($this->has_post_values()) {
-				if(mb_substr(mb_strtolower($this->sql), 0, 6) !== 'select') {
+				if(preg_match('/^\{(?<key>[A-Za-z0-9_\-]+)\}/', $this->sql, $match)) {
+					$this->query_info['custom_query'] = $match['key'];
+				}
+				else if(mb_substr(mb_strtolower($this->sql), 0, 6) !== 'select') {
 					proc_error(l10n('error.storedquery-invalid-sql'));
 					$this->sql = null;
 				}
@@ -497,6 +500,7 @@ HTML;
 		//--------------------------------------------------------------------------------------
 		protected function build_visualization_part() {
 		//--------------------------------------------------------------------------------------
+			global $APP;
 			$this->viz_ui = '';
 
 			if($this->view === QUERY_VIEW_RESULT) {
@@ -579,16 +583,28 @@ HTML;
 				$js = $this->chart->cache_get_js();
 
 			if($js === false) {
-				$stmt = $this->db->prepare($this->query_info['sql']);
-				if($stmt === false)
-					return proc_error(l10n('error.db-prepare'), $this->db);
-
 				$all_params = array_merge($this->query_info['params'], $this->query_info['multiparams']);
 				foreach($all_params as $p => $v)
 					if(is_array($v))
 						unset($all_params[$p]);
-				if($stmt->execute($all_params) === false)
-					return proc_error(l10n('error.db-execute'), $stmt);
+
+				if(isset($this->query_info['custom_query'])) {
+					// remve the ':' at the beginning of param keys
+					$custom_params = array();
+					foreach($all_params as $p => $v)
+						$custom_params[mb_substr($p, 1)] = $v;
+					$stmt = $APP['custom_query_data_provider'](
+						$this->query_info['custom_query'],
+						$custom_params
+					);
+				}
+				else {
+					$stmt = $this->db->prepare($this->query_info['sql']);
+					if($stmt === false)
+						return proc_error(l10n('error.db-prepare'), $this->db);
+					if($stmt->execute($all_params) === false)
+						return proc_error(l10n('error.db-execute'), $stmt);
+				}
 
 				$js = $this->chart->get_js($stmt);
 
