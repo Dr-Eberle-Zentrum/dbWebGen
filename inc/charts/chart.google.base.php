@@ -194,6 +194,8 @@
 					options.width = $('#chart_div').width() - {$subtract_width};
 					var chart = new {$this->class_name()}(document.getElementById('chart_div'));
 					{$this->before_draw_js()}
+					if(typeof dbwebgen_chart_beforedraw === 'function')
+						dbwebgen_chart_beforedraw(chart, data_table, options);
 					chart.draw(data_table, options);
 				}
 
