@@ -397,3 +397,29 @@ span.hl {
 .help-block.remaining-chars {
 	display: none;
 }
+
+pre .pre-string {
+	color: darkred;
+}
+
+pre .pre-number {
+	color: darkgreen;
+}
+
+pre .pre-key {
+	color: darkblue;
+	font-weight: bold;
+}
+
+pre .pre-bool {
+	color: darkorange;
+	font-style: italic;
+}
+
+pre .pre-null {
+	color: dimgray;
+	font-style: italic;
+}
+
+pre .pre-any {	
+}

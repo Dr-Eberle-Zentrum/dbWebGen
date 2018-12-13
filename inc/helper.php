@@ -202,14 +202,27 @@
 	//------------------------------------------------------------------------------------------
 		$s = str_repeat(' ', $indent) . "[\n";
 		if(is_array($a)) foreach($a as $k => $v) {
-
-			$s .= str_repeat(' ', $indent + 2) . "'{$k}' => ";
-			if(is_array($v))
-				$s .= "\n" . __arr_str($v, $indent + 2) . ",\n";
-			else if(is_string($v))
-				$s .= "'$v',\n";
-			else
-				$s .= "$v,\n";
+			$s .= str_repeat(' ', $indent + 3) . "'<span class='pre-key'>{$k}</span>' => ";
+			switch(gettype($v)) {
+				case 'NULL':
+					$s .= "<span class='pre-null'>NULL</span>,\n";
+					break;
+				case 'array':
+					$s .= trim(__arr_str($v, $indent + 3)) . ",\n";
+					break;
+				case 'boolean':
+					$s .= "'<span class='pre-bool'>" . ($v ? 'TRUE' : 'FALSE') . "</span>',\n";
+					break;
+				case 'string':
+					$s .= "'<span class='pre-string'>" . html($v) . "</span>',\n";
+					break;
+				case 'integer': case 'double':
+					$s .= "<span class='pre-number'>$v</span>,\n";
+					break;
+				default:
+					$s .= "<span class='pre-any'>" . html($v) . "</span>,\n";
+					break;
+			}	
 		}
 		$s .= str_repeat(' ', $indent) . "]\n";
 		return $s;
