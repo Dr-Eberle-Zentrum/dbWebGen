@@ -211,7 +211,7 @@
 					$s .= trim(__arr_str($v, $indent + 3)) . ",\n";
 					break;
 				case 'boolean':
-					$s .= "'<span class='pre-bool'>" . ($v ? 'TRUE' : 'FALSE') . "</span>',\n";
+					$s .= "<span class='pre-bool'>" . ($v ? 'TRUE' : 'FALSE') . "</span>,\n";
 					break;
 				case 'string':
 					$s .= "'<span class='pre-string'>" . html($v) . "</span>',\n";
