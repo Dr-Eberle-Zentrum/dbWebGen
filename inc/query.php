@@ -252,7 +252,11 @@ SQL;
 			$sql_field = QUERYPAGE_FIELD_SQL;
 			$sql_label = l10n('querypage.sql-label');
 			$exec_label = l10n('querypage.exec-button');
-			$sql_help = get_help_popup(l10n('querypage.sql-help-head'), l10n('querypage.sql-help-text'));
+			$sql_help = get_help_popup(
+				l10n('querypage.sql-help-head'), 
+				l10n('querypage.sql-help-text'), 
+				array('data-min-width="550px"')
+			);
 
 			$this->query_ui = <<<QUI
 				<div class="form-group">
@@ -457,7 +461,7 @@ HTML;
 		}
 
 		//--------------------------------------------------------------------------------------
-		protected function render_lookup_field($table_name, $field_name, $param_name, $param_value) {
+		protected function render_lookup_field($table_name, $field_name, $param_name, $param_value, $is_required) {
 		//--------------------------------------------------------------------------------------
 			global $TABLES;
 			if(!isset($TABLES[$table_name]) || !isset($TABLES[$table_name]['fields'][$field_name])) {
@@ -477,7 +481,8 @@ HTML;
 						'id_attr' => $param_name,
 						'null_option_allowed' => false,
 						'force_cardinality_single' => true,
-						'multi_select' => isset($this->query_info['flags'][':'.$param_name]) && in_array('multi', $this->query_info['flags'][':'.$param_name])
+						'multi_select' => QueryPage::is_multi_param($this->query_info['flags'], ':'.$param_name),
+						'render_required' => $is_required
 					);
 					return $f->render_control($render_options);
 					break;
@@ -498,11 +503,39 @@ HTML;
 		}
 
 		//--------------------------------------------------------------------------------------
+		protected function render_query_form_script($download_js = '') {
+		//--------------------------------------------------------------------------------------
+			if($this->chart && !$this->chart->is_plaintext()) {
+				$this->viz_ui .= <<<JS
+				<script>
+					$(document).ready(function() {
+						/*$('form.param-query-form select').change(function() {
+							let box = $(this);
+							// submit form, but only if selection different than initial
+							if(box.prop('multiple') === true || box.find('option:selected').attr('selected') === 'selected')
+								return;
+							$(this).parents('form').first().submit();
+						});*/
+						$('form.param-query-form').removeClass('hidden');
+					});
+					$download_js
+				</script>
+JS;
+			}
+			if(!$download_js) {
+				$this->viz_ui .= <<<JS
+					<script>
+						$('#download-link').remove();
+					</script>
+JS;
+			}
+		}
+
+		//--------------------------------------------------------------------------------------
 		protected function build_visualization_part() {
 		//--------------------------------------------------------------------------------------
 			global $APP;
 			$this->viz_ui = '';
-
 			if($this->view === QUERY_VIEW_RESULT) {
 				$size = 12;
 				$css_class = 'result-full fill-height';
@@ -522,13 +555,26 @@ HTML;
 				if($this->stored_description != '' && !$nometa)
 					$this->viz_ui .= '<p>' . html($this->stored_description) . "</p>\n";
 				if(count($this->query_info['params']) > 0) {
+					$has_required_fields = false;
 					$param_fields = '';
 					foreach($this->query_info['params'] as $param_name => $param_value) {
+						$required_attr = $required_indicator = '';
+						if($this->query_info['required'][$param_name]) {
+							$has_required_fields = true;
+							$required_attr = "required='true'";
+							$required_indicator = sprintf("<span class='required-indicator' title='%s'>★</span>", l10n('querypage.param-required'));
+						}
 						$control_html = '';
 						if(isset($this->query_info['lookups'][$param_name])) {
 							$lookup_expr = $this->query_info['lookups'][$param_name];
 							if(preg_match('/^table:(?P<table>[^,]+),field:(?P<field>.+)$/', $lookup_expr, $matches)) {
-								$control_html = $this->render_lookup_field($matches['table'], $matches['field'], substr($param_name, 1), $param_value);
+								$control_html = $this->render_lookup_field(
+									$matches['table'], 
+									$matches['field'], 
+									substr($param_name, 1), 
+									$param_value,
+									$required_attr != ''
+								);
 							}
 						}
 						$param_name = substr($param_name, 1);
@@ -537,14 +583,17 @@ HTML;
 						  html($this->query_info['labels'][":$param_name"]) : $param_name;
 						if($control_html == '') {
 							$param_value = unquote($param_value);
-							$control_html = "<input id='$param_name' type='text' class='input-sm form-control' name='p:$param_name' value='$param_value' />";
+							$control_html = "<input $required_attr id='$param_name' type='text' class='input-sm form-control' name='p:$param_name' value='$param_value' />";
 						}
 						$param_fields .= <<<HTML
 							<div class="form-group">
-								<label for='$param_name'>$param_label:</label>
+								<label for='$param_name'>$param_label$required_indicator:</label>
 								$control_html &nbsp;&nbsp;
 							</div>
 HTML;
+					}
+					if($has_required_fields) {
+						$param_fields = sprintf("<p class='text-muted'>%s</p>\n%s", l10n('querypage.param-hint'), $param_fields);
 					}
 
 					foreach($_GET as $p => $v) {
@@ -573,8 +622,27 @@ HTML;
 			$this->viz_ui .= "  <div class='$css_class' id='chart_div'></div>\n";
 			$this->viz_ui .= "</div>\n";
 
-			if($this->chart === null || !$this->sql)
+			$required_param_missing = false;
+			foreach($this->query_info['required'] as $param => $required) {
+				if(!$required)
+					continue;
+				$is_multi_param = QueryPage::is_multi_param($this->query_info['flags'], $param);
+				if( ($is_multi_param && !is_array($this->query_info['params'][$param]))
+					|| (!$is_multi_param && $this->query_info['params'][$param] === '')
+				) {
+					$required_param_missing = true;
+					break;
+				}
+			}
+			#debug_log('Required parameter missing = ', $required_param_missing);
+
+			if($this->chart === null 
+				|| !$this->sql 
+				|| $required_param_missing
+			) {
+				$this->render_query_form_script();
 				return;
+			}
 
 			$js = false;
 			$can_cache = $this->can_cache();
@@ -685,24 +753,14 @@ JS;
 							$('#download-link').remove();
 JS;
 				}
-
-				$this->viz_ui .= <<<JS
-				<script>
-					$(document).ready(function() {
-						$('form.param-query-form select').change(function() {
-							/*let box = $(this);
-							// submit form, but only if selection different than initial
-							if(box.prop('multiple') === true || box.find('option:selected').attr('selected') === 'selected')
-								return;
-							$(this).parents('form').first().submit();
-							*/
-						})
-						$('form.param-query-form').removeClass('hidden');
-					});
-					$download_js
-				</script>
-JS;
+				$this->render_query_form_script($download_js);
 			}
+		}
+
+		//--------------------------------------------------------------------------------------
+		protected static function is_multi_param(&$flags, $param) {
+		//--------------------------------------------------------------------------------------
+			return isset($flags[$param]) && in_array('multi', $flags[$param]);
 		}
 
 		//--------------------------------------------------------------------------------------
@@ -714,13 +772,14 @@ JS;
 				'multiparams' => array(),
 				'lookups' => array(),
 				'labels' => array(),
-				'flags' => array()
+				'flags' => array(),
+				'required' => array()
 			);
 
 			// FIXME: right now, infos paramters that occur multiple times are overwritten each time, so only the last one counts
 
 			if(preg_match_all(
-				'/#{' .
+				'/#(?P<required>!)?{' .
 				'(?P<params>\w+)(:(?P<labels>[^|]+))?\|' .
 				'(?P<defvals>[^}|]*)' .
 				'(\|(?P<lookups>[^}|]*))?' .
@@ -732,6 +791,8 @@ JS;
 			) {
 				for($i = 0; $i < count($matches['params']); $i++) {
 					$key = ':' . $matches['params'][$i];
+
+					$retval['required'][$key] = $matches['required'][$i] === '!';
 
 					if(trim($matches['flags'][$i]) !== '')
 						$retval['flags'][$key] = explode(',', $matches['flags'][$i]);
@@ -747,9 +808,7 @@ JS;
 
 					// replace this stuff in the sql statement
 					// check if we have a multi param
-					if(isset($retval['flags'][$key])
-						&& in_array('multi', $retval['flags'][$key])
-					) {
+					if(QueryPage::is_multi_param($retval['flags'], $key)) {
 						// empty multi select box delivers array with one item that has empty string as value
 						if(!is_array($val) || (count($val) === 1 && $val[0] === ''))
 							$val = array();
@@ -763,7 +822,7 @@ JS;
 						if(count($val) === 0) {
 							// no constraints selected => just true
 							$retval['sql'] = preg_replace(
-								'/#{' . $matches['params'][$i] . '(:[^|]+)?\|[^}]*}/',
+								'/#!?{' . $matches['params'][$i] . '(:[^|]+)?\|[^}]*}/',
 								'(' . $key . ')',
 								$retval['sql']);
 
@@ -778,10 +837,11 @@ JS;
 							}
 							// currently we only have the "in" operator, so no need to diversify yet
 							$retval['sql'] = preg_replace(
-								'/#{' . $matches['params'][$i] . '(:[^|]+)?\|[^}]*}/',
+								'/#!?{' . $matches['params'][$i] . '(:[^|]+)?\|[^}]*}/',
 								sprintf(
-									'(%s in (%s))',
+									'(%s %s (%s))',
 									$retval['expr'][$key],
+									$retval['op'][$key],
 									join(', ', $placeholders)
 								),
 								$retval['sql']
@@ -791,7 +851,7 @@ JS;
 					else {
 						// simple param
 						$retval['sql'] = preg_replace(
-							'/#{' . $matches['params'][$i] . '(:[^|]+)?\|[^}]*}/',
+							'/#!?{' . $matches['params'][$i] . '(:[^|]+)?\|[^}]*}/',
 							'(' . $key . ')',
 							$retval['sql']);
 
@@ -808,7 +868,7 @@ JS;
 						$retval['labels'][$key] = $label;
 				}
 			}
-
+			//debug_log($retval);
 			//debug_log($retval['sql']);
 			//debug_log($retval['params']);
 			return $retval;

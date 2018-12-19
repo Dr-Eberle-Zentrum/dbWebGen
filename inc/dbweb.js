@@ -196,6 +196,13 @@ function init_popovers() {
 //------------------------------------------------------------------------------------------
     $('[data-toggle=popover][data-purpose=help]').popover({
         html: true
+    }).on('show.bs.popover', function() {
+        let e = $(this);
+        if(e.data('min-width')) {
+            e.data('bs.popover').tip().css({
+                'min-width': e.data('min-width')
+            });
+        }
     });
 }
 

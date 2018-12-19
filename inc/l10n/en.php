@@ -461,11 +461,24 @@ HTML
         'querypage.exec-button' => 'Execute',
         'querypage.sql-help-head' => 'SQL Query Help',
         'querypage.sql-help-text' => <<<HTML
-            <p>Enter here the SQL query to execute. Only <code>SELECT</code> queries are possible.</p>
-            <p><b>Parameterized Queries</b>: It is possible to use named placeholders with default values instead of literal values in the where clause. A parameter looks like <code>#{my_param|default_val}</code>, where <code>my_param</code> is the name of the paramenter, and <code>default_val</code> is the default value. The default value can be empty. The separator <code>|</code> is mandatory even for an empty default value.</p>
-            <p><b>Example</b>: <code>select * from users where lastname = #{Name|Norris}</code></p>
-            <p>Every parameter can optionally be given a label upon first use. The label is then displayed in the query display and is defined as follows: <code>#{my_param:label|default_val}</code>, for instance <code>#{a:Minimum Age of Person|18}</code></p>
-            <p>For experts: additionally one can define to display a dropdown box in the query view, by referencing a table field setting in the project settings. This exemplary works as follows: <code>#{Name||table:person,field:fullname}</code>. This will display a dropdown box as configured in the table <code>person</code> for the field <code>fullname</code>.</p>
+            <p>
+                Enter here the SQL query to execute. Only <code>SELECT</code> queries are possible.
+            </p>
+            <p>
+                <b>Parameterized Queries</b>: It is possible to use named placeholders with default values instead of literal values in the where clause. A parameter looks like <code>#{my_param|default_val}</code>, where <code>my_param</code> is the name of the paramenter, and <code>default_val</code> is the default value. The default value can be empty. The separator <code>|</code> is mandatory even for an empty default value. By default all parameters are optional. To define a required parameter, which prevents the query from being executed when it's empty, you put an exclamation mark <code>!</code> at the beginning signature of the parameter, e.g. <code>#!{...}</code>
+            </p>
+            <p>
+                <b>Example</b>: <code>select * from users where lastname = #{Name|Norris}</code>
+            </p>
+            <p>
+                Every parameter can optionally be given a label. The label is then displayed in the query display and is defined as follows: <code>#{my_param:label|default_val}</code>, for instance <code>#{a:Minimum Age of Person|18}</code>. Note that if you use a parameter multiple times in the query, only the last occurrence of the parameter fully defines the parameter.
+            </p>
+            <p>
+                For experts: additionally one can define to display a dropdown box in the query view, by referencing a table field setting in the project settings. This exemplary works as follows: <code>#{Name||table:person,field:fullname}</code>. This will display a dropdown box as configured in the table <code>person</code> for the field <code>fullname</code>.
+            </p>
+            <p>
+                <b>Dropdown Parameters</b>: It is possible to use one of the lookup fields defined for the database to generate a dropdown box, so the user can choose the parameter value by picking. The signature of a dropdown parameter is: <code>#{p||table:persons,field:relationship|flags:multi|expr:pers_rel|op:in}</code>. This example defines a parameter <code>p</code> without default value. It is fed by the lookup field relationship in table persons. <code>flags:multi</code> enables multiple selection. <code>expr:pers_rel</code> defines the SQL expression (typically the field) to test the picked values against, and <code>op:in</code> defines that the SQL operator used is <code>in</code>. Other set comparison operators can be used like <code>not in</code>, <code>>= any</code>, etc.
+            </p>
 HTML
         ,
         'querypage.store-settings-cache-expires' => 'Enable caching of data. Cache expires after (seconds)',
@@ -483,6 +496,8 @@ HTML
         'querypage.settings-viz-label' => 'Visualization Type',
         'querypage.param-query-refresh' => 'Refresh Results',
         'querypage.results-head' => 'Result Visualization',
+        'querypage.param-required' => 'This query field must be provided before the query can be executed',
+        'querypage.param-hint' => 'Query parameters marked with ★ are mandatory to fill in.',
 
         'record-renderer.view-icon' => 'View This $1',
         'record-renderer.edit-icon' => 'Edit This $1',

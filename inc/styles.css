@@ -398,28 +398,24 @@ span.hl {
 	display: none;
 }
 
-pre .pre-string {
+/* for debug_log() output */
+.pre-string {
 	color: darkred;
 }
-
-pre .pre-number {
+.pre-number {
 	color: darkgreen;
 }
-
-pre .pre-key {
+.pre-key {
 	color: darkblue;
 	font-weight: bold;
 }
-
-pre .pre-bool {
+.pre-bool {
 	color: darkorange;
 	font-style: italic;
 }
-
-pre .pre-null {
+.pre-null {
 	color: dimgray;
 	font-style: italic;
 }
-
-pre .pre-any {	
+.pre-any {	
 }

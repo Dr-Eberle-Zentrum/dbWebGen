@@ -72,11 +72,14 @@
 	}
 
 	//------------------------------------------------------------------------------------------
-	function get_help_popup($title, $text) {
+	function get_help_popup($title, $text, $addl_attrs = array()) {
 	//------------------------------------------------------------------------------------------
-		return "<a href='javascript:void(0)' title='$title' data-purpose='help' data-toggle='popover' data-placement='bottom' data-content='" .
-			htmlentities($text, ENT_QUOTES) .
-			"'><span class='glyphicon glyphicon-info-sign'></span></a>\n";
+		return sprintf(
+			"<a href='javascript:void(0)' title='%s' data-container='body' data-purpose='help' data-toggle='popover' data-placement='bottom' data-content='%s' %s><span class='glyphicon glyphicon-info-sign'></span></a>\n",
+			$title,
+			htmlentities($text, ENT_QUOTES),
+			join(' ', $addl_attrs)
+		);
 	}
 
 	//------------------------------------------------------------------------------------------
@@ -198,31 +201,34 @@
 	}
 
 	//------------------------------------------------------------------------------------------
+	function __debug_val_display($v, $indent = 0, $quote_string = false) {
+	//------------------------------------------------------------------------------------------
+		switch(gettype($v)) {
+			case 'NULL':
+				return "<span class='pre-null'>NULL</span>";
+			case 'array':
+				return trim(__arr_str($v, $indent + 3));
+			case 'boolean':
+				return "<span class='pre-bool'>" . ($v ? 'TRUE' : 'FALSE') . "</span>";
+			case 'string':
+				$sret = "<span class='pre-string'>" . html($v) . "</span>";
+				if($quote_string)
+					$sret = "'" . $sret . "'";
+				return $sret;
+			case 'integer': case 'double':
+				return "<span class='pre-number'>$v</span>";
+			default:
+				return "<span class='pre-any'>" . html($v) . "</span>";
+		}	
+	}
+
+	//------------------------------------------------------------------------------------------
 	function __arr_str(&$a, $indent = 0) {
 	//------------------------------------------------------------------------------------------
 		$s = str_repeat(' ', $indent) . "[\n";
 		if(is_array($a)) foreach($a as $k => $v) {
 			$s .= str_repeat(' ', $indent + 3) . "'<span class='pre-key'>{$k}</span>' => ";
-			switch(gettype($v)) {
-				case 'NULL':
-					$s .= "<span class='pre-null'>NULL</span>,\n";
-					break;
-				case 'array':
-					$s .= trim(__arr_str($v, $indent + 3)) . ",\n";
-					break;
-				case 'boolean':
-					$s .= "<span class='pre-bool'>" . ($v ? 'TRUE' : 'FALSE') . "</span>,\n";
-					break;
-				case 'string':
-					$s .= "'<span class='pre-string'>" . html($v) . "</span>',\n";
-					break;
-				case 'integer': case 'double':
-					$s .= "<span class='pre-number'>$v</span>,\n";
-					break;
-				default:
-					$s .= "<span class='pre-any'>" . html($v) . "</span>,\n";
-					break;
-			}	
+			$s .= __debug_val_display($v, $indent, true) . ",\n";
 		}
 		$s .= str_repeat(' ', $indent) . "]\n";
 		return $s;
@@ -386,7 +392,7 @@
 		$msg = '';
 
 		foreach(func_get_args() as $arg)
-			$msg .= is_array($arg) ? arr_str($arg) : strval($arg);
+			$msg .= is_array($arg) ? arr_str($arg) : __debug_val_display($arg);
 
 		$_SESSION['msg'][] = "<div class='alert alert-info'>$msg</div>";
 	}

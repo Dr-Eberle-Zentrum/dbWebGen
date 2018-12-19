@@ -88,7 +88,7 @@
 		//--------------------------------------------------------------------------------------
 		public function get_required_attr() {
 		//--------------------------------------------------------------------------------------
-			return $this->is_required() ? 'required' : '';
+			return $this->is_required() || $this->is_render_as_required() ? 'required' : '';
 		}
 		//--------------------------------------------------------------------------------------
 		public function is_disabled() { // default: false
@@ -134,6 +134,12 @@
 		public function has_array_value() {
 		//--------------------------------------------------------------------------------------
 			return false;
+		}
+		//--------------------------------------------------------------------------------------
+		public function is_render_as_required() {
+		//--------------------------------------------------------------------------------------
+			return isset($this->render_settings['render_required']) 
+				&& $this->render_settings['render_required'] === true;
 		}
 		//--------------------------------------------------------------------------------------
 		public function get_submitted_value($value_if_missing = null) {

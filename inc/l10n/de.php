@@ -469,11 +469,24 @@ HTML
         'querypage.exec-button' => 'Ausführen',
         'querypage.sql-help-head' => 'Hilfe für SQL-Abfrage',
         'querypage.sql-help-text' => <<<HTML
-            <p>Geben Sie hier Ihre SQL-Abfrage ein. Nur <code>SELECT</code>-Abfragen sind erlaubt.</p>
-            <p><b>Parametrisierte Abfrage</b>: Sie können benannte Platzhalter mit vorbelegten Werten statt konkreten Wertden in Ihrer Abfrage verwenden. Ein Parameter wird wie folgt verwendet: <code>#{my_param|default_val}</code>, wobei <code>my_param</code> der Name des Parameters ist und <code>default_val</code> ist der vorbelegte Wert. Letzterer kann auch leer sein, aber das Trennzeichen <code>|</code> muss trotzdem gesetzt werden.</p>
-            <p><b>Beispiel</b>: <code>select * from users where lastname = #{Name|Norris}</code></p>
-            <p>Jedem Parameter kann optional bei erster Verwendung in der Abfrage ein Label gegeben, werden, der dann in der Ausführungsansicht verwendet wird. Das Muster ist dann wie folgt: <code>#{my_param:label|default_val}</code>, also z.B. <code>#{a:Mindestalter der Person|18}</code></p>
-            <p>Expertenmodus: zusätzlich kann optional ein Dropdown-Feld aus einer Tabelle angegeben werden, das dann dem Benutzer in der Abfragenansicht angeboten wird, nach folgendem Muster: <code>#{Name||table:person,field:fullname}</code>. Hier werden aus der Tabelle <code>person</code> entsprechend den Projekteinstellungen für das Feld <code>fullname</code> eine Dropdown-Box angeboten zur Auswahl.</p>
+            <p>
+                Geben Sie hier Ihre SQL-Abfrage ein. Nur <code>SELECT</code>-Abfragen sind erlaubt.
+            </p>
+            <p>
+                <b>Parametrisierte Abfrage</b>: Sie können benannte Platzhalter mit vorbelegten Werten statt konkreten Wertden in Ihrer Abfrage verwenden. Ein Parameter wird wie folgt verwendet: <code>#{my_param|default_val}</code>, wobei <code>my_param</code> der Name des Parameters ist und <code>default_val</code> ist der vorbelegte Wert. Letzterer kann auch leer sein, aber das Trennzeichen <code>|</code> muss trotzdem gesetzt werden. Wenn der Parameter mit <code>#!{...}</code>, also mit einem Ausrufezeichen zwischen <code>#</code> und <code>{</code> markiert wird, dann muss dieser Parameter verpflichtend vom Benutzer oder über Standardwert gegeben sein, um die Abfrage ausführen zu können.
+            </p>
+            <p>
+                <b>Beispiel</b>: <code>select * from users where lastname = #{Name|Norris}</code>
+            </p>
+            <p>
+                Jedem Parameter kann optional (zumindest beim letzten Vorkommen in der Abfrage) ein Label gegeben, werden, der dann in der Ausführungsansicht verwendet wird. Das Muster ist dann wie folgt: <code>#{my_param:label|default_val}</code>, also z.B. <code>#{a:Mindestalter der Person|18}</code>
+            </p>
+            <p>
+                Expertenmodus: zusätzlich kann optional ein Dropdown-Feld aus einer Tabelle angegeben werden, das dann dem Benutzer in der Abfragenansicht angeboten wird, nach folgendem Muster: <code>#{Name||table:person,field:fullname}</code>. Hier werden aus der Tabelle <code>person</code> entsprechend den Projekteinstellungen für das Feld <code>fullname</code> eine Dropdown-Box angeboten zur Auswahl.
+            </p>
+            <p>
+                Es ist auch möglich, Dropdowns mit Mehrfachauswahl als Parameter anzugeben. Der Parameter sieht dann z.B. wie folgt aus: <code>#{x||table:person,field:full_name|flags:multi|expr:person_name|op:in}</code>. Erklärung: <code>flags:multi</code> ermöglicht Mehrfachauswahl. <code>expr:person_name</code> bestimmt, dass die Mehrfachauswahl als Einschränkung auf das Feld <code>person_name</code> gemacht wird. Und <code>op:in</code> bestimmt, dass der SQL-Befehl <code>in</code> als Operator verwendet wird. Hier könnten auch andere SQL-Mengenoperatoren vorkommen, z.B. <code>not in</code> oder <code>>= any</code>.
+            </p>
 HTML
         ,
         'querypage.store-settings-cache-expires' => 'Zwischenspeichern aktivieren. Erneuerungsintervall (Sekonden)',
@@ -491,6 +504,8 @@ HTML
         'querypage.settings-viz-label' => 'Visualisierungstyp',
         'querypage.param-query-refresh' => 'Eregbnisse aktualisieren',
         'querypage.results-head' => 'Ergebnisvisualisierung',
+        'querypage.param-required' => 'Dieses Abfragefeld muss ausgefüllt werden, sonst kann die Abfrage nicht durchgeführt werden',
+        'querypage.param-hint' => 'Die mit ★ gekennzeichneten Abfragefelder müssen ausgefüllt werden.',
 
         'record-renderer.view-icon' => 'Diesen $1-Datensatz ansehen',
         'record-renderer.edit-icon' => 'Diesen $1-Datensatz bearbeiten',
