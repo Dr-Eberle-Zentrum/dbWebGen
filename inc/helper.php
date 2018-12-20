@@ -206,6 +206,8 @@
 		switch(gettype($v)) {
 			case 'NULL':
 				return "<span class='pre-null'>NULL</span>";
+			case 'object':
+				$v = (array) $v;
 			case 'array':
 				return trim(__arr_str($v, $indent + 3));
 			case 'boolean':
