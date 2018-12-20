@@ -162,6 +162,12 @@ SQL;
 		}
 
 		//--------------------------------------------------------------------------------------
+		protected function hides_meta() {
+		//--------------------------------------------------------------------------------------
+			return isset($_GET['meta']) && $_GET['meta'] == 'none';
+		}
+
+		//--------------------------------------------------------------------------------------
 		public function view($new_val = null) {
 		//--------------------------------------------------------------------------------------
 			if($new_val !== null)
@@ -253,8 +259,8 @@ SQL;
 			$sql_label = l10n('querypage.sql-label');
 			$exec_label = l10n('querypage.exec-button');
 			$sql_help = get_help_popup(
-				l10n('querypage.sql-help-head'), 
-				l10n('querypage.sql-help-text'), 
+				l10n('querypage.sql-help-head'),
+				l10n('querypage.sql-help-text'),
 				array('data-min-width="550px"')
 			);
 
@@ -540,7 +546,7 @@ JS;
 				$size = 12;
 				$css_class = 'result-full fill-height';
 
-				$nometa = isset($_GET['meta']) && $_GET['meta'] == 'none'; // some kind of hack to allow hiding title + description (for embedding)
+				$nometa = $this->hides_meta(); // some kind of hack to allow hiding title + description (for embedding)
 				$css = isset($_GET[PLUGIN_PARAM_NAVBAR]) && $_GET[PLUGIN_PARAM_NAVBAR] == PLUGIN_NAVBAR_ON ? 'margin-top:0' : '';
 				if(!$nometa) {
 					$download_link = $this->chart->can_download() ?
@@ -569,9 +575,9 @@ JS;
 							$lookup_expr = $this->query_info['lookups'][$param_name];
 							if(preg_match('/^table:(?P<table>[^,]+),field:(?P<field>.+)$/', $lookup_expr, $matches)) {
 								$control_html = $this->render_lookup_field(
-									$matches['table'], 
-									$matches['field'], 
-									substr($param_name, 1), 
+									$matches['table'],
+									$matches['field'],
+									substr($param_name, 1),
 									$param_value,
 									$required_attr != ''
 								);
@@ -592,7 +598,7 @@ JS;
 							</div>
 HTML;
 					}
-					if($has_required_fields) {
+					if($has_required_fields && !$this->hides_meta()) {
 						$param_fields = sprintf("<p class='text-muted'>%s</p>\n%s", l10n('querypage.param-hint'), $param_fields);
 					}
 
@@ -636,8 +642,8 @@ HTML;
 			}
 			#debug_log('Required parameter missing = ', $required_param_missing);
 
-			if($this->chart === null 
-				|| !$this->sql 
+			if($this->chart === null
+				|| !$this->sql
 				|| $required_param_missing
 			) {
 				$this->render_query_form_script();
