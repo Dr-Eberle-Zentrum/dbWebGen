@@ -393,8 +393,11 @@
 	//------------------------------------------------------------------------------------------
 		$msg = '';
 
-		foreach(func_get_args() as $arg)
+		foreach(func_get_args() as $arg) {
+			if(is_object($arg))
+				$arg = (array) $arg;
 			$msg .= is_array($arg) ? arr_str($arg) : __debug_val_display($arg);
+		}
 
 		$_SESSION['msg'][] = "<div class='alert alert-info'>$msg</div>";
 	}
