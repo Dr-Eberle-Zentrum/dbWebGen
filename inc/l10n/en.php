@@ -363,6 +363,7 @@ HTML
         'error.lookup-async.connect-db' => 'Error during search: Connecting to database failed.',
         'error.lookup-async.stmt-error' => 'Error during search: Database could not be queried.',
         'error.lookup-async.query-whitespace' => 'Error during search: The search term includes too many whitespace characters.',
+        'error.merge-primary-key-setting-missing' => 'Undefined primary key setting for table <code>$1</code>! Merging was aborted. Contact your admin!',
 
         'geom-field.placeholder' => 'Enter WKT value or click "$1"',
         'geom-field.map-picker-button-label' => 'Map',

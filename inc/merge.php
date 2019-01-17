@@ -7,12 +7,16 @@
     //==========================================================================================
     {
         protected $table_name, $table, $merge_success = false;
+        protected $is_table_relevant_for_merge_func = null;
         protected $db;
 
         //--------------------------------------------------------------------------------------
         public function render() {
         //--------------------------------------------------------------------------------------
             global $TABLES;
+            global $APP;
+            if(isset($APP['is_table_relevant_for_merge_func']) && function_exists($APP['is_table_relevant_for_merge_func']))
+                $this->is_table_relevant_for_merge_func = $APP['is_table_relevant_for_merge_func'];
             $this->db = db_connect();
             $this->table_name = $this->get_urlparam('table');
             if(!$this->table_name || !isset($TABLES[$this->table_name]))
@@ -23,6 +27,13 @@
             if($this->get_post('do_merge'))
                 echo $this->do_merge();
             echo $this->display_form();
+        }
+
+        //--------------------------------------------------------------------------------------
+        protected function is_relevant_referenced_table($referenced_table) {
+        //--------------------------------------------------------------------------------------
+            $func = $this->is_table_relevant_for_merge_func;
+            return !$func || $func($this->table_name, $referenced_table);
         }
 
         //--------------------------------------------------------------------------------------
@@ -466,7 +477,7 @@ JS;
             global $TABLES;
             $related_records = array();
             foreach($TABLES as $table_name => $table_settings) {
-                if($table_name == $this->table_name || ends_with('_history', $table_name))
+                if($table_name == $this->table_name || !$this->is_relevant_referenced_table($table_name))
                     continue;
                 foreach($table_settings['fields'] as $field_name => $field_settings) {
                     if($field_settings['type'] != T_LOOKUP)
@@ -476,6 +487,8 @@ JS;
                     // now we have a lookup field in another table that references this table
                     if($field_settings['lookup']['cardinality'] === CARDINALITY_SINGLE) {
                         $pk_fields = array();
+                        if(!isset($table_settings['primary_key']))
+                            return proc_error(l10n('error.merge-primary-key-setting-missing', $table_name));
                         foreach($table_settings['primary_key']['columns'] as $pk_field)
                             $pk_fields[] = db_esc($pk_field);
                         $pk_fields = join(', ', $pk_fields);
@@ -618,6 +631,8 @@ JS;
             $str_button_swap = l10n('merge.button-swap');
 
             $related_records = $this->get_related_records_of_slave();
+            if($related_records === false)
+                return '';
             #debug_log($related_records);
             $total_related = 0;
             $related_records_div = '';
@@ -634,14 +649,14 @@ JS;
                     <div class="form-group">
                         <input type='hidden' name='rewire-references' value='0' />
                         <input type='hidden' name='rewire-delete-slave' value='0' />
-                        <label>
+                        <label class='normal-font-weight'>
                             {$this->render_checkbox('rewire-references', '1', true)}
                             $checkbox_text
                             <ul>
                                 $related_records_div
                             </ul>
                         </label>
-                        <ul><label>
+                        <ul><label class='normal-font-weight'>
                             {$this->render_checkbox('rewire-delete-slave', '1', true)}
                             $delete_text
                         </label></ul>

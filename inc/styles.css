@@ -15,6 +15,10 @@
 	box-shadow: 0px 0px 10px 3px rgba(138, 138, 138, 0.7);
 }
 
+.normal-font-weight {
+	font-weight: normal !important;
+}
+
 div.table {
 	display: table;
     margin-bottom: .35em

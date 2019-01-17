@@ -371,6 +371,7 @@ HTML
         'error.lookup-async.connect-db' => 'Fehler bei der Suche: Verbindung zur Datenbank fehlgeschlagen.',
         'error.lookup-async.stmt-error' => 'Fehler bei der Suche: Datenbank konnte nicht abgefragt werden.',
         'error.lookup-async.query-whitespace' => 'Fehler bei der Suche: Der Suchbegriff enthält zu viele Leerzeichen.',
+        'error.merge-primary-key-setting-missing' => 'Primary key nicht definiert in Einstellungen für Tabelle <code>$1</code>! Zusammenführung würd abgebrochen. Kontaktieren Sie Ihren Admin!',
 
         'geom-field.placeholder' => 'WKT-Wert eingeben oder über "$1" auswählen',
         'geom-field.map-picker-button-label' => 'Karte',

@@ -87,6 +87,11 @@
 				- $key: the key defined in the query string, in the example above: "mydata"
 				- $params: a key/value array with parameters and their values, if the query is parameterized
 			The engine expects this function to return an instance of PDOStatement. If this is not possible, e.g. when the resulting data is not coming from a PDO query, then the function may also return an instance of class PDOStatementEmulator (defined in /inc/db.php), which basically allows to create synthetic query results.
+		- is_table_relevant_for_merge_func: string (optional)
+			The name of a function to call when preparing the merging of records. The function returns a boolean defining whether the $referenced_table is relevant when determining referenced records from the $merge_table .
+			Arguments:
+				$merge_table: the current table on which the merge operation shall be performed
+				$referenced_table: the table with referenced records
 	======================================================================================================== */
 	$APP = array(
 		'plugins' => array(),
