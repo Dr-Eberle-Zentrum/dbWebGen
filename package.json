@@ -4,7 +4,7 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "bootstrap": "3.3.6",
+    "bootstrap": "3.4.0",
     "eonasdan-bootstrap-datetimepicker": "4.17.47",
     "ionicons": "2.0.1",
     "jquery": "1.12.0",
