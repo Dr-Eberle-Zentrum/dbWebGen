@@ -274,41 +274,47 @@
 			if($this->is_lookup_async($num_results) && $this->has_submitted_value() && $this->get_submitted_value() != '') // NULL_OPTION
 				$where_clause = sprintf('where %s = ?', db_esc($this->get_lookup_field_name()));
 
-			$sql = sprintf('select %s val, %s txt from %s t %s order by txt',
-				db_esc($this->get_lookup_field_name()), resolve_display_expression($this->get_lookup_display(), 't'), db_esc($this->get_lookup_table_name()), $where_clause);
+			
+			if($this->is_lookup_async($num_results) && $where_clause === '') {
+				// we're in async mode and there is nothing to pre-select, so do not add any options!
+			}
+			else {
+				$sql = sprintf('select %s val, %s txt from %s t %s order by txt',
+					db_esc($this->get_lookup_field_name()), resolve_display_expression($this->get_lookup_display(), 't'), db_esc($this->get_lookup_table_name()), $where_clause);
 
-			$stmt = $db->prepare($sql);
-			if(false === $stmt)
-				return proc_error(l10n('error.db-prepare'), $db);
+				$stmt = $db->prepare($sql);
+				if(false === $stmt)
+					return proc_error(l10n('error.db-prepare'), $db);
 
-			if(false === $stmt->execute($where_clause != '' ? array($this->get_submitted_value()) : array()))
-				return proc_error(l10n('error.db-execute'), $stmt);
+				if(false === $stmt->execute($where_clause != '' ? array($this->get_submitted_value()) : array()))
+					return proc_error(l10n('error.db-execute'), $stmt);
 
-			$output_buf .= "<option value=''></option>\n";
+				$output_buf .= "<option value=''></option>\n";
 
-			$selection_done = '';
-			while($obj = $stmt->fetch(PDO::FETCH_OBJ)) {
-				if($this->is_multi_select()) {
-					$sel = ($this->has_submitted_value() && is_array($this->get_submitted_value()) && in_array($obj->val, $this->get_submitted_value()) ? ' selected="selected" ' : '');
-				}
-				else if($selection_done != 'done') {
-					$sel = ($this->has_submitted_value() && $this->get_submitted_value() == strval($obj->val) ? ' selected="selected" ' : '');
-					if($sel != '')
-						$selection_done = 'done';
-					else if($sel == '' && $this->is_required() && $this->has_lookup_default() && strval($this->get_lookup_default()) === strval($obj->val)) {
-						$sel = ' selected="selected" ';
-						$selection_done = 'default';
+				$selection_done = '';
+				while($obj = $stmt->fetch(PDO::FETCH_OBJ)) {
+					if($this->is_multi_select()) {
+						$sel = ($this->has_submitted_value() && is_array($this->get_submitted_value()) && in_array($obj->val, $this->get_submitted_value()) ? ' selected="selected" ' : '');
 					}
-				}
-				else
-					$sel = '';
+					else if($selection_done != 'done') {
+						$sel = ($this->has_submitted_value() && $this->get_submitted_value() == strval($obj->val) ? ' selected="selected" ' : '');
+						if($sel != '')
+							$selection_done = 'done';
+						else if($sel == '' && $this->is_required() && $this->has_lookup_default() && strval($this->get_lookup_default()) === strval($obj->val)) {
+							$sel = ' selected="selected" ';
+							$selection_done = 'default';
+						}
+					}
+					else
+						$sel = '';
 
-				$output_buf .= sprintf(
-					"<option value='%s' %s>%s</option>\n",
-					unquote($obj->val),
-					$sel,
-					format_lookup_item_label($obj->txt, $this->field['lookup'], $obj->val, 'html', false)
-				);
+					$output_buf .= sprintf(
+						"<option value='%s' %s>%s</option>\n",
+						unquote($obj->val),
+						$sel,
+						format_lookup_item_label($obj->txt, $this->field['lookup'], $obj->val, 'html', false)
+					);
+				}
 			}
 			$output_buf .= "</select>\n";
 		}
