@@ -420,6 +420,7 @@ HTML
         'lookup-field.linked-records-clipped-tooltip' => 'Text clipped due to length. Click to show clipped text.',
         'lookup-field.linked-record-no-display-value' => 'There is no display value for this referenced record, so its identifier is displayed here',
         'lookup-field.max-async' => 'Limiting the dropdown box to the first $1 options. Please use a more restrictive search term.',
+        'lookup-field.linkage-details-missing' => 'For all linked records in the following list, which are highlighted with a red <span class="glyphicon glyphicon-th-list"></span> icon, required linkage details must be provided by clicking the icon!',
 
         'main-page.html' => '<p>Choose an action from the top menu.</p>',
 

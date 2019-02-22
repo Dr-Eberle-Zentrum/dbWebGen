@@ -526,6 +526,99 @@
 	}
 
 	//------------------------------------------------------------------------------------------
+	// finds out whether there are missing values for required fields in records created using
+	// the "Create New" button. If so, this is indicated in the form.
+	function are_linkage_details_missing(
+		$linkage_has_already_existed,
+		$form_id,
+		$linkage_field_name,
+		&$linkage_field,
+		$linked_record_fk
+	) {
+	//------------------------------------------------------------------------------------------
+		global $TABLES;		
+		if($linkage_has_already_existed)
+			return false;
+
+		if(!isset($TABLES[$linkage_field['linkage']['table']])) // there's no way of knowing
+			return false;
+		
+		$linked_table = &$TABLES[$linkage_field['linkage']['table']];
+		$linked_table_pks = $linked_table['primary_key']['columns'];
+		$required_fields = array();
+		$linkage_defaults = isset($linkage_field['linkage']['defaults']) ? $linkage_field['linkage']['defaults'] : array();
+		foreach($linked_table['fields'] as $field_name => &$field) {
+			// primary keys always required but not relevant here
+			if(in_array($field_name, $linked_table_pks))
+				continue;
+			
+			// ignore optional fields
+			if(!is_field_required($field))
+				continue;
+			
+			// igore fields that have default
+			if(isset($linkage_defaults[$field_name]))
+				continue;
+
+			// here we have a required field with no defaults -> neeeds to have value in inline form data
+			$required_fields[] = $field_name;
+		}
+		
+		// if there are no required fields - go away
+		if(count($required_fields) === 0)
+			return false;
+
+		// see whether we have values for the required field(s)
+		$linkage_details = get_inline_linkage_details($form_id, $linkage_field_name, $linked_record_fk);
+		if($linkage_details === false)
+			return true;
+
+		/* linkage details now looks like this:
+			[
+				'details' => [
+					'user_id' => '18',
+					'location_id' => '1',
+					'rating' => '3',
+					'review' => '',
+				],
+				'columns' => [
+					'0' => 'user_id',
+					'1' => 'location_id',
+					'2' => 'rating',
+					'3' => 'review',
+				],
+				'params' => [
+					'0' => '18',
+					'1' => '1',
+					'2' => '3',
+					'3' => NULL,
+				],
+			] 
+		*/
+		foreach($required_fields as $field_name) {
+			if(!isset($linkage_details['details'][$field_name]))
+				return true;
+			// if value is empty then only fail if param is NULL
+			if($linkage_details['details'][$field_name] === '') {
+				// find column index
+				$col_index = array_search(field_name, $linkage_details['columns']);
+				
+				// not found? -> missing
+				if($col_index === false)
+					return true;
+
+				// find param value at this index
+				if($linkage_details['params'][$col_index] === null)
+					return true;
+
+				// here we can let go...
+			}
+		}
+		
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------
 	// CAREFUL: this function can be called via MODE_FUNC, e.g. it's called so from dbweb.js
 	//------------------------------------------------------------------------------------------
 	function get_linked_item_html(
@@ -536,8 +629,9 @@
 		/*bool*/	$can_edit,
 		/*string*/	$fk_other_value,
 		/*string*/	$fk_other_text,
-		/*string*/	$fk_self_value)
-	{
+		/*string*/	$fk_self_value,
+		/*bool*/	$has_already_existed = false
+	) {
 	//------------------------------------------------------------------------------------------
 		global $TABLES;
 
@@ -560,8 +654,11 @@
 			));
 			$popup_title = unquote($TABLES[$linkage['table']]['item_name'] . ' Details');
 
+			$details_missing = are_linkage_details_missing($has_already_existed, $parent_form, $field_name, $field, $fk_other_value);
+
 			$detail_data_span = sprintf(
-				"<a role='button' onclick='linkage_details_click(this)' class='space-left multiple-select-details-edit' data-id-other='%s' data-details-title='%s' data-details-url='%s' id='%s_details_%s' title='%s'><span class='glyphicon glyphicon-th-list'></span></a>",
+				"<a role='button' onclick='linkage_details_click(this)' class='%s space-left multiple-select-details-edit' data-id-other='%s' data-details-title='%s' data-details-url='%s' id='%s_details_%s' title='%s'><span class='glyphicon glyphicon-th-list'></span></a>",
+				$details_missing ? 'linkage-details-missing' : '',
 				$fk_other_value, $popup_title, $inline_url, $field_name, $fk_other_value, l10n('lookup-field.linkage-details-edit-tooltip')
 			);
 		}
@@ -596,7 +693,7 @@
 		}
 
 		$item_div_format = <<<STR
-			<div class='table multiple-select-item' data-field='%s' data-id-other='%s'>
+			<div class='table multiple-select-item' data-field='%s' data-id-other='%s' data-newly-added='%s'>
 				<div class='tr'>
 					<div class='td nowrap'><a role='button' onclick='remove_linked_item(this)' data-field='%s' data-id='%s' data-role='remove' title='%s'><span class='glyphicon glyphicon-remove-circle'></span></a>%s%s</div>
 					<div class='td full-width multiple-select-text'>%s</div>
@@ -606,6 +703,7 @@ STR;
 		return sprintf($item_div_format,
 			unquote($field_name),
 			unquote($fk_other_value),
+			$has_already_existed ? 0 : 1,
 			unquote($field_name),
 			unquote($fk_other_value),
 			l10n('lookup-field.linkage-assoc-delete-tooltip', unquote($lookup_table_item_name)),

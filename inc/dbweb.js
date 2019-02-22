@@ -355,7 +355,15 @@ function init_multilookup_dropdowns() {
                 // add item line to list of selected items
                 var linked_items = $(list_id);
                 linked_items.prepend(data);
-                insert_linked_item_sorted(linked_items.find('.multiple-select-item').first())
+                let inserted_item = linked_items.find('.multiple-select-item').first();
+
+                // if the added item was initially present, then removed, then added again, we can remove any linkage-details-missing warning >>
+                let remInitArr = dropdown_box.data('removed-initial-items');
+                if(remInitArr && remInitArr.includes(String(inserted_item.data('id-other'))))
+                    inserted_item.find('.linkage-details-missing').removeClass('linkage-details-missing');
+                // <<
+                
+                insert_linked_item_sorted(inserted_item);
 
                 // remove added item from dropdown
                 $(dropdown_id + " option[value='" + selected_value + "']").each(function() {
@@ -373,6 +381,28 @@ function init_multilookup_dropdowns() {
             });
         });
     });
+}
+
+//------------------------------------------------------------------------------------------
+function check_missing_linkage_details_warning() {
+//------------------------------------------------------------------------------------------
+    let hasErrors = false;
+    $('div.form-group').each(function () {
+        let row = $(this);
+        let error = row.find('.linkage-details-missing').length > 0;
+        if(error && !row.hasClass('has-error')) {
+            row.addClass('has-error').find('div').first().append(
+                $('<span/>').addClass('validation-error help-block').html(
+                    row.find('span.linkage-details-error-message').html()
+                )
+            );
+            hasErrors = true;
+        }
+        else if(!error && row.hasClass('has-error')) {
+            row.removeClass('has-error').find('span.linkage-details-error-message').remove();
+        }
+    });
+    return hasErrors;
 }
 
 //------------------------------------------------------------------------------------------
@@ -571,7 +601,8 @@ function remove_linked_item(e) {
 	var removed_id = $e.data('id');
 	var field = $e.data('field');
 	var label = item_div.find('span.display-label').text();
-	var dropdown_id = field + '_dropdown';
+    var dropdown_id = field + '_dropdown';
+    let dropdown_box = $('#' + dropdown_id);
 	var removed_text = item_div.find('.multiple-select-text').text();
 
 	// remove the value from the hidden input
@@ -585,10 +616,20 @@ function remove_linked_item(e) {
 	$('input#' + field).val(write_multiple_val(list)).change();
 
 	// remove the list item
-	item_div.fadeOut(100, function() { item_div.remove() });
+	item_div.fadeOut(100, () => { 
+        item_div.remove(); 
+
+        // we need to remember those items that were 
+        if(!item_div.data('newly-added')) {
+            if(!dropdown_box.data('removed-initial-items'))
+                dropdown_box.data('removed-initial-items', [String(removed_id)]);
+            else if(!dropdown_box.data('removed-initial-items').includes(String(removed_id)))
+                dropdown_box.data('removed-initial-items').push(String(removed_id));
+        }
+    });
 
     // only need to insert in non-async boxes
-    if(!$('#' + dropdown_id).hasClass('lookup-async'))
+    if(!dropdown_box.hasClass('lookup-async'))
 	   insert_option_sorted(dropdown_id, removed_id, label, removed_text, false);
 
     // ensure box and create new are enabled

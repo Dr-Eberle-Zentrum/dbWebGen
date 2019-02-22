@@ -428,6 +428,7 @@ HTML
         'lookup-field.linked-records-clipped-tooltip' => 'Text wegen Überlänge abgeschnitten. Klicke um gesamten Text einzublenden.',
         'lookup-field.linked-record-no-display-value' => 'Für diesen refernzierten Datensatz konnte keine Anzeigewert ermittelt werden, daher wird sein Identifikationswert dargestellt',
         'lookup-field.max-async' => 'Es werden nur die ersten $1 Ergebnisse in der Auswahlliste angezeigt. Bitte verwenden Sie einen einschränkenderen Suchtext.',
+        'lookup-field.linkage-details-missing' => 'Für alle verknüpften Datensätze in der folgenden Liste, die ein rotes <span class="glyphicon glyphicon-th-list"></span>-Symbol haben, müssen durch Klicken auf das Symbol erforderliche Verknüpfungsdetails eingegeben werden!',
 
         'main-page.html' => '<p>Wählen Sie eine Aktion aus dem Menü aus.</p>',
 

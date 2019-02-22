@@ -67,6 +67,11 @@
 			return $this->field['linkage'];
 		}
 		//--------------------------------------------------------------------------------------
+		public function get_linkage_table_name() {
+		//--------------------------------------------------------------------------------------
+			return $this->field['linkage']['table'];
+		}
+		//--------------------------------------------------------------------------------------
 		public function has_array_value() {
 		//--------------------------------------------------------------------------------------
 			return $this->is_multi_select();
@@ -388,8 +393,10 @@
 				}
 				asort($existing_linkage);
 				foreach($existing_linkage as $val => $txt) {
-					$this->linked_items_div .= get_linked_item_html($this->get_form_id(), $table, $this->table_name, $this->field_name, $has_additional_editable_fields,
-							$val, $txt, get_the_primary_key_value_from_url($table, ''));
+					$this->linked_items_div .= get_linked_item_html(
+						$this->get_form_id(), $table, $this->table_name,
+						$this->field_name, $has_additional_editable_fields,
+						$val, $txt, get_the_primary_key_value_from_url($table, ''), true);
 				}
 			}
 			else {
@@ -402,8 +409,10 @@
 				// fill dropdown and linked fields list
 				while($obj = $res->fetchObject()) {
 					if(in_array("{$obj->val}", $linked_items)) {
-						$this->linked_items_div .= get_linked_item_html($this->get_form_id(), $table, $this->table_name, $this->field_name, $has_additional_editable_fields,
-							$obj->val, $obj->txt, get_the_primary_key_value_from_url($table, ''));
+						$this->linked_items_div .= get_linked_item_html(
+							$this->get_form_id(), $table, $this->table_name, 
+							$this->field_name, $has_additional_editable_fields,
+							$obj->val, $obj->txt, get_the_primary_key_value_from_url($table, ''), true);
 					}
 					else {
 						$output_buf .= sprintf(
@@ -415,7 +424,10 @@
 					}
 				}
 			}
-			$output_buf .= "</select>\n";
+			$output_buf .= sprintf(
+				"</select>\n<span class='hidden linkage-details-error-message'>%s</span>\n",
+				l10n('lookup-field.linkage-details-missing')
+			);
 		}
 
 		//--------------------------------------------------------------------------------------

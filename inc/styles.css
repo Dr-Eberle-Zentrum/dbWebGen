@@ -79,6 +79,14 @@ div.multiple-select-item:first-child {
 	margin-top: .5em;
 }
 
+.linkage-details-missing {
+	color: #a94442;
+}
+
+.linkage-details-missing:hover {
+	color: darkred;
+}
+
 span.multiple-select-id {
 	padding-left: 1em;
 	color: #5f5f5f;

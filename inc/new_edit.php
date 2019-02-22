@@ -237,43 +237,55 @@ EOT;
 	//------------------------------------------------------------------------------------------
 	function get_form_validation_code($table_name, &$table) {
 	//------------------------------------------------------------------------------------------
-		if(!isset($table['validation_func']))
-			return '';
-		$fields = array();
-		foreach($table['fields'] as $field_name => $field_settings) {
-			if(!is_field_editable($field_settings))
-				continue;
-			$fields[] = $field_name;
+		$custom_validation_js = '';
+		if(isset($table['validation_func'])) {
+			$fields = array();
+			foreach($table['fields'] as $field_name => $field_settings) {
+				if(!is_field_editable($field_settings))
+					continue;
+				$fields[] = $field_name;
+			}
+			$fields = json_encode($fields);
+			$table_name_js = json_encode($table_name);
+			$table_js = json_encode($table);
+			$table_validation_func = $table['validation_func'];
+			$custom_validation_js = <<<JS
+				if(typeof $table_validation_func !== 'function') {
+					console.log('WARNING: invalid table validation function; check settings.php');
+				}
+				else {
+					var values = {};
+					var fields = $fields;
+					for(var i = 0; i < fields.length; i++)
+						values[fields[i]] = $('#' + fields[i]).val();
+					var errors = $table_validation_func($table_name_js, $table_js, values);
+					if(errors !== null) {
+						hasErrors = true;
+						for(var field_name in errors) {
+							if(!errors.hasOwnProperty(field_name))
+								continue;
+							var field = $('#' + field_name);
+							field.after($('<span/>').addClass('validation-error help-block').html(errors[field_name]));
+						}
+					}
+				}
+JS;
 		}
+		
 		$error_note_html = json_encode(sprintf(
 			'<div class="validation-error"><b>%s</b></div>',
 			l10n('new-edit.validation-error')
 		));
-		$fields = json_encode($fields);
-		$table_name_js = json_encode($table_name);
-		$table_js = json_encode($table);
+		
 		return <<<JS
 			<script>
 				function validate_form_data() {
 					$('.validation-error').remove();
 					$('div.form-group').removeClass('has-error');
-					if(typeof {$table['validation_func']} !== 'function') {
-						console.log('WARNING: invalid table validation function; check settings.php');
+					let hasErrors = check_missing_linkage_details_warning();
+					$custom_validation_js
+					if(!hasErrors)
 						return true;
-					}
-					var values = {};
-					var fields = $fields;
-					for(var i = 0; i < fields.length; i++)
-						values[fields[i]] = $('#' + fields[i]).val();
-					var errors = {$table['validation_func']}($table_name_js, $table_js, values);
-					if(errors === null)
-						return true;
-					for(var field_name in errors) {
-						if(!errors.hasOwnProperty(field_name))
-							continue;
-						var field = $('#' + field_name);
-						field.after($('<span/>').addClass('validation-error help-block').html(errors[field_name]));
-					}
 					$('button[type=submit]').after($('<span/>').addClass('validation-error help-block').html($error_note_html));
 					$('.validation-error').each(function() {
 						$(this).parents('div.form-group').addClass('has-error');
@@ -738,12 +750,26 @@ JS;
 			$edit_ids = get_primary_key_values_from_url($table);
 
 			if(is_inline()) {
+				$id_other = $edit_ids[get_inline_fieldname_fk_other()];
+				$lookup_field = $_GET['lookup_field'];
+
 				// copy the values to session
-				set_inline_linkage_details($_GET['parent_form'], $_GET['lookup_field'],
-					$edit_ids[get_inline_fieldname_fk_other()], $arr_inline_details, $columns, $values);
+				set_inline_linkage_details($_GET['parent_form'], $lookup_field,
+					$id_other, $arr_inline_details, $columns, $values);
 
 				// here we just close the window.
-				echo "<script>window.close();</script>";
+				// ... and check again if required linkage details are missing
+				
+				echo <<<JS
+					<script>
+						if(window.opener) {
+							$(window.opener.document).find(
+								'div.multiple-select-item[data-field="$lookup_field"][data-id-other="$id_other"]'
+							).find('.linkage-details-missing').removeClass('linkage-details-missing');
+						}
+						window.close();
+					</script>
+JS;
 				return true;
 			}
 
