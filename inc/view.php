@@ -198,7 +198,11 @@
 
 			$val = prepare_field_display_val($table, $record, $table['fields'][$col], $col, $val);
 
-			$table_html .= "<div class='col-sm-9 column-value'>{$val}</div></div>\n";
+			$style = '';
+			if(isset($table['fields'][$col]['view_css']))
+				$style = sprintf(' style="%s"', $table['fields'][$col]['view_css']);
+
+			$table_html .= "<div class='col-sm-9 column-value'$style>{$val}</div></div>\n";
 		}
 
 		if($empty_count > 0) {

@@ -359,7 +359,9 @@
 			- step: number or string (optional) (default: 1)
 				for T_NUMBER, define the step size for up/down (e.g. 3 or 0.01). If not restricted, use 'any'
 			- cell_css: string (optional) (default: none)
-				any value will be set as the CSS style of the table cell in list view
+				any value will be set as the CSS style of the table cell in MODE_LIST
+			- view_css: string (optional) (default: none)
+				any value will be set as the CSS style of the display div in MODE_VIEW
 			- number_format: array (optional)
 				for T_NUMBER, a hash array with the following keys
 					* template (string): a string specifying a combination of the following number components:

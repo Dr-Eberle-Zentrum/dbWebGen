@@ -8,7 +8,7 @@
                 $conn = "pgsql:dbname={$DB['db']};host={$DB['host']};port={$DB['port']};options='--client_encoding=UTF8'";
                 break;
             case DB_MYSQL:
-                $conn = "mysql:dbname={$DB['db']};host={$DB['host']};port={$DB['port']};";
+                $conn = "mysql:dbname={$DB['db']};host={$DB['host']};port={$DB['port']};charset=utf8";
                 break;
         }
 
