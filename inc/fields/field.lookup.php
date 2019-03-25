@@ -425,7 +425,7 @@
 							"<option value='%s' data-label='%s'>%s</option>\n",
 							$obj->val,
 							unquote($obj->txt),
-							format_lookup_item_label($obj->txt, $this->get_lookup_settings(), $obj->val, 'html', false)
+							format_lookup_item_label($obj->txt, $this->field['lookup'], $obj->val, 'html', false)
 						);
 					}
 				}
