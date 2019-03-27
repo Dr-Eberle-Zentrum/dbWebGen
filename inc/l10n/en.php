@@ -411,6 +411,7 @@ HTML
         'login.logout-navbar-label' => 'Logout',
         'login.guest-access' => 'Guest Access',
 
+        'lookup-field.record' => 'Record',
 		'lookup-field.create-new-button' => 'Create New',
         'lookup-field.create-new-tooltip' => 'If you cannot find the record in the dropdown box, click this button to create a new record.',
         'lookup-field.placeholder' => 'Click to select',

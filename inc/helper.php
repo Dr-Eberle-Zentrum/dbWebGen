@@ -663,7 +663,9 @@
 			);
 		}
 
-		$lookup_table_item_name = $TABLES[$lookup['table']]['item_name'];
+		$lookup_table_item_name = isset($TABLES[$lookup['table']]) 
+			? $TABLES[$lookup['table']]['item_name'] 
+			: l10n('lookup-field.record');
 
 		$edit_other_span = '';
 		if(is_lookup_allow_edit($lookup)
