@@ -219,6 +219,7 @@ function init_search_popup() {
         // set the form content specific to the field
         $(this).data('content', search_popover_template.replace('%FIELDNAME%', $(this).data('field'))).popover({
             html: true,
+            sanitize: false,
             container: '#search-popover' // needed for CSS styling
         });
     });
