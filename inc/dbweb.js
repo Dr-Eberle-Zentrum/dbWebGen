@@ -195,7 +195,8 @@ function set_install_clipped_text_handler() {
 function init_popovers() {
 //------------------------------------------------------------------------------------------
     $('[data-toggle=popover][data-purpose=help]').popover({
-        html: true
+        html: true,
+        sanitize: false
     }).on('show.bs.popover', function() {
         let e = $(this);
         if(e.data('min-width')) {
