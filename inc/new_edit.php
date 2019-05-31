@@ -685,14 +685,14 @@ JS;
 			}
 
 			if(!isset($_POST[$field_name])) {
-				// field can be missing for non-required async lookup dropdowns => just ignore
+				// field can be missing for non-required async lookup dropdowns => just set null
 				if(!is_field_required($field_info))
-					continue;
-					
-				return proc_error(l10n('error.field-value-missing', $field_info['label']));
+					$_POST[$field_name] = null;
+				else
+					return proc_error(l10n('error.field-value-missing', $field_info['label']));
 			}
 
-			if(is_field_required($field_info) && $_POST[$field_name] === '' || $_POST[$field_name] === null) {
+			if(is_field_required($field_info) && ($_POST[$field_name] === '' || $_POST[$field_name] === null)) {
 				// only fk_self can be missing in mode inline
 				if(is_inline() && in_array($field_name, array_keys(get_primary_key_values_from_url($table)))) {
 					$columns[] = $field_name;
