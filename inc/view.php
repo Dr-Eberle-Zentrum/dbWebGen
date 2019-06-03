@@ -107,9 +107,13 @@
 
 		if(isset($table['render_links']) && is_allowed($table, MODE_LINK)) {
 			foreach($table['render_links'] as $render_link) {
+				$fields = is_array($render_link['field']) ? $render_link['field'] : [ $render_link['field'] ];
+				foreach($fields as &$field)
+					$field = $record[$field];
+				$btn_label = isset($render_link['btn_label']) ? $render_link['btn_label'] : '';
 				$addl_data .= "<a href='" .
-					sprintf($render_link['href_format'], $record[$render_link['field']]) .
-					"' title='{$render_link['title']}' class='btn btn-default'><span class='glyphicon glyphicon-{$render_link['icon']}'></span></a>";
+					vsprintf($render_link['href_format'], $fields) .
+					"' title='{$render_link['title']}' class='btn btn-default'><span class='glyphicon glyphicon-{$render_link['icon']}'></span> $btn_label</a>";
 			}
 		}
 

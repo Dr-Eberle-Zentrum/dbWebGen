@@ -65,8 +65,11 @@
 
                 if(isset($this->table['render_links']) && is_allowed($this->table, MODE_LINK)) {
                     foreach($this->table['render_links'] as $render_link) {
+                        $fields = is_array($render_link['field']) ? $render_link['field'] : [ $render_link['field'] ];
+                        foreach($fields as &$field)
+                            $field = $record[$field];
                         $action_icons[] = "<a href='" .
-                            sprintf($render_link['href_format'], $record[$render_link['field']]) .
+                            vsprintf($render_link['href_format'], $fields) .
                             "'><span title='{$render_link['title']}' class='glyphicon glyphicon-{$render_link['icon']}'></span></a>";
                     }
                 }

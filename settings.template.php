@@ -500,13 +500,20 @@
 				- icon: string
 					The name of a glyphicon that works with bootstrap, e.g. "eye-open" or "trash". See a list here: http://www.w3schools.com/bootstrap/bootstrap_ref_comp_glyphs.asp
 				- href_format: string
-					A URL template that will be used in a sprintf() call, with the 'field' key of this array (see next). Hence this string should contain one %s
-				- field: string
-					Name of the field whose value will be used to replace %s in href_format
+					A URL template that will be used in a sprintf() call. Each %s must be matched by a field name in the 'fields' parameter:
+				- field: string|array
+					Name of the field (or array of field names) whose value(s) will be used to replace the %s placeholders in href_format
 				- title: string
 					Title (tooltip) shown when hovering over the link icon in MODE_LIST
-			Example: 'render_links' => array(
+				- btn_label: string (optional)
+					Label shown on button in MODE_VIEW
+			Example: 
+				'render_links' => array(
 					array('icon' => 'eye-open', 'href_format' => 'uploads_images/%s', 'field' => 'filename', title => 'Show the damn file')
+				)
+			Example with array of fields:
+				'render_links' => array(
+					array('icon' => 'eye-open', 'href_format' => 'somedir/%s/id/%s', 'field' => ['filename', 'id'], title => 'Show the damn file')
 				)
 		- form_tabs: array (optional)
 			If a tabbed MODE_NEW / MODE_EDIT / MODE_VIEW form is desired, fill this array with the following settings:
