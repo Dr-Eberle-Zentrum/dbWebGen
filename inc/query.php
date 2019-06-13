@@ -354,9 +354,15 @@ STR;
 			if(!$this->chart || !$this->sql || $this->sql === '')
 				return;
 
-			global $APP;
+			global $APP, $TABLES;
 			if(!isset($APP['querypage_stored_queries_table']))
 				return;
+
+			if(isset($TABLES[$APP['querypage_stored_queries_table']]['allow_store_query']) 
+				&& $TABLES[$APP['querypage_stored_queries_table']]['allow_store_query'] === false
+			) {
+				return;
+			}
 
 			$link_url = '?' . http_build_query(array(
 				'mode' => MODE_FUNC,
