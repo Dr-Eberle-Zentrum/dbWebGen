@@ -63,8 +63,14 @@
                 $table_body .= "<tr><td class='fit'><div class='hidden-print'>\n";
                 $action_icons = array();
 
-                if(isset($this->table['render_links']) && is_allowed($this->table, MODE_LINK)) {
+                if(isset($this->table['render_links']) 
+                    && is_allowed($this->table, MODE_LINK)
+                ) {
                     foreach($this->table['render_links'] as $render_link) {
+                        if(!isset($render_link['modes']))
+                            $render_link['modes'] = [MODE_LIST, MODE_VIEW];
+                        if(isset($_GET['mode']) && !in_array($_GET['mode'], $render_link['modes']))
+                            continue;
                         $fields = is_array($render_link['field']) ? $render_link['field'] : [ $render_link['field'] ];
                         foreach($fields as &$field)
                             $field = $record[$field];

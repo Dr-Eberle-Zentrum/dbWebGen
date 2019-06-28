@@ -107,6 +107,8 @@
 
 		if(isset($table['render_links']) && is_allowed($table, MODE_LINK)) {
 			foreach($table['render_links'] as $render_link) {
+				if(isset($render_link['modes']) && !in_array(MODE_VIEW, $render_link['modes']))
+					continue;
 				$fields = is_array($render_link['field']) ? $render_link['field'] : [ $render_link['field'] ];
 				foreach($fields as &$field)
 					$field = $record[$field];

@@ -496,7 +496,9 @@
 		- show_in_related: bool (optional) (default: true)
 			In MODE_VIEW, there is a dropdown linking to tables where the current record is linked through a foreign key (T_LOOKUP). If you do not want this table to appear in this list at all, set this to false.
 		- render_links: array (optional)
-			If MODE_LINK and MODE_LIST are allowed in this table, then there will be an extra icon in the table in MODE_LIST for each record that allows to view the actual object represented by the record. An associative array has to be provided for each entry in this array:
+			If MODE_LINK is allowed in this table, then there will be an extra icon in the table in MODE_LIST for each record that allows to view the actual object represented by the record. Also there will be an extra button in MODE_VIEW that features this link. An associative array has to be provided for each entry in this array:
+				- modes: array (optional; default: [MODE_LIST, MODE_VIEW])
+					The display modes in which this link shall be displayed.
 				- icon: string
 					The name of a glyphicon that works with bootstrap, e.g. "eye-open" or "trash". See a list here: http://www.w3schools.com/bootstrap/bootstrap_ref_comp_glyphs.asp
 				- href_format: string

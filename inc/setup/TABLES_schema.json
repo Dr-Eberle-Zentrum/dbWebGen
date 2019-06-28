@@ -200,6 +200,18 @@
                     "title": "Link",
                     "type": "object",
                     "properties": {
+                        "modes": {
+                            "title": "Display Modes",
+                            "description": "Display Modes where this render link shall be displayed. If omitted, both <code>list</code> and <code>view</code> modes will show the link.",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "required": false,
+                            "items": {
+                                "title": "Mode",
+                                "type": "string",
+                                "enum": [ "list",  "view" ]
+                            }
+                        },
                         "icon": {
                             "title": "Icon",
                             "description": "The name of a glyphicon that works with bootstrap, e.g. <code>eye-open</code> or <code>trash</code>. See the <a target='_blank' href='http://www.w3schools.com/bootstrap/bootstrap_ref_comp_glyphs.asp'>full list here</a>",
@@ -215,10 +227,14 @@
                             "required": true
                         },
                         "field": {
-                            "title": "Field",
-                            "description": "Name of the field whose value will be used to replace <code>%s</code> in the Link Format",
-                            "type": "string",
-                            "minLength": 1,
+                            "title": "Fields",
+                            "description": "Names of fields whose values will be used to replace the <code>%s</code> placeholders in the Link Format",
+                            "type": "array",
+                            "items": {
+                                "title": "Field Name",
+                                "type": "string",
+                                "minLength": 1
+                            },
                             "required": true
                         },
                         "title": {
