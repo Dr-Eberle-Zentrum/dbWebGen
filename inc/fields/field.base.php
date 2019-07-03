@@ -311,7 +311,7 @@
 			// if datetime picker options set, check settings
 			if($this->has_datetime_picker()) {
 				$this->field['datetime_picker']['showClear'] = !$this->is_required();
-				$this->field['datetime_picker']['locale'] = DBWEBGEN_LANG;
+				$this->field['datetime_picker']['locale'] = $_SESSION['language'];
 				if($this->has_submitted_value()) {
 					$this->field['datetime_picker']['defaultDate'] = $this->get_submitted_value();
 					$this->field['datetime_picker']['useCurrent'] = false;

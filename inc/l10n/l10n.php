@@ -4,16 +4,31 @@
     //--------------------------------------------------------------------------------------
     function l10n_init() {
     //--------------------------------------------------------------------------------------
-        if(isset($_SESSION['l10n']))
-            return; // nothing to do
-        require_once (defined('DBWEBGEN_LANG') ? DBWEBGEN_LANG : 'en') . '.php';
+        $defaultLang = defined('DBWEBGEN_LANG') ? DBWEBGEN_LANG : 'en';
+        $switchLang = defined('DBWEBGEN_SWITCH_LANG') ? DBWEBGEN_SWITCH_LANG : '';
+        $currentLang = isset($_SESSION['language']) ? $_SESSION['language'] : '';
+        
+        if($switchLang !== '' && $switchLang === $currentLang)
+            return; // desired lang is current lang
+
+        if($currentLang !== '' && $switchLang === '')
+            return; // lang already set and no switching desired
+
+        $desiredLang = ($switchLang !== '' ? $switchLang : $defaultLang);
+        if($desiredLang === $currentLang)
+            return; // desired language already loaded
+
+        // here we need to load the new language into our session...
+        include "$desiredLang.php";
         $_SESSION['l10n'] = $_L10N;
+        $_SESSION['language'] = $desiredLang;
+        // ... and invalidate the previously defined plugin localizations
+        unset($_SESSION['l10n_custom']);
     }
 
     //--------------------------------------------------------------------------------------
     function l10n($key /* + add'l arguments for replacing %x placeholders */) {
     //--------------------------------------------------------------------------------------
-        global $_L10N;
         $str = isset($_SESSION['l10n'][$key]) ? $_SESSION['l10n'][$key] : $key;
         for($i = func_num_args() - 1; $i > 0; $i--)
             $str = str_replace('$'.$i, func_get_arg($i), $str);
@@ -40,7 +55,7 @@
         $string_table   // array with key => localized string, can overwrite default keys
     ) {
     //--------------------------------------------------------------------------------------
-        if($lang != (defined('DBWEBGEN_LANG') ? DBWEBGEN_LANG : 'en'))
+        if($lang != $_SESSION['language'])
             return; // nothing to do
         if(!isset($_SESSION['l10n_custom']))
             $_SESSION['l10n_custom'] = array();

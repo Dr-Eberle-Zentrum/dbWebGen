@@ -21,8 +21,8 @@
 			$options = isset($this->field['richtext']['init_options']) 
 				? $this->field['richtext']['init_options']
 				: array();
-			if(DBWEBGEN_LANG !== 'en')
-				$options['lang'] = DBWEBGEN_LANG;
+			if($_SESSION['language'] !== 'en')
+				$options['lang'] = $_SESSION['language'];
 			return json_encode($options);
 		}
 
