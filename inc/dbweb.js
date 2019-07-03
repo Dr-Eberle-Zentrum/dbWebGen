@@ -260,7 +260,7 @@ function init_null_value_handler() {
         });
     });
     $('.trumbowyg-textarea').on('tbwchange', function() {
-        update_null_value_checkbox($(this))
+        update_null_value_checkbox($(this));
     });
 }
 

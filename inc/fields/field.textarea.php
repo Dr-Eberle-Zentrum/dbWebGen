@@ -23,7 +23,7 @@
 				: array();
 			if(DBWEBGEN_LANG !== 'en')
 				$options['lang'] = DBWEBGEN_LANG;
-			return json_encode($options, JSON_FORCE_OBJECT);
+			return json_encode($options);
 		}
 
 		//--------------------------------------------------------------------------------------
