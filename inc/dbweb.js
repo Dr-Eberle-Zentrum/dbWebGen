@@ -259,6 +259,9 @@ function init_null_value_handler() {
             update_null_value_checkbox(control);
         });
     });
+    $('.trumbowyg-textarea').on('tbwchange', function() {
+        update_null_value_checkbox($(this))
+    });
 }
 
 //------------------------------------------------------------------------------------------

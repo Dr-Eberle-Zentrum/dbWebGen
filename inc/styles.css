@@ -429,5 +429,12 @@ span.hl {
 	color: dimgray;
 	font-style: italic;
 }
-.pre-any {	
+
+/* for trumbowyg */
+.trumbowyg-box {
+	margin: 0;
+	border-radius: 4px;
+}
+.trumbowyg-editor {
+	background-color: white;
 }

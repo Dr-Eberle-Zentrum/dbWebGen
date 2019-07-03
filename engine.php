@@ -100,12 +100,16 @@
 		echo_javascript(ENGINE_PATH_HTTP . 'node_modules/select2/dist/js/select2.full.min.js');
 		echo_javascript(ENGINE_PATH_HTTP . 'node_modules/transliteration/lib/browser/transliteration.min.js');
 		echo_javascript(ENGINE_PATH_HTTP . 'node_modules/bootstrap-toggle/js/bootstrap-toggle.min.js');
+		echo_javascript(ENGINE_PATH_HTTP . 'node_modules/trumbowyg/dist/trumbowyg.min.js');
+		if(DBWEBGEN_LANG !== 'en')
+			echo_javascript(sprintf('%snode_modules/trumbowyg/dist/langs/%s.min.js', ENGINE_PATH_HTTP, DBWEBGEN_LANG));
 		//if($settings_exist && safehash($_GET, 'mode') != MODE_SETUP)
 			echo_javascript(ENGINE_PATH_HTTP . 'inc/dbweb.js', true);
 		echo_stylesheet(bootstrap_css());
 		echo_stylesheet(ENGINE_PATH_HTTP . 'node_modules/select2/dist/css/select2.min.css');
 		echo_stylesheet(ENGINE_PATH_HTTP . 'node_modules/select2-bootstrap-theme/dist/select2-bootstrap.min.css');
 		echo_stylesheet(ENGINE_PATH_HTTP . 'node_modules/bootstrap-toggle/css/bootstrap-toggle.min.css');
+		echo_stylesheet(ENGINE_PATH_HTTP . 'node_modules/trumbowyg/dist/ui/trumbowyg.min.css');
 		echo_stylesheet(ENGINE_PATH_HTTP . 'inc/styles.css', true);
 	?>
 	<!--META_INCLUDES_GO_HERE-->

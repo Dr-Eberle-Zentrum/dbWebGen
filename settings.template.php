@@ -466,6 +466,12 @@
 						OPERATOR_GROUP_CLOSE
 					)
 					In this example, the field is displayed if the 'name' field either contains any of the values of "Staatsoper" or "Empire State Building", OR when both of the following conditions are met: field 'location_id' is not empty, and field 'nr' contains a number between 3 and 7.
+			- richtext: array (optional)
+				Turns a T_TEXT_AREA input into a rich text editor. The following options are possible:
+					- editor: string
+						Currently only 'trumbowyg' editor is supported. See https://alex-d.github.io/Trumbowyg
+					- init_options: array (optional)
+						If provided, this hash array will be converted to a JSON object and passed to the editor initialization function.
 
 		- sort: array (optional)
 			Used for default sorting of tables in MODE_LIST. Associative array with key := fieldname (or SQL expression) and value := {'asc', 'desc'}

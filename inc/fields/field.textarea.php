@@ -10,6 +10,30 @@
 		}
 
 		//--------------------------------------------------------------------------------------
+		public function is_richtext() { // default: false
+		//--------------------------------------------------------------------------------------
+			return isset($this->field['richtext']);
+		}
+
+		//--------------------------------------------------------------------------------------
+		public function get_richtext_options_js() { // default: empty
+		//--------------------------------------------------------------------------------------
+			$options = isset($this->field['richtext']['init_options']) 
+				? $this->field['richtext']['init_options']
+				: array();
+			if(DBWEBGEN_LANG !== 'en')
+				$options['lang'] = DBWEBGEN_LANG;
+			return json_encode($options, JSON_FORCE_OBJECT);
+		}
+
+		//--------------------------------------------------------------------------------------
+		public function get_richtext_editor() {
+		//--------------------------------------------------------------------------------------
+			return $this->field['richtext']['editor'];
+		}
+			
+
+		//--------------------------------------------------------------------------------------
 		public function get_resize_classname() {
 		//--------------------------------------------------------------------------------------
 			return !isset($this->field['resizeable']) || $this->field['resizeable'] === true ? 'vresize' : 'noresize';
@@ -40,6 +64,18 @@
 				html($this->get_submitted_value('')),
 				$this->get_remaining_chars_display()
 			);
+			if($this->is_richtext()) {
+				switch($this->get_richtext_editor()) {
+					case 'trumbowyg': {
+						$output_buf .= sprintf(
+							"<script>$(document).ready(() => $('#%s').trumbowyg(%s))</script>\n",
+							$this->get_control_id(),
+							$this->get_richtext_options_js()
+						);
+						break;
+					}
+				}
+			}
 			return $output_buf;
 		}
 	}
