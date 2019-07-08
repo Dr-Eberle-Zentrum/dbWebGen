@@ -22,7 +22,7 @@
                     foreach($controlled_fields as $controlling_field) {
                         if(!isset(self::$controlled_fields[$controlling_field]))
                             self::$controlled_fields[$controlling_field] = array();
-                        self::$controlled_fields[$controlling_field] += array($cfd->get_field_name());
+                        array_push(self::$controlled_fields[$controlling_field], $cfd->get_field_name());
                     }
                 }
             }
