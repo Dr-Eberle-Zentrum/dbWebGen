@@ -350,6 +350,13 @@
 			- post_proc: string (optional)
 				Name of a function that will be called after the file was uploaded to the server.
 				Arguments: table name, field name, file info array, file path
+			- filename_override: string (optional)
+				For T_UPLOAD fields, this can be the name of a function to be called before storing the file to the final storage location. The function must return true if the filename was changed, and false if it was not changed
+				Function parameters:
+					* $table_name: Name of the current table
+					* $field_name: Name of the file upload field
+					* $cur_filename: Current file name (= file name on user's computer)
+					* &$new_filename: Output parameter taking the new desired filename
 			- reset: bool (default: false)
 				reset=true means that when editing a record (MODE_EDIT) its current value is not fetched into the form control.
 			- min: number (optional)

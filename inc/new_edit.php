@@ -85,7 +85,7 @@
 			<div class='form-loading bg-gray'>
 				<span class="glyphicon glyphicon-hourglass"></span> Form Loading...
 			</div>
-			<form class='form-horizontal bg-gray form-loading' role='form' method='post' enctype='multipart/form-data' data-navigate-away-warning='true'>
+			<form class='form-horizontal bg-gray form-loading' role='form' method='post' enctype='multipart/form-data' data-navigate-away-warning='true' accept-charset='UTF-8'>
 				<fieldset>
 HTML;
 
@@ -491,6 +491,18 @@ JS;
 			return proc_error(l10n('error.upload-location'));
 
 		if($field['store'] & STORE_FOLDER) {
+			// allow manipulation of filename prior to moving the uploaded file
+			if(isset($field['filename_override']) && is_callable($field['filename_override'])) {
+				if($field['filename_override'](
+					$table_name,
+					$field_name,
+					$file['name'],
+					$new_filename
+				)) {
+					$file['name'] = $new_filename;
+				}
+			}
+
 			// make sure storage location ends with a slash /
 			$store_folder = $field['location'];
 			if(substr($field['location'], -1) != '/')
