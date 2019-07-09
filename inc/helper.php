@@ -991,10 +991,10 @@ STR;
 					$linked_rec['raw_val'] = $display_val;
 					$params = array('mode' => MODE_VIEW);
 
-					if($field['lookup']['cardinality'] == CARDINALITY_MULTIPLE
-						&& isset($TABLES[$field['linkage']['table']])
-						&& is_allowed($TABLES[$field['linkage']['table']], MODE_VIEW))
-					{
+					if(isset($TABLES[$field['linkage']['table']])
+						&& is_allowed($TABLES[$field['linkage']['table']], MODE_VIEW)
+						&& !(isset($field['lookup']['link_to_lookup_record']) && $field['lookup']['link_to_lookup_record'] === true)
+					) {
 						// display link to n:m table view (typically MODE_VIEW will be allowed when there are additional attributes to the n:m table, otherwise not)
 						$params['table'] = $field['linkage']['table'];
 						$params[$field['linkage']['fk_other']] = $id_val;
