@@ -185,13 +185,16 @@
 		/*foreach($record as $col => $val) {
 			if(!isset($table['fields'][$col]))
 				continue;*/
-		foreach(array_keys($table['fields']) as $col) {
+		foreach($table['fields'] as $col => &$field_settings) {
 			/*if(!isset($record[$col]))
 				continue;*/
+			if(isset($field_settings['view_hide']) && $field_settings['view_hide'] === true)
+				continue;
+				
 			$val = $record[$col];
 			$table_html .= $form_tabs->new_tab_if_needed($col);
 
-			$field_label = get_field_label($table['fields'][$col], $record);
+			$field_label = get_field_label($field_settings, $record);
 
 			# display null values?
 			$css_null = '';
@@ -202,11 +205,11 @@
 
 			$table_html .= "<div class='form-group $css_null'><label class='col-sm-3 control-label'>{$field_label}</label>\n";
 
-			$val = prepare_field_display_val($table, $record, $table['fields'][$col], $col, $val);
+			$val = prepare_field_display_val($table, $record, $field_settings, $col, $val);
 
 			$style = '';
-			if(isset($table['fields'][$col]['view_css']))
-				$style = sprintf(' style="%s"', $table['fields'][$col]['view_css']);
+			if(isset($field_settings[$col]['view_css']))
+				$style = sprintf(' style="%s"', $field_settings['view_css']);
 
 			$table_html .= "<div class='col-sm-9 column-value'$style>{$val}</div></div>\n";
 		}
