@@ -101,6 +101,7 @@
 	define('MODE_QUERY', 'query');
 	define('MODE_GLOBALSEARCH', 'search');
 	define('MODE_SETUP', 'setup');
+	define('MODE_FILE', 'file');
 
 	// pseudo modes
 	define('MODE_LINK', 'link'); // table-level action, providing a link for rendering the actual object, not the record

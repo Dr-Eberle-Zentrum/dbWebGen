@@ -235,6 +235,9 @@
 						$p->render();
 						break;
 
+					case MODE_FILE:
+						break;
+
 					default:
 						throw new Exception(l10n('error.invalid-mode', $_GET['mode']));
 				}

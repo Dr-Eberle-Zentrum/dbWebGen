@@ -79,6 +79,12 @@
 			if(MergeRecordsPage::process_ajax())
 				exit;
 			break;
+
+		case MODE_FILE:
+			require_once ENGINE_PATH_LOCAL . 'inc/file.php';
+			if(FileRetrieval::processRequest())
+				exit;
+			break;
 	}
 
 	if($settings_exist)
