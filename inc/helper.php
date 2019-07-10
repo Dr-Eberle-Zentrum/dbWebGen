@@ -1053,6 +1053,8 @@ STR;
 				$val = html($val, $APP['max_text_len'], true, false, $highlighter);
 		}
 
+		if(isset($field['display_value_postproc']))
+			$val = $field['display_value_postproc']($val, $_GET['table'], $col, $record);
 		return $val;
 	}
 
@@ -1865,4 +1867,29 @@ END;
 			}
 		}
 	}
+
+	//------------------------------------------------------------------------------------------
+	// Credit for this function is due to "Leo" (https://stackoverflow.com/users/227532/leo) 
+	// on Stack Overflow: https://stackoverflow.com/a/2510459/5529515
+	function formatByteDisplay($bytes, $precision = 2, $number_format_callback = null) { 
+	//------------------------------------------------------------------------------------------
+		$units = ['B', 'KB', 'MB', 'GB', 'TB'];
+	
+		if($bytes < 0)
+			return '?';
+
+		$pow = floor(($bytes ? log($bytes) : 0) / log(1000)); 
+		$pow = min($pow, count($units) - 1); 
+	
+		// Uncomment one of the following alternatives
+		$bytes /= pow(1000, $pow);
+		// $bytes /= (1 << (10 * $pow)); 
+	
+		if($number_format_callback)
+			$bytes = $number_format_callback(round($bytes, $precision));
+		else
+			$bytes = round($bytes, $precision);
+		
+		return $bytes . ' ' . $units[$pow];
+	} 
 ?>
