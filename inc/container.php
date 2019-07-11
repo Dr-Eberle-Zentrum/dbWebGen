@@ -115,6 +115,11 @@
 		global $TABLES;
 		global $APP;
 
+		if(isset($APP['custom_menu'])) {
+			$menu = $APP['custom_menu']();
+			return;
+		}
+		
 		$menu = array();
 
 		$menu[0] = array('name' => l10n('menu.new'), 'items' => array());

@@ -92,6 +92,25 @@
 			Arguments:
 				$merge_table: the current table on which the merge operation shall be performed
 				$referenced_table: the table with referenced records
+		- custom_menu: string (optional)
+			Name of a function that is called to build the app's menu bar. Must return a hash array representing the menu.
+			Example: 
+			[
+				[
+					'name' => 'First dropdown',
+					'items' => [
+						[ 'label' => 'Some menu item', 'href' => '/some/path?param=valueX' ],
+						[ 'label' => 'Another menu item', 'href' => '/some/path?param=valueY' ]
+					]
+				], [
+					'name' => 'Second dropdown',
+					'items' => [
+						[ 'label' => 'Blah', 'href' => '/some/path?param=value1' ],
+						[ 'label' => 'Lalalala', 'href' => '/some/path?param=value2' ]
+					]
+				]
+			]
+
 	======================================================================================================== */
 	$APP = array(
 		'plugins' => array(),
