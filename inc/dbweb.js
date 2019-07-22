@@ -480,11 +480,28 @@ function set_create_new_handler() {
                     url_append += '&' + 'pre:' + encodeURIComponent(f) + '=' + encodeURIComponent(v);
             }
         }
-        window.open(
+        let popupWindow = window.open(
             $(this).data('create-url') + url_append,
             /*$(this).data('create-title')*/ '_blank',
             'location=0,menubar=0,resizable=1,scrollbars=1,toolbar=0,left='+popup.x+',top='+popup.y+',width='+popup.width+',height='+popup.height
         );
+        if(popupWindow) {
+            console.log('Popup opened!');
+            if(window.createNewPopupCount === undefined)
+                window.createNewPopupCount = 0;
+            window.createNewPopupCount++;
+            set_navigate_away_warning(true, false);
+            $(popupWindow).load(() => {
+                popupWindow.addEventListener('unload', event => {
+                    console.log('Popup closed!');
+                    if(--window.createNewPopupCount <= 0) {
+                        window.createNewPopupCount = 0;
+                        if(!window.formDirty)
+                            set_navigate_away_warning(false, false);
+                    }
+                })
+            })
+        }
     });
 }
 
@@ -695,18 +712,27 @@ function init_file_selection_handler() {
 //------------------------------------------------------------------------------------------
 function prepare_navigate_away_warning() {
 //------------------------------------------------------------------------------------------
-    $('form[data-navigate-away-warning="true"]')
-    .submit(function() {
+    let form = $('form[data-navigate-away-warning="true"]');
+    form.submit(function() {
         set_navigate_away_warning(false);
-    })
-    .find(':input').on('change', function() {
-        set_navigate_away_warning(true);
+    });
+    form.find(':input').on('change', function() {
+        set_navigate_away_warning(true, true);
+    });
+    form.find('.trumbowyg-textarea').on('tbwchange', function() {
+        set_navigate_away_warning(true, true);
     });
 }
 
 //------------------------------------------------------------------------------------------
-function set_navigate_away_warning(/*bool*/ on) {
+// setFormDirty must be true when coming from form input, and false when coming from
+// open "Create New" popup
+function set_navigate_away_warning(/*bool*/ on, /*bool*/ setFormDirty) {
 //------------------------------------------------------------------------------------------
+    if(on && setFormDirty === true)
+        window.formDirty = true;
+    if(!on)
+        window.formDirty = false;
     window.onbeforeunload = (on? (function() { return true }) : null);
 }
 
