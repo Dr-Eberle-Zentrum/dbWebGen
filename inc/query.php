@@ -483,6 +483,18 @@ HTML;
 
 			$f = FieldFactory::create($table_name, $field_name);
 			switch($f->get_type()) {
+				case T_NUMBER:
+					if(!isset($_GET["p:$param_name"]))
+						$_GET["p:$param_name"] = $param_value;
+					$render_options = array(
+						'form_method' => 'GET',
+						'name_attr' => "p:$param_name",
+						'id_attr' => $param_name,
+						'null_option_allowed' => false,
+						'render_required' => $is_required
+					);
+					return $f->render_control($render_options);
+
 				case T_ENUM:
 				case T_LOOKUP:
 					if(!isset($_GET["p:$param_name"]))
@@ -497,7 +509,6 @@ HTML;
 						'render_required' => $is_required
 					);
 					return $f->render_control($render_options);
-					break;
 			}
 
 			return '';
