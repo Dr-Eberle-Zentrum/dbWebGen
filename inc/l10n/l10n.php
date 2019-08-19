@@ -18,7 +18,9 @@
         if($desiredLang === $currentLang)
             return; // desired language already loaded
 
-        // here we need to load the new language into our session...
+        // here we need to load the new language into our session...         
+        if(!file_exists(__DIR__ . "/$desiredLang.php"))
+            $desiredLang = 'en';
         include "$desiredLang.php";
         $_SESSION['l10n'] = $_L10N;
         $_SESSION['language'] = $desiredLang;
