@@ -57,7 +57,13 @@
                         }
                         else if(typeof conds[start_index] === 'object') { // we have a real condition; this is the only option left
                             var cond = conds[start_index];
-                            var field_val = $('[name]').filter(function() { return $(this).attr('name') == cond.field }).val();
+                            let control = $('[name]').filter(function() { 
+                                return $(this).attr('name') === cond.field 
+                                    && (!cond.control_filter || $(this).is(cond.control_filter));
+                            }).first();
+                            // we use .val() to retrieve field value, unless control_prop is specified
+                            var field_val = typeof cond.control_prop === 'string' ?
+                                control.prop(cond.control_prop) : control.val();
                             var cond_result = false;
                             switch(cond.operator) {
                                 case 'OPERATOR_EQUALS':
