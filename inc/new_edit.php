@@ -530,8 +530,15 @@ JS;
 					db_esc($field_name), db_esc($_GET['table']), implode(' AND ', $where));
 
 				$succ = db_get_single_val($sql, $params, $prev_filename);
-				if($succ && $prev_filename != $file['name'] && file_exists($store_folder . $prev_filename))
-					unlink($store_folder . $prev_filename);
+                if($succ 
+                    && $prev_filename !== null
+                    && is_string($prev_filename)
+                    && $prev_filename != ''
+                    && $prev_filename != $file['name'] 
+                    && file_exists($store_folder . $prev_filename)
+                ) {
+                    @unlink($store_folder . $prev_filename);
+                }
 			}
 
 			$moved = move_uploaded_file($file['tmp_name'], $target_filename);
