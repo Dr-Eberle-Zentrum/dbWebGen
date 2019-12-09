@@ -978,47 +978,54 @@ STR;
 				// postgre 9.2
 				$temp_arr = json_decode($val);
 				$id_display_map = array();
-				for($i=0; $i<count($temp_arr[0]); $i++)
-					$id_display_map[$temp_arr[0][$i]] = $temp_arr[1][$i];
+				if(is_array($temp_arr)) {
+					for($i = 0; $i < count($temp_arr[0]); $i++)
+						$id_display_map[$temp_arr[0][$i]] = $temp_arr[1][$i];
+				}
 				//<< postgre 9.2
 
-				if(!isset($field['lookup']['sort']) || $field['lookup']['sort'] == true)
-					asort($id_display_map);
-
-				$linked_records = array();
-				foreach($id_display_map as $id_val => $display_val) {
-					$linked_rec = array();
-					$linked_rec['raw_val'] = $display_val;
-					$params = array('mode' => MODE_VIEW);
-
-					if(isset($TABLES[$field['linkage']['table']])
-						&& is_allowed($TABLES[$field['linkage']['table']], MODE_VIEW)
-						&& !(isset($field['lookup']['link_to_lookup_record']) && $field['lookup']['link_to_lookup_record'] === true)
-					) {
-						// display link to n:m table view (typically MODE_VIEW will be allowed when there are additional attributes to the n:m table, otherwise not)
-						$params['table'] = $field['linkage']['table'];
-						$params[$field['linkage']['fk_other']] = $id_val;
-						$params[$field['linkage']['fk_self']] = $record[$table['primary_key']['columns'][0]];
-					}
-					else {
-						// display link to linked item
-						$params['table'] = $field['lookup']['table'];
-						$params[$TABLES[$field['lookup']['table']]['primary_key']['columns'][0]] = $id_val;
-					}
-
-					$linked_rec['href'] = isset($TABLES[$params['table']]) && in_array(MODE_VIEW, $TABLES[$params['table']]['actions']) && !is_lookup_hyperlink_suppressed($field) ? http_build_query($params) : null;
-					$linked_rec['html_val'] = $highlighter->highlight(html($display_val));
-					$linked_rec['title'] = '';
-					$linked_rec['class'] = '';
-					if($linked_rec['html_val'] == '') {
-						$linked_rec['title'] = l10n('lookup-field.linked-record-no-display-value');
-						$linked_rec['html_val'] = $highlighter->highlight(html($linked_rec['raw_val'] = $id_val));
-						$linked_rec['class'] = 'dotted';
-					}
-
-					$linked_records[] = $linked_rec;
+				if(count($id_display_map) === 0) {
+					$val = '';
 				}
-				$val = html_linked_records($field, $linked_records, $_GET['mode'] == MODE_VIEW ? 0 : $APP['max_text_len']);
+				else {
+					if(!isset($field['lookup']['sort']) || $field['lookup']['sort'] == true)
+						asort($id_display_map);
+
+					$linked_records = array();
+					foreach($id_display_map as $id_val => $display_val) {
+						$linked_rec = array();
+						$linked_rec['raw_val'] = $display_val;
+						$params = array('mode' => MODE_VIEW);
+
+						if(isset($TABLES[$field['linkage']['table']])
+							&& is_allowed($TABLES[$field['linkage']['table']], MODE_VIEW)
+							&& !(isset($field['lookup']['link_to_lookup_record']) && $field['lookup']['link_to_lookup_record'] === true)
+						) {
+							// display link to n:m table view (typically MODE_VIEW will be allowed when there are additional attributes to the n:m table, otherwise not)
+							$params['table'] = $field['linkage']['table'];
+							$params[$field['linkage']['fk_other']] = $id_val;
+							$params[$field['linkage']['fk_self']] = $record[$table['primary_key']['columns'][0]];
+						}
+						else {
+							// display link to linked item
+							$params['table'] = $field['lookup']['table'];
+							$params[$TABLES[$field['lookup']['table']]['primary_key']['columns'][0]] = $id_val;
+						}
+
+						$linked_rec['href'] = isset($TABLES[$params['table']]) && in_array(MODE_VIEW, $TABLES[$params['table']]['actions']) && !is_lookup_hyperlink_suppressed($field) ? http_build_query($params) : null;
+						$linked_rec['html_val'] = $highlighter->highlight(html($display_val));
+						$linked_rec['title'] = '';
+						$linked_rec['class'] = '';
+						if($linked_rec['html_val'] == '') {
+							$linked_rec['title'] = l10n('lookup-field.linked-record-no-display-value');
+							$linked_rec['html_val'] = $highlighter->highlight(html($linked_rec['raw_val'] = $id_val));
+							$linked_rec['class'] = 'dotted';
+						}
+
+						$linked_records[] = $linked_rec;
+					}
+					$val = html_linked_records($field, $linked_records, $_GET['mode'] == MODE_VIEW ? 0 : $APP['max_text_len']);
+				}
 			}
 			else
 				$val = '';
