@@ -1714,7 +1714,7 @@ END;
 		}
 
 		public function get_help_text() {
-			return $this->is_in_group() ? $this->cur_group['help'] : '';
+			return $this->is_in_group() && isset($this->cur_group['help']) ? $this->cur_group['help'] : '';
 		}
 
 		public function get_width() {

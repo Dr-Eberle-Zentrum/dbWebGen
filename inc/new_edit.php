@@ -137,8 +137,11 @@ HTML;
 					$field_grouper->get_label_tooltip(),
 					$field_name
 				);
-				$field['help'] = $field_grouper->get_help_text();
-				render_help($field);
+				$help_text = $field_grouper->get_help_text();
+				if($help_text !== '') {
+					$field['help'] = $help_text;
+					render_help($field);
+				}
 				echo sprintf(
 					"<span data-field='%s'>%s</span>%s</label>\n",
 					$field_name,
