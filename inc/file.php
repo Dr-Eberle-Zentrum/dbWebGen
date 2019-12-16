@@ -1,16 +1,21 @@
 <?php
 /*
-    Processes MODE_FILE requests,  which deliver a file uploaded using a T_UPLOAD field
+    Processes MODE_FILE requests, which deliver a file uploaded using a T_UPLOAD field
     by providing the primary key(s) of the record in the table. This allows file name
-    independent retrieval of uploaded files.
+    independent retrieval of uploaded files. To work, table actions must include either 
+    MODE_VIEW or MODE_FILE.
     
     Following URL parameters are required:
         * table: name of the DB table that holds the file info
         * field: name of the field in table that holds the file name
         * primary key values (depends on primary keys of table)
-    Optionally, an URL-encoded "fragment" parameter can be specified, which will be appended as a fragment ideintified
+    
+    Optionally, an URL-encoded "fragment" parameter can be specified, which will be 
+    appended as a fragment ideintified
+    
     Example:
         /?mode=file&table=uploads&field=filename&id=27 
+    
     Example with fragment identifier pointing to page 50:
         /?mode=file&table=uploads&field=filename&id=20&fragment=page%3D50
 */
@@ -46,6 +51,8 @@ class FileRetrieval {
         if(!isset($TABLES[$this->table]))
             return proc_error(l10n('error.invalid-params'));
         $table = $TABLES[$this->table];
+        if(!in_array(MODE_VIEW, $table['actions']) && !in_array(MODE_FILE, $table['actions']))
+            return proc_error(l10n('error.not-allowed'));
         if(!isset($table['fields'][$this->field]))
             return proc_error(l10n('error.invalid-params'));
         $field = $table['fields'][$this->field];
