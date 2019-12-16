@@ -317,6 +317,7 @@ HTML
         'error.field-value-missing' => 'Es ist kein Wert für das Feld "$1" definiert.',
         'error.field-required' => 'Bitte geben Sie einen Wert für das Pflichtfeld <b>$1</b> an.',
         'error.field-multi-required' => 'Bitte wählen Sie mindestens einen Wert für das Mehrfachauswahlfeld <b>$1</b>.',
+        'error.file-retrieval-no-upload' => 'Für diesen Datensatz wurde keine Datei hochgeladen.',
         'error.password-too-short' => 'Das Passwort ist zu kurz, die minimale Länge ist $1.',
         'error.password-hash-missing' => 'Konfigurationsfehler: Die Passwort-Hashfunktion <i>$1</i> existiert nicht.',
         'error.upload-err-ini-size' => "Der Upload überschreitet die Einstellung upload_max_filesize in php.ini",

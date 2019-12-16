@@ -309,6 +309,7 @@ HTML
         'error.field-value-missing' => 'No value for field $1 provided.',
         'error.field-required' => 'Please fill in required field <b>$1</b>',
         'error.field-multi-required' => 'Please provide at least one value for required field <b>$1</b>',
+        'error.file-retrieval-no-upload' => 'No file was uploaded for this record.',
         'error.password-too-short' => 'Password is too short. Minimum length is $1.',
         'error.password-hash-missing' => 'Password hash function $1 does not exist. Inform your admin.',
         'error.upload-err-ini-size' => "The uploaded file exceeds the upload_max_filesize directive in php.ini",

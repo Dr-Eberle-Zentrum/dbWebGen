@@ -8,8 +8,11 @@
         * table: name of the DB table that holds the file info
         * field: name of the field in table that holds the file name
         * primary key values (depends on primary keys of table)
+    Optionally, an URL-encoded "fragment" parameter can be specified, which will be appended as a fragment ideintified
     Example:
         /?mode=file&table=uploads&field=filename&id=27 
+    Example with fragment identifier pointing to page 50:
+        /?mode=file&table=uploads&field=filename&id=20&fragment=page%3D50
 */
 
 // ============================================================================
@@ -18,18 +21,21 @@ class FileRetrieval {
 
     protected   $table,
                 $field,
-                $primaryKeys;
+                $primaryKeys,
+                $fragment;
     
     // ------------------------------------------------------------------------
     protected function __construct(
         $table,
         $field,
-        $primaryKeys
+        $primaryKeys,
+        $fragment
     ) {
     // ------------------------------------------------------------------------
         $this->table = $table;
         $this->field = $field;
         $this->primaryKeys = $primaryKeys;
+        $this->fragment = $fragment;
     }
 
     // ------------------------------------------------------------------------
@@ -70,12 +76,15 @@ class FileRetrieval {
 		if(false === $stmt->execute($params))
             return proc_error(l10n('error.db-execute'), $stmt);
         $fileName = $stmt->fetchColumn();
-        if($fileName === false)
+        if($fileName === false) // no record even exists
             return proc_error(l10n('error.invalid-params'));
+        if(!is_string($fileName) || $fileName === '') // there's a record, but no file was uploaded
+            return proc_error(l10n('error.file-retrieval-no-upload'));
         $store_folder = str_replace("\\", '/', $field['location']);
         if(substr($store_folder, -1) !== '/')
             $store_folder .= '/';
-        header('Location: ' . $store_folder . $fileName);
+        $fragment = ($this->fragment !== '' ? "#{$this->fragment}" : '');
+        header('Location: ' . $store_folder . $fileName . $fragment);
         return true;
     }
 
@@ -88,11 +97,12 @@ class FileRetrieval {
             switch ($k) {
                 case 'table': $table = $v; break;
                 case 'field': $field = $v; break;
+                case 'fragment': $fragment = $v; break;
                 case 'mode': break;
                 default: $primaryKeys[$k] = $v;
             }
         }
-        $f = new FileRetrieval($table, $field, $primaryKeys);
+        $f = new FileRetrieval($table, $field, $primaryKeys, isset($fragment) ? $fragment : '');
         return $f->redirect();
     }
 }
