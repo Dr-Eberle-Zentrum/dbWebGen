@@ -5,6 +5,38 @@
 	note: the db user you use with this script needs to have read permission on the target schema and on the information_schema
 */
 
+	// needed to mask constants, so they can be replaced properly later
+	function c($n) {
+		return "__CONST__$n";
+	}
+
+	// pretty formats var_export() output
+	function formatOutput($s) {
+		// constants
+		$s = preg_replace("/'__CONST__([^']+)'/", '$1', $s);
+
+		// array openers after hash key
+		$s = preg_replace('/=>\s+array \(/s', '=> [', $s);
+
+		// array openers after assignment
+		$s = preg_replace('/(= )?array \(/', '$1[', $s);
+
+		// array closers
+		$s = preg_replace('/\n(\s*)\),/', PHP_EOL . '$1],', $s);
+
+		// end
+		$len = strlen($s);
+		if($s[$len - 1] === ')')
+			$s[$len - 1] = ']';
+
+		return $s;
+	}
+
+	function prettyDump($arr) {
+		$s = var_export($arr, true);
+		echo formatOutput($s);
+	}
+
 	$tables_setup_json = isset($_GET['special']) && $_GET['special'] === 'tables_setup';
 	if($tables_setup_json)
 		header('Content-Type: application/json; charset=utf8');
@@ -114,7 +146,7 @@ SQL;
 			'display_name' => ucwords(strtolower(str_replace('_', ' ', $table_name))),
 			'description' => '',
 			'item_name' => ucwords(strtolower(str_replace('_', ' ', $table_name))),
-			'actions' => array(MODE_EDIT, MODE_NEW, MODE_VIEW, MODE_LIST, MODE_DELETE, MODE_LINK),
+			'actions' => array(c('MODE_EDIT'), c('MODE_NEW'), c('MODE_VIEW'), c('MODE_LIST'), c('MODE_DELETE'), c('MODE_LINK')),
 			'fields' => array()
 		);
 
@@ -144,7 +176,7 @@ SQL;
 				'label' => ucwords(strtolower(str_replace('_', ' ', $col['column_name']))),
 				'required' => $col['is_nullable'] == 'YES' ? false : true,
 				'editable' => $col['is_updatable'] == 'YES' ? true : false,
-				'type' => T_TEXT_LINE // default
+				'type' => c('T_TEXT_LINE') // default
 			);
 
 			// if nextval from a sequence is the default value, make it not editable
@@ -156,7 +188,7 @@ SQL;
 
 			// check if there is a range check constraint on this field, then the type will be T_ENUM:
 			$check_cons_query = <<<SQL
-			SELECT consrc
+			SELECT pg_get_constraintdef(chk.oid)
 				FROM information_schema.table_constraints tc, pg_constraint chk, information_schema.constraint_column_usage ccu
 				WHERE tc.constraint_type = 'CHECK'
 				and chk.contype = 'c'
@@ -179,7 +211,7 @@ SQL;
 			if($num_checks == 1) { // only if 1 single check constraint on this column
 				$enum_vals = array();
 				// see whether we have a range check
-				if(1 == preg_match('/=\\sANY\\s\\(+ARRAY\\[(?P<val>.+)\\]\\)+/', $consrc, $extract))
+				if(1 == preg_match('/=\sANY\s\(+ARRAY\[(?P<val>.+)\]\)+/', $consrc, $extract))
 				{
 					// here we have something like:
 					//    1::numeric, 1.3, 1.7, 2::numeric
@@ -202,7 +234,7 @@ SQL;
 						$enum_vals[(string) $val] = $val;
 					}
 
-					$field['type'] = T_ENUM;
+					$field['type'] = c('T_ENUM');
 					$field['values'] = $enum_vals;
 				}
 				/*if(1 == preg_match('/=\\sANY\\s\\(+ARRAY\\[(?P<val>.+)\\]\\)+/', $consrc, $extract)
@@ -216,7 +248,7 @@ SQL;
 				}*/
 			}
 
-			if($field['type'] != T_ENUM) { // only if we have no check range constraint here
+			if($field['type'] != c('T_ENUM')) { // only if we have no check range constraint here
 				if($col['character_maximum_length'] !== null)
 					$field['len'] = $col['character_maximum_length'];
 
@@ -224,25 +256,48 @@ SQL;
 				// select * from information_schema.columns where table_schema = 'public'
 				switch($col['data_type']) {
 					case 'boolean':
-						$field['type'] = T_ENUM;
+						$field['type'] = c('T_ENUM');
 						$field['values'] = array(1 => 'Yes', 0 => 'No');
 						if($col['column_default'] !== null)
 							$field['default'] = $col['column_default'] === true ? 1 : 0;
 						$field['width_columns'] = 2;
 						break;
 
-					case 'integer': case 'smallint': case 'bigint':
-						$field['type'] = T_NUMBER;
+					case 'integer': 
+						$field['type'] = c('T_NUMBER');
+						if($field['editable']) {
+							$field['step'] = 1;
+							$field['max'] = pow(2, 32) / 2;
+							$field['min'] = -$field['max'];
+						}
+						break;
+
+					case 'smallint': 
+						$field['type'] = c('T_NUMBER');
+						if($field['editable']) {
+							$field['step'] = 1;
+							$field['max'] = pow(2, 16) / 2;
+							$field['min'] = -$field['max'];
+						}
+						break;
+
+					case 'bigint':
+						$field['type'] = c('T_NUMBER');
+						if($field['editable']) {
+							$field['step'] = 1;
+							$field['max'] = pow(2, 64) / 2;
+							$field['min'] = -$field['max'];
+						}
 						break;
 
 					case 'numeric':
 						if($col['numeric_scale'] === null && $col['numeric_precision'] === null) {
 							// declared as NUMERIC without arguments -> can be any dec number
-							$field['type'] = T_NUMBER;
+							$field['type'] = c('T_NUMBER');
 							$field['step'] = 'any';
 						}
 						else if($col['numeric_precision'] !== null) {
-							$field['type'] = T_NUMBER;
+							$field['type'] = c('T_NUMBER');
 							if($col['numeric_scale'] > 0)
 								$field['step'] = number_format(1. / pow(10, $col['numeric_scale']), $col['numeric_scale']);
 							else
@@ -251,21 +306,21 @@ SQL;
 						break;
 
 					case 'bit':
-						$field['type'] = T_ENUM;
+						$field['type'] = c('T_ENUM');
 						$field['values'] = array('0' => '0', '1' => '1');
 						$field['width_columns'] = 2;
 						break;
 
 					case 'bit varying': case 'character varying': case 'character': case 'text':
 						if($col['character_maximum_length'] !== null) {
-							$field['type'] = T_TEXT_LINE;
+							$field['type'] = c('T_TEXT_LINE');
 							$field['len'] = $col['character_maximum_length'];
 
 							if($field['len'] > 50)
 								$field['resizeable'] = true;
 						}
 						else
-							$field['type'] = T_TEXT_AREA;
+							$field['type'] = c('T_TEXT_AREA');
 						break;
 
 					case 'USER-DEFINED':
@@ -278,7 +333,7 @@ SQL;
 							$q_srid = db_exec('SELECT find_srid(?, ?, ?)',
 								array($db_schema, $table_name, $col['column_name']));
 
-							$field['type'] = T_POSTGIS_GEOM;
+							$field['type'] = c('T_POSTGIS_GEOM');
 							$field['SRID'] = strval($q_srid->fetchColumn());
 							$field['map_picker'] = array(
 								'draw_options' => array(
@@ -301,7 +356,7 @@ SQL;
 								$enum_vals[$enum_val[0]] = $enum_val[0];
 
 							if(count($enum_vals) > 0) {
-								$field['type'] = T_ENUM;
+								$field['type'] = c('T_ENUM');
 								$field['values'] = $enum_vals;
 							}
 						}
@@ -368,9 +423,14 @@ SQL;
 		while($cons = $res->fetch(PDO::FETCH_ASSOC)) {
 			$field = $TABLES[$table_name]['fields'][$cons['column_name']];
 
-			$field['type'] = T_LOOKUP;
+			$field['type'] = c('T_LOOKUP');
+			if($field['editable']) {
+				unset($field['step']);
+				unset($field['min']);
+				unset($field['max']);
+			}
 			$field['lookup'] = array(
-				'cardinality' => CARDINALITY_SINGLE,
+				'cardinality' => c('CARDINALITY_SINGLE'),
 				'table'  => $cons['references_table'],
 				'field'  => $cons['references_field'],
 				'display' => ($cons['display_field'] !== null ? $cons['display_field'] : $cons['references_field']),
@@ -406,7 +466,7 @@ SQL;
 		// this is the case if this table has:
 		// * exactly two primary key fields
 		// * both are foreign keys to two different tables
-		// If both conditions hold we add this table as a linkage table in CARDINALTY_MULTIPLE field in both referenced tables
+		// If both conditions hold we add this table as a linkage table in CARDINALITY_MULTIPLE field in both referenced tables
 		if(count($primary_key['columns']) == 2) {
 			$field1 = $field2 = null;
 			if(isset($foreign_keys_info[$primary_key['columns'][0]])
@@ -424,9 +484,9 @@ SQL;
 						'label' => $table_name . ' list',
 						'required' => false,
 						'editable' => true,
-						'type' => T_LOOKUP,
+						'type' => c('T_LOOKUP'),
 						'lookup' => array(
-							'cardinality' => CARDINALITY_MULTIPLE,
+							'cardinality' => c('CARDINALITY_MULTIPLE'),
 							'table'  => $field1['lookup']['table'],
 							'field'  => $field1['lookup']['field'],
 							'display' => $field1['lookup']['display'],
@@ -445,9 +505,9 @@ SQL;
 						'label' => $table_name . ' list',
 						'required' => false,
 						'editable' => true,
-						'type' => T_LOOKUP,
+						'type' => c('T_LOOKUP'),
 						'lookup' => array(
-							'cardinality' => CARDINALITY_MULTIPLE,
+							'cardinality' => c('CARDINALITY_MULTIPLE'),
 							'table'  => $field0['lookup']['table'],
 							'field'  => $field0['lookup']['field'],
 							'display' => $field0['lookup']['display'],
@@ -490,7 +550,7 @@ SQL;
 			'search_string_transformation' => 'lower((%s)::text)'
 		);
 		echo '<?php', PHP_EOL, '$APP = ';
-		var_export($APP);
+		prettyDump($APP);
 		echo ';', PHP_EOL, PHP_EOL;
 	}
 
@@ -499,7 +559,7 @@ SQL;
 	// ================================================
 	if(!isset($_GET['only']) || $_GET['only'] == 'DB') {
 		$DB = array(
-			'type' => DB_POSTGRESQL,
+			'type' => c('DB_POSTGRESQL'),
 			'host' => $db_host,
 			'port' => intval($db_port),
 			'user' => $db_user,
@@ -507,7 +567,7 @@ SQL;
 			'db'   => $db_name
 		);
 		echo '$DB = ';
-		var_export($DB);
+		prettyDump($DB);
 		echo ';', PHP_EOL, PHP_EOL;
 	}
 
@@ -517,7 +577,7 @@ SQL;
 	if(!isset($_GET['only']) || $_GET['only'] == 'LOGIN') {
 		$LOGIN = array();
 		echo '$LOGIN = ';
-		var_export($LOGIN);
+		prettyDump($LOGIN);
 		echo ';', PHP_EOL, PHP_EOL;
 	}
 
@@ -526,10 +586,7 @@ SQL;
 	// ================================================
 	if(!isset($_GET['only']) || $_GET['only'] == 'TABLES') {
 		echo '$TABLES = ';
-		var_export($TABLES);
+		prettyDump($TABLES);
 		echo ';', PHP_EOL;
 	}
-
-	if(!isset($_GET['only']))
-		echo PHP_EOL, '?>';
 ?>
