@@ -319,29 +319,37 @@ SQL;
 							if($field['len'] > 50)
 								$field['resizeable'] = true;
 						}
-						else
-							$field['type'] = c('T_TEXT_AREA');
+						else {
+							$field['type'] = c('T_TEXT_LINE'); // most text fields are single line, even if unlimited characters
+						}
 						break;
 
 					case 'USER-DEFINED':
-						// check whether we have Postgis geometry
-						if(strtolower($col['udt_name']) == 'geometry') {
+						// check whether we have Postgis geometry or geography
+						if(in_array(strtolower($col['udt_name']), ['geometry', 'geography'])) {
+							$column_type = strtolower($col['udt_name']);
 							// integer Find_SRID(varchar a_schema_name, varchar a_table_name, varchar a_geomfield_name);
-							$q_type = db_exec('SELECT type FROM geometry_columns WHERE f_table_schema = ? AND f_table_name = ? and f_geometry_column = ?',
+							$q_type = db_exec("SELECT type FROM {$column_type}_columns WHERE f_table_schema = ? AND f_table_name = ? and f_{$column_type}_column = ?",
 								array($db_schema, $table_name, $col['column_name']));
 							$geom_type = strtolower($q_type->fetchColumn());
-							$q_srid = db_exec('SELECT find_srid(?, ?, ?)',
-								array($db_schema, $table_name, $col['column_name']));
-
 							$field['type'] = c('T_POSTGIS_GEOM');
-							$field['SRID'] = strval($q_srid->fetchColumn());
+							if($column_type === 'geometry') {
+								$q_srid = db_exec('SELECT find_srid(?, ?, ?)',
+									array($db_schema, $table_name, $col['column_name']));
+								$field['SRID'] = strval($q_srid->fetchColumn());
+							}
+							else {
+								$field['SRID'] = 4326; // for geography columns we use srid 4326 (WGS 84)
+							}
+							
 							$field['map_picker'] = array(
 								'draw_options' => array(
 									'polyline' => in_array($geom_type, array('polyline', 'linestring', 'geometry')),
 									'polygon' => in_array($geom_type, array('polygon', 'geometry')),
 									'rectangle' => in_array($geom_type, array('polygon', 'geometry')),
 									'circle' => false,
-									'point' => in_array($geom_type, array('point', 'geometry'))
+									'circlemarker' => false,
+									'marker' => in_array($geom_type, array('point', 'geometry'))
 								)
 							);
 						}
