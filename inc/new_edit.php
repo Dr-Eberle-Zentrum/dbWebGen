@@ -737,6 +737,9 @@ JS;
 			else if($field_info['type'] == T_PASSWORD) {
 				if(isset($field_info['min_len']) && mb_strlen($_POST[$field_name]) < $field_info['min_len'])
 					return proc_error(l10n('error.password-too-short', $field_info['min_len']));
+				
+				if(!check_password_chars($field_info, $_POST[$field_name]))
+					return false;
 
 				if(isset($LOGIN['password_hash_func']) && !function_exists($LOGIN['password_hash_func']))
 					return proc_error(l10n('error.password-hash-missing', $LOGIN['password_hash_func']));

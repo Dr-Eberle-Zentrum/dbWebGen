@@ -622,6 +622,52 @@
                         	"type": "integer",
                             "minimum": 0
                         },
+                        "password_chars": {
+                            "title": "Password Character Restrictions",
+                            "description": "Allows defining the minimum number of occurrences of various sets of characters",
+                            "type": "object",
+                            "required": [ ],
+                            "properties": {
+                                "lower": {
+                                    "title": "Lower-Case Characters",
+                                	"description": "Number of lower-case characters required",
+                                	"type": "integer",
+                                    "minimum": 0
+                                },
+                                "upper": {
+                                    "title": "Upper-Case Characters",
+                                	"description": "Number of upper-case characters required",
+                                	"type": "integer",
+                                    "minimum": 0
+                                },
+                                "number": {
+                                    "title": "Numeric Characters",
+                                	"description": "Number of numeric characters required",
+                                	"type": "integer",
+                                    "minimum": 0
+                                },
+                                "other": {
+                                    "title": "Other Characters",
+                                	"description": "Type and number of other characters required",
+                                	"type": "object",
+                                    "required": [ "chars", "min" ],
+                                    "properties": {
+                                        "chars": {
+                                            "title": "Characters",
+                                            "description": "String of other characters with occurrence requirement",
+                                            "type": "string",
+                                            "minLength": 1
+                                        },
+                                        "min": {
+                                            "title": "Minimum Occurrences",
+                                            "description": "Minimum number of occurrences of above characters",
+                                            "type": "integer",
+                                            "minimum": 0
+                                        }
+                                    }
+                                }
+                            }
+                        },
                         "max_size": {
                             "title": "File Upload: Maximum Size",
                         	"description": "Only evaluated for <i>File Upload</i> fields, to limit the file size for uploads",

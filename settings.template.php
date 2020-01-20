@@ -358,6 +358,19 @@
 				Spatial Reference ID of the Postgis geometry
 			- min_len: int (optional)
 				This setting is only ueful for type=T_PASSWORD. If it is set, users will have to provide a password of this minimum length
+			- password_chars: array (optional)
+				This setting defines requirements for types of characters that have to occur in passwords. The following keys can be defined:
+				- lower: int (optional; default: 0)
+					Required number of lower case characters (a-z)
+				- upper: int (optional; default: 0)
+					Required number of upper case characters (A-Z)
+				- number: int (optional; default: 0)
+					Required number of number characters (0-9)
+				- other: array (optional)
+					- chars: string
+						String of allowed other characters
+					- min: int
+						Required number of other characters
 			- max_size: int (optional)
 				Only evaluated for type=T_UPLOAD, to limit the file size for uploads
 			- location: string (required for type=T_UPLOAD && store=STORE_FOLDER)

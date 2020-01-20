@@ -149,4 +149,39 @@ END;
 
 		return true;
 	}
+
+	//------------------------------------------------------------------------------------------
+	function check_char_occurrences($text, $chars, $min) {
+	//------------------------------------------------------------------------------------------
+		if($min === 0)
+			return true;
+		$c = 0;
+		for($i = mb_strlen($text) - 1; $i >= 0; $i--) {
+			if(in_array($text[$i], $chars)) {
+				if(++$c >= $min) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------
+	function check_password_chars($field, $password) {
+	//------------------------------------------------------------------------------------------
+		if(!isset($field['password_chars']))
+			return true;
+
+		$pw = $field['password_chars'];
+		if(isset($pw['lower']) && !check_char_occurrences($password, str_split('abcdefghijklmnopqrstuvwxyz'), $pw['lower']))
+			return proc_error(l10n('error.password-lower', $pw['lower']));
+		if(isset($pw['upper']) && !check_char_occurrences($password, str_split('ABCDEFGHIJKLMNOPQRSTUVWXYZ'), $pw['upper']))
+			return proc_error(l10n('error.password-upper', $pw['upper']));
+		if(isset($pw['number']) && !check_char_occurrences($password, str_split('0123456789'), $pw['number']))
+			return proc_error(l10n('error.password-number', $pw['number']));
+		if(isset($pw['other']) && !check_char_occurrences($password, str_split($pw['other']['chars']), $pw['other']['min']))
+			return proc_error(l10n('error.password-other', $pw['other']['min'], $pw['other']['chars']));
+
+		return true;
+	}
 ?>
