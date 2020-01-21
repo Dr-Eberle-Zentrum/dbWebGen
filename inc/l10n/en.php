@@ -538,6 +538,7 @@ HTML
 
         'upload-field.browse' => 'Browse',
         'upload-field.hint-empty' => 'Note: If you don\'t want to replace the existing file on the server, you may leave this field empty',
+        'upload-field.remove-existing-file' => 'Check this box to delete the existing file <code>$1</code> from the server',
 
         'view.invalid-record' => 'This record cannot be viewed. It might have been deleted.',
         'view.add-related-data-button' => 'Add Related Data',

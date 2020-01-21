@@ -546,6 +546,7 @@ HTML
 
         'upload-field.browse' => 'Durchsuchen',
         'upload-field.hint-empty' => 'Hinweis: Wenn Sie die bestehende Datei am Server nicht überschreiben wollen, können Sie dieses Feld leer lassen.',
+        'upload-field.remove-existing-file' => 'Setzen Sie das Häkchen, um die existierende Datei <code>$1</code> vom Server zu löschen',
 
         'view.invalid-record' => 'Dieser Datensatz kann nicht angezeigt werden. Möglicherweise wurde er gelöscht.',
         'view.add-related-data-button' => 'Verknüpfen mit',

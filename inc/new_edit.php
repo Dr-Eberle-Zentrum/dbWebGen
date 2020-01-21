@@ -645,6 +645,10 @@ JS;
 		$values = array();
 		$arr_inline_details = array();
 
+		$db = db_connect();
+		if($db === false)
+			return proc_error(l10n('error.db-connect'));
+
 		// store the name of the password field in the users table if an underpriviledged user is editing their own user record
 		$password_only_field = ($_GET['mode'] == MODE_EDIT
 			&& !is_allowed($table, $_GET['mode'])
@@ -684,8 +688,20 @@ JS;
 							continue;
 					}
 
-					if($_GET['mode'] ==  MODE_EDIT)
+					if($_GET['mode'] ==  MODE_EDIT) {
+						if(isset($_POST[$field_name . '__remove_file']) 
+							&& $_POST[$field_name . '__remove_file'] === 'remove'
+						) {
+							// explicitly requests removal
+							if(!remove_existing_file_during_edit($field_name, $db))
+								proc_info(l10n('error.delete-file-warning'));
+							
+							$columns[] = $field_name;
+							$values[] = null;
+						}
+
 						continue; //issue #20
+					}
 
 					// something's wrong here.
 					return proc_error(l10n('error.invalid-mode'));
@@ -807,9 +823,6 @@ JS;
 		}
 
 		// FIRST INSERT OR UPDATE THE RECORD
-		$db = db_connect();
-		if($db === false)
-			return proc_error(l10n('error.db-connect'));
 		$stmt = $db->prepare($sql);
 		if($stmt === false)
 			return proc_error(l10n('error.db-prepare'), $db);

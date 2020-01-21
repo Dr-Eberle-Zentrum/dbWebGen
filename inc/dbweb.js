@@ -699,6 +699,14 @@ function init_file_selection_handler() {
     $('.btn-file :file').on('fileselect', function(event, numFiles, label) {
         var log = numFiles > 1 ? numFiles + ' files selected' : label;
         $('span.filename#' + $(this).data('text')).text(log);
+        if(numFiles >= 1) {
+            $('#' + $(this).attr('id') + '__remove_file_container').fadeOut();
+            $('#' + $(this).attr('id') + '__remove_file').val('ignore');
+        }
+        else {
+            $('#' + $(this).attr('id') + '__remove_file_container').fadeIn();
+            $('#' + $(this).attr('id') + '__remove_file').val('remove');
+        }
     });
 
     $(document).on('change', '.btn-file :file', function() {

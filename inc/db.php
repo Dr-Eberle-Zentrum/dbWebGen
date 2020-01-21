@@ -180,6 +180,43 @@
         }
     }
 
+    //------------------------------------------------------------------------------------------
+    // !!! this can only be called during MODE_EDIT !!!
+    function remove_existing_file_during_edit($field_name, $db = false) {
+    //------------------------------------------------------------------------------------------
+        global $TABLES;
+        $table_name = $_GET['table'];
+        $table = $TABLES[$table_name];
+        $field = $table['fields'][$field_name];
+        $store_folder = $field['location'];
+        $store_folder = str_replace("\\", '/', $store_folder);
+        if(substr($store_folder, -1) != '/')
+            $store_folder .= '/';
+        if(!@is_dir($store_folder))
+            return true; // file doesn't exist anyway ... should not happen
+        $where = array();
+        $params = array();
+        foreach($table['primary_key']['columns'] as $pk_col) {
+            $where[] = db_esc($pk_col) . ' = ?';
+            $params[] = $_GET[$pk_col];
+        }
+        $sql = sprintf(
+            'select %s from %s where %s',
+            db_esc($field_name), db_esc($table_name), implode(' and ', $where)
+        );
+
+        $succ = db_get_single_val($sql, $params, $prev_filename, $db);
+        if($succ 
+            && $prev_filename !== null
+            && is_string($prev_filename)
+            && $prev_filename != ''
+            && @file_exists($store_folder . $prev_filename)
+        ) {
+            return @unlink($store_folder . $prev_filename);
+        }
+        return true;
+    }
+
     //==========================================================================================
   	// To fake query results for chart building (see setting $APP/custom_query_data_provider)
   	class PDOStatementEmulator {

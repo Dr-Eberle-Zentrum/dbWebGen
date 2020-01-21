@@ -30,8 +30,19 @@
 				$this->get_control_name(),
 				$this->get_control_name()
 			);
-			if($_GET['mode'] == MODE_EDIT)
+			if($_GET['mode'] == MODE_EDIT) {
 				$output_buf .= '<span class="help-block">' . l10n('upload-field.hint-empty') . '</span>';
+				if(!$this->is_required() && $this->get_submitted_value('') !== '') {
+					// this control's attributes are used in dbweb.js in init_file_selection_handler() and in new_edit.php ---> be careful!!!
+					$output_buf .= sprintf(
+						'<span id="%s__remove_file_container" class="help-block top-margin-zero" ><input type="checkbox" value="remove" id="%s__remove_file" name="%s__remove_file"> %s</span>',
+						$this->get_control_id(),
+						$this->get_control_id(),
+						$this->get_control_name(),
+						l10n('upload-field.remove-existing-file', html($this->get_submitted_value()))
+					);
+				}
+			}
 			return $output_buf;
 		}
 
