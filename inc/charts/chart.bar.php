@@ -11,11 +11,11 @@
 				'chart.bar.settings',
 				$this->page->render_radio($this->ctrlname('direction'), 'horizontal', true),
 				$this->page->render_radio($this->ctrlname('direction'), 'vertical'),
-				$this->page->render_select($this->ctrlname('stacking'), 0, array( // this is ignored
-					0 => 'None',
-					'absolute' => 'Absolute values',
-					'percent' => 'Relative values as a percentage of 100%',
-					'relative' => 'Relative values as a fraction of 1'
+				$this->page->render_select($this->ctrlname('stacking'), '0', array( // this is ignored
+					'0' => l10n('chart.bar.stacking.0'),
+					'1' => l10n('chart.bar.stacking.1'),
+					'percent' => l10n('chart.bar.stacking.percent'),
+					'relative' => l10n('chart.bar.stacking.relative'),
 				))
 			);
 		}
@@ -30,6 +30,12 @@
 		//--------------------------------------------------------------------------------------
 		protected function options() {
 		//--------------------------------------------------------------------------------------
+			$stacking = $this->page->get_post($this->ctrlname('stacking'));
+			if($stacking == '0')
+				$stacking = false;
+			else if($stacking == '1')
+				$stacking = true;
+
 			return parent::options() + array(
 				'bars' => $this->page->get_post($this->ctrlname('direction')),
 				'isStacked' => $this->page->get_post($this->ctrlname('stacking'))

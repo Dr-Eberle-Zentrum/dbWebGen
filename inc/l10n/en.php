@@ -39,13 +39,17 @@ HTML
                     <label class="radio-inline">$2 Vertical</label>
                 </div>
             </div>
-            <!-- STACKED DOES NOT WORK !
             <div class="form-group">
-                <label class="control-label">Stacking of Values</label>
+                <label class="control-label">Stacking</label>
                 <div>$3</div>
-            </div>-->
+            </div>
 HTML
         ,
+        'chart.bar.stacking.0' => 'No stacking',
+        'chart.bar.stacking.1' => 'Stacked absolute values',
+        'chart.bar.stacking.percent' => 'Stacked relative values summing up to 100%',
+        'chart.bar.stacking.relative' => 'Stacked relative values summing up to 1',
+
         'chart.candlestick.settings' => <<<HTML
             <p>A candlestick chart is used to show an opening and closing value overlaid on top of a total variance. It requires <a target=_blank href="https://developers.google.com/chart/interactive/docs/gallery/candlestickchart#data-format">four columns</a> in the query result.</p>
 HTML

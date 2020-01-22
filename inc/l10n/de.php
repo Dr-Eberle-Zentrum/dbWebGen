@@ -41,13 +41,16 @@ HTML
                     <label class="radio-inline">$2 Vertikal</label>
                 </div>
             </div>
-            <!-- STACKED DOES NOT WORK !
             <div class="form-group">
                 <label class="control-label">Balken stapeln</label>
                 <div>$3</div>
-            </div>-->
+            </div>
 HTML
         ,
+        'chart.bar.stacking.0' => 'Keine Stapelung',
+        'chart.bar.stacking.1' => 'Gestapelte absolute Werte',
+        'chart.bar.stacking.percent' => 'Gestapelte relative Werte, die zu 100% aufsummieren',
+        'chart.bar.stacking.relative' => 'Gestapelte relative Werte die zu 1 aufsummieren',
 
         'chart.candlestick.settings' => <<<HTML
             <p>Zeigt Eröffnungs- und Schlusswert über einer Varianz. Benötigt <a target=_blank href="https://developers.google.com/chart/interactive/docs/gallery/candlestickchart#data-format">4 Spalten</a> im Abfrageergebnis.</p>
