@@ -25,7 +25,7 @@
                     'right' => l10n('chart.pie.legend-position.right'),
                     'top' => l10n('chart.pie.legend-position.top')
 				))
-			);
+			) . parent::settings_html();
 		}
 
 		//--------------------------------------------------------------------------------------

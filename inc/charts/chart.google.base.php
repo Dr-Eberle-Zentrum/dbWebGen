@@ -30,6 +30,16 @@
 		}
 
 		//--------------------------------------------------------------------------------------
+		// form field @name must be prefixed with exact charttype followed by dash
+		public function settings_html() {
+		//--------------------------------------------------------------------------------------
+			return l10n(
+				'chart.google-base.settings',
+				$this->page->render_textarea($this->ctrlname('additional_options_js'), '', 'monospace vresize')
+			);
+		}
+
+		//--------------------------------------------------------------------------------------
 		// any default options. call this from subclasses, then add to default array
 		protected function options() {
 		//--------------------------------------------------------------------------------------
@@ -47,6 +57,14 @@
 		// any js to be rendered before the actual draw() call.
 		public function before_draw_js() {
 		//--------------------------------------------------------------------------------------
+			// json_decode converts numeric string object keys to array without index,
+			// which does not work e.g. for bar chart colors like { series: "0": {color:"black"} }
+			// -> so we support javascript object literals and do not use JSON decoding to PHP,
+			// although JSON will still work
+			$options_js = trim($this->page->get_post($this->ctrlname('additional_options_js')));
+			if($options_js !== '') {
+				return "$.extend(options, $options_js);" . PHP_EOL;
+			}
 			return '';
 		}
 

@@ -93,6 +93,15 @@ HELPTEXT
             </div>
 HTML
         ,
+
+        'chart.google-base.settings' => <<<HTML
+            <div class="form-group">
+                <label class="control-label">Additional Options (JSON or JavaScript object literal)</label>
+                <p>$1</p>
+            </div>
+HTML
+        ,
+
         'chart.leaflet.settings' => <<<HTML
             <p><a target="_blank" href="http://leafletjs.com/">Leaflet</a> offers mobile-friendly interactive maps.</p>
             <div class='form-group'>

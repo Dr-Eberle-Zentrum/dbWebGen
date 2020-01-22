@@ -10,7 +10,7 @@
 			return l10n(
 				'chart.table.settings',
 				$this->page->render_checkbox($this->ctrlname('allowHtml'), 'ON', false)
-			);
+			). parent::settings_html();
 		}
 
 		//--------------------------------------------------------------------------------------

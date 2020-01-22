@@ -99,6 +99,14 @@ HELPTEXT
 HTML
         ,
 
+        'chart.google-base.settings' => <<<HTML
+            <div class="form-group">
+                <label class="control-label">Weitere Optionen (JSON oder JavaScript Objekt-Literal)</label>
+                <p>$1</p>
+            </div>
+HTML
+        ,
+
         'chart.leaflet.settings' => <<<HTML
             <p><a target="_blank" href="http://leafletjs.com/">Leaflet</a> erzeugt interaktive mobilgerät-taugliche Karten.</p>
             <div class='form-group'>

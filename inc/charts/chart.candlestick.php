@@ -7,7 +7,8 @@
 		// form field @name must be prefixed with exact charttype followed by dash
 		public function settings_html() {
 		//--------------------------------------------------------------------------------------
-			return l10n('chart.candlestick.settings');
+			return l10n('chart.candlestick.settings')
+				. parent::settings_html();
 		}
 
 		//--------------------------------------------------------------------------------------

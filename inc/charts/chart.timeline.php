@@ -13,7 +13,7 @@
 				$this->page->render_checkbox($this->ctrlname('has-singleColor'), 'ON', false),
 				$this->page->render_textbox($this->ctrlname('singleColor'), 'darkgreen'),
 				$this->page->render_checkbox($this->ctrlname('tooltips'), 'ON', true)
-			);
+			) . parent::settings_html();
 		}
 
 		//--------------------------------------------------------------------------------------

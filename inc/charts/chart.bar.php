@@ -17,14 +17,15 @@
 					'percent' => l10n('chart.bar.stacking.percent'),
 					'relative' => l10n('chart.bar.stacking.relative'),
 				))
-			);
+			) . parent::settings_html();
 		}
 
 		//--------------------------------------------------------------------------------------
 		// need to override this because of material options conversion
 		public function before_draw_js() {
 		//--------------------------------------------------------------------------------------
-			return 'options = google.charts.Bar.convertOptions(options);';
+			return parent::before_draw_js()
+			 	. 'options = google.charts.Bar.convertOptions(options);';
 		}
 
 		//--------------------------------------------------------------------------------------
@@ -38,7 +39,7 @@
 
 			return parent::options() + array(
 				'bars' => $this->page->get_post($this->ctrlname('direction')),
-				'isStacked' => $this->page->get_post($this->ctrlname('stacking'))
+				'isStacked' => $stacking
 			);
 		}
 
