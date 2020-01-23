@@ -83,7 +83,9 @@
 		//--------------------------------------------------------------------------------------
 		public function is_required() {
 		//--------------------------------------------------------------------------------------
-			return isset($this->field['required']) && $this->field['required'] === true;
+			return isset($this->render_settings['render_required']) 
+				? $this->render_settings['render_required']
+				: isset($this->field['required']) && $this->field['required'] === true;
 		}
 		//--------------------------------------------------------------------------------------
 		public function get_required_attr() {
