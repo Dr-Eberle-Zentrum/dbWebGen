@@ -98,6 +98,8 @@ HTML
             <div class="form-group">
                 <label class="control-label">Additional Options (JSON or JavaScript object literal)</label>
                 <p>$1</p>
+                <label class="control-label">JavaScript after Drawing</label>
+                <p>$2</p>
             </div>
 HTML
         ,

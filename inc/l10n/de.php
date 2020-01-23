@@ -103,6 +103,8 @@ HTML
             <div class="form-group">
                 <label class="control-label">Weitere Optionen (JSON oder JavaScript Objekt-Literal)</label>
                 <p>$1</p>
+                <label class="control-label">JavaScript nach dem Zeichnen</label>
+                <p>$2</p>
             </div>
 HTML
         ,

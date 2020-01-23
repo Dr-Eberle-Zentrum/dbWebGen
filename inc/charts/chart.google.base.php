@@ -13,7 +13,8 @@
 		//--------------------------------------------------------------------------------------
 		public function options_js() {
 		//--------------------------------------------------------------------------------------
-			return json_encode($this->options());
+			$options = json_encode($this->options());
+			return $options === '[]' ? '{}' : $options;
 		}
 
 		//--------------------------------------------------------------------------------------
@@ -35,7 +36,8 @@
 		//--------------------------------------------------------------------------------------
 			return l10n(
 				'chart.google-base.settings',
-				$this->page->render_textarea($this->ctrlname('additional_options_js'), '', 'monospace vresize')
+				$this->page->render_textarea($this->ctrlname('additional_options_js'), '', 'monospace vresize'),
+				$this->page->render_textarea($this->ctrlname('after_draw_js'), '', 'monospace vresize')
 			);
 		}
 
@@ -66,6 +68,13 @@
 				return "$.extend(options, $options_js);" . PHP_EOL;
 			}
 			return '';
+		}
+
+		//--------------------------------------------------------------------------------------
+		// any js to be rendered after the actual draw() call.
+		public function after_draw_js() {
+		//--------------------------------------------------------------------------------------
+			return trim($this->page->get_post($this->ctrlname('after_draw_js')));
 		}
 
 		//--------------------------------------------------------------------------------------
@@ -219,6 +228,7 @@
 					if(typeof dbwebgen_chart_beforedraw === 'function')
 						dbwebgen_chart_beforedraw(chart, data_table, options);
 					chart.draw(data_table, options);
+					{$this->after_draw_js()}
 				}
 
 				$('#chart_div').deferredResize(draw_chart, 500);
