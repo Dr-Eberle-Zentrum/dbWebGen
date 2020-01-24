@@ -533,11 +533,12 @@
 		- hooks: array (optional)
 			Functions to call before/after certain events. Associative array with key reflecting the event, and value reflecting the function to call.
 			Possible keys:
-			- after_insert: string (optional), after_update: string (optional)
-				Function to call after insertion/update of a record.
+			- after_insert: string (optional), after_update: string (optional), after_delete: string (optional)
+				Function to call after insertion/update/deletion of a record.
 				Arguments: (1) table name (2) table settings and (3) primary key/value array.
-			- before_insert: string (optional), before_update: string (optional)
-				Function to call before insertion/update of a record.
+				For hook after_delete_ex, an additional associative array with the deleted record is provided as argument
+			- before_insert: string (optional), before_update: string (optional), before_delete: string (optional)
+				Function to call before insertion/update/deletion of a record. Be careful with before_delete hook since the acutal deletion might fail
 				Arguments: (1) table name (2) table settings (3) column names array reference, (4) column values array reference
 		- additional_steps: array (optional)
 			Steps offered to be performed after a new record was created to link this record with others via separate linkage tables. The key reflects the linked table, the value is an array with these values:
@@ -566,7 +567,7 @@
 				- btn_label: string (optional)
 					Label shown on button in MODE_VIEW
 				- href_callback: string 
-					Name of a function to be called for retrieving the hyperlink. The function will receive as arguments the current database record as an associative array, and the name of the current table. The function must return a URL
+					Name of a function to be called for retrieving the hyperlink. The function will receive as arguments the current database record as an associative array, and the name of the current table. The function must either return a hyperlink or boolean false. In the latter case, no link will be displayed. 
 				- href_format: string
 					A URL template that will be used in a sprintf() call. Each %s must be matched by a field name in the 'fields' parameter:
 				- field: string|array

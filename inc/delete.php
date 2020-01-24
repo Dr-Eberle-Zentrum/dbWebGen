@@ -38,6 +38,16 @@
 		if($db === false)
 			return proc_error(l10n('error.db-connect'));
 
+		/* for after_delete_ex, we want to deliver the deleted row, so fetch: */
+		$cur_record = [];
+		if(isset($table['hooks']) && isset($table['hooks']['after_delete_ex'])) {
+			if(!db_get_single_row(sprintf('select * from %s where %s', db_esc($table_name), $where), $values, $cur_record, $db)
+				|| !is_array($cur_record)
+			) {
+				$cur_record = [];
+			}
+		}
+
 		$stmt = $db->prepare($sql);
 		if($stmt === false)
 			return proc_error(l10n('error.db-prepare'), $db);
@@ -68,8 +78,12 @@
 			return proc_error(l10n('error.delete-count'), $stmt);
 
 		// call after_delete hook, if any
-		if(isset($table['hooks']) && isset($table['hooks']['after_delete']) && trim($table['hooks']['after_delete']) != '')
-			$table['hooks']['after_delete']($table_name, $table, $pk_hash);
+		if(isset($table['hooks'])) {
+			if(isset($table['hooks']['after_delete']))
+				$table['hooks']['after_delete']($table_name, $table, $pk_hash);
+			if(isset($table['hooks']['after_delete_ex']))
+				$table['hooks']['after_delete_ex']($table_name, $table, $pk_hash, $cur_record);
+		}
 
 		$warn = '';
 		if($row != null) {

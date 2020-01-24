@@ -891,13 +891,17 @@ STR;
 	}
 
 	//------------------------------------------------------------------------------------------
-	function prepare_field_display_val(&$table, &$record, &$field, $col, $val, $highlighter = null) {
+	function prepare_field_display_val($table_name, &$table, &$record, &$field, $col, $val, $highlighter = null) {
 	//------------------------------------------------------------------------------------------
 		global $TABLES;
 		global $APP;
 
 		if($highlighter === null)
 			$highlighter = new NothingHighlighter;
+
+		$cur_mode = $_GET['mode'];
+		if($cur_mode === MODE_GLOBALSEARCH) // global search uses record renderer, so we use MODE_LIST
+			$cur_mode = MODE_LIST;
 
 		if($field['type'] == T_ENUM && $val !== NULL) {
 			$val = $highlighter->highlight(html($field['values'][$val]));
@@ -930,8 +934,8 @@ STR;
 			}
 			else if(isset($field['max_decimals'])) {
 				if(is_array($field['max_decimals'])) {
-					if(isset($field['max_decimals'][$_GET['mode']]))
-						$val = (float) number_format($val, $field['max_decimals'][$_GET['mode']], '.', '');
+					if(isset($field['max_decimals'][$cur_mode]))
+						$val = (float) number_format($val, $field['max_decimals'][$cur_mode], '.', '');
 					else
 						$val = (float) $val;
 				}
@@ -1024,7 +1028,7 @@ STR;
 
 						$linked_records[] = $linked_rec;
 					}
-					$val = html_linked_records($field, $linked_records, $_GET['mode'] == MODE_VIEW ? 0 : $APP['max_text_len']);
+					$val = html_linked_records($field, $linked_records, $cur_mode == MODE_VIEW ? 0 : $APP['max_text_len']);
 				}
 			}
 			else
@@ -1033,7 +1037,7 @@ STR;
 		else if($field['type'] == T_BOOLEAN) {
 			require_once 'fields/field.base.php';
 			require_once 'fields/field.boolean.php';
-			$field_obj = FieldFactory::create($_GET['table'], $col);
+			$field_obj = FieldFactory::create($table_name, $col);
 			if(($field_obj->has_custom_values() && $field_obj->get_custom_value(BooleanField::ON) == $val)
 			 	|| (!$field_obj->has_custom_values() && $val == true))
 				$val = $field_obj->get_display_value(BooleanField::ON);
@@ -1041,14 +1045,14 @@ STR;
 				$val = $field_obj->get_display_value(BooleanField::OFF);
 		}
 		else {
-			if($_GET['mode'] == MODE_VIEW) {
+			if($cur_mode == MODE_VIEW) {
 				$val = html($val, 0, false, true, $highlighter);
 
 				if(trim($val) !== '' && $field['type'] == T_POSTGIS_GEOM) {
 					// append map button to show location
 					require_once 'fields/field.base.php';
 					require_once 'fields/field.postgisgeom.php';
-					$field_obj = FieldFactory::create($_GET['table'], $col);
+					$field_obj = FieldFactory::create($table_name, $col);
 					if($field_obj->has_map_picker()) {
 						$val = $field_obj->render_map_picker_button(
 							$val, 'map-marker', l10n('geom-field.map-picker-view-tooltip'), true, 'btn-link', $record[$col]
@@ -1061,7 +1065,7 @@ STR;
 		}
 
 		if(isset($field['display_value_postproc']))
-			$val = $field['display_value_postproc']($val, $_GET['table'], $col, $record);
+			$val = $field['display_value_postproc']($val, $table_name, $col, $record);
 		return $val;
 	}
 

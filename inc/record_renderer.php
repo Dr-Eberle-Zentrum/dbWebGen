@@ -72,7 +72,8 @@
                         if(isset($_GET['mode']) && !in_array($_GET['mode'], $render_link['modes']))
                             continue;
                         $href = get_render_link_href($render_link, $record, $this->table_name);
-                        $action_icons[] = "<a href='$href'><span title='{$render_link['title']}' class='glyphicon glyphicon-{$render_link['icon']}'></span></a>";
+                        if($href !== false)
+                            $action_icons[] = "<a href='$href'><span title='{$render_link['title']}' class='glyphicon glyphicon-{$render_link['icon']}'></span></a>";
                     }
                 }
 
@@ -127,7 +128,7 @@
                     if(isset($this->fields[$col]['cell_css']))
                         $style = sprintf(' style="%s"', $this->fields[$col]['cell_css']);
 
-                    $val = prepare_field_display_val($this->table, $record, $this->fields[$col], $col, $val, $this->html_highlighter);
+                    $val = prepare_field_display_val($this->table_name, $this->table, $record, $this->fields[$col], $col, $val, $this->html_highlighter);
                     $table_body .= "<td $css$style>$val</td>\n";
 
                     // determine max cell len

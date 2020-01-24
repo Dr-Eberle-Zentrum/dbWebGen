@@ -110,8 +110,10 @@
 				if(isset($render_link['modes']) && !in_array(MODE_VIEW, $render_link['modes']))
 					continue;
 				$href = get_render_link_href($render_link, $record, $table_name);
-				$btn_label = isset($render_link['btn_label']) ? $render_link['btn_label'] : '';
-				$addl_data .= "<a href='$href' title='{$render_link['title']}' class='btn btn-default'><span class='glyphicon glyphicon-{$render_link['icon']}'></span> $btn_label</a>";
+				if($href !== false) {
+					$btn_label = isset($render_link['btn_label']) ? $render_link['btn_label'] : '';
+					$addl_data .= "<a href='$href' title='{$render_link['title']}' class='btn btn-default'><span class='glyphicon glyphicon-{$render_link['icon']}'></span> $btn_label</a>";
+				}
 			}
 		}
 
@@ -201,7 +203,7 @@
 
 			$table_html .= "<div class='form-group $css_null'><label class='col-sm-3 control-label'>{$field_label}</label>\n";
 
-			$val = prepare_field_display_val($table, $record, $field_settings, $col, $val);
+			$val = prepare_field_display_val($table_name, $table, $record, $field_settings, $col, $val);
 
 			$style = '';
 			if(isset($field_settings[$col]['view_css']))
