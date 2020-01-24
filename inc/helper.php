@@ -1899,4 +1899,16 @@ END;
 		
 		return $bytes . ' ' . $units[$pow];
 	} 
+
+	//------------------------------------------------------------------------------------------
+	function get_render_link_href($render_link, $record, $table_name) {
+	//------------------------------------------------------------------------------------------
+		if(isset($render_link['href_callback'])) {
+			return $render_link['href_callback']($record, $table_name);
+		}		
+		$fields = is_array($render_link['field']) ? $render_link['field'] : [ $render_link['field'] ];
+		foreach($fields as &$field)
+			$field = $record[$field];
+		return vsprintf($render_link['href_format'], $fields);
+	}
 ?>

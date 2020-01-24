@@ -556,19 +556,21 @@
 		- show_in_related: bool (optional) (default: true)
 			In MODE_VIEW, there is a dropdown linking to tables where the current record is linked through a foreign key (T_LOOKUP). If you do not want this table to appear in this list at all, set this to false.
 		- render_links: array (optional)
-			If MODE_LINK is allowed in this table, then there will be an extra icon in the table in MODE_LIST for each record that allows to view the actual object represented by the record. Also there will be an extra button in MODE_VIEW that features this link. An associative array has to be provided for each entry in this array:
+			If MODE_LINK is allowed in this table, then there will be an extra icon in the table in MODE_LIST for each record that allows to view the actual object represented by the record. Also there will be an extra button in MODE_VIEW that features this link. An associative array has to be provided for each entry in this array (note that you must provide either href_callback or both href_format and field):
 				- modes: array (optional; default: [MODE_LIST, MODE_VIEW])
 					The display modes in which this link shall be displayed.
 				- icon: string
 					The name of a glyphicon that works with bootstrap, e.g. "eye-open" or "trash". See a list here: http://www.w3schools.com/bootstrap/bootstrap_ref_comp_glyphs.asp
-				- href_format: string
-					A URL template that will be used in a sprintf() call. Each %s must be matched by a field name in the 'fields' parameter:
-				- field: string|array
-					Name of the field (or array of field names) whose value(s) will be used to replace the %s placeholders in href_format
 				- title: string
 					Title (tooltip) shown when hovering over the link icon in MODE_LIST
 				- btn_label: string (optional)
 					Label shown on button in MODE_VIEW
+				- href_callback: string 
+					Name of a function to be called for retrieving the hyperlink. The function will receive as arguments the current database record as an associative array, and the name of the current table. The function must return a URL
+				- href_format: string
+					A URL template that will be used in a sprintf() call. Each %s must be matched by a field name in the 'fields' parameter:
+				- field: string|array
+					Name of the field (or array of field names) whose value(s) will be used to replace the %s placeholders in href_format
 			Example: 
 				'render_links' => array(
 					array('icon' => 'eye-open', 'href_format' => 'uploads_images/%s', 'field' => 'filename', title => 'Show the damn file')

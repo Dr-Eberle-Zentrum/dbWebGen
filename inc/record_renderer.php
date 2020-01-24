@@ -71,12 +71,8 @@
                             $render_link['modes'] = [MODE_LIST, MODE_VIEW];
                         if(isset($_GET['mode']) && !in_array($_GET['mode'], $render_link['modes']))
                             continue;
-                        $fields = is_array($render_link['field']) ? $render_link['field'] : [ $render_link['field'] ];
-                        foreach($fields as &$field)
-                            $field = $record[$field];
-                        $action_icons[] = "<a href='" .
-                            vsprintf($render_link['href_format'], $fields) .
-                            "'><span title='{$render_link['title']}' class='glyphicon glyphicon-{$render_link['icon']}'></span></a>";
+                        $href = get_render_link_href($render_link, $record, $this->table_name);
+                        $action_icons[] = "<a href='$href'><span title='{$render_link['title']}' class='glyphicon glyphicon-{$render_link['icon']}'></span></a>";
                     }
                 }
 

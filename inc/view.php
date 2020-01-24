@@ -109,13 +109,9 @@
 			foreach($table['render_links'] as $render_link) {
 				if(isset($render_link['modes']) && !in_array(MODE_VIEW, $render_link['modes']))
 					continue;
-				$fields = is_array($render_link['field']) ? $render_link['field'] : [ $render_link['field'] ];
-				foreach($fields as &$field)
-					$field = $record[$field];
+				$href = get_render_link_href($render_link, $record, $table_name);
 				$btn_label = isset($render_link['btn_label']) ? $render_link['btn_label'] : '';
-				$addl_data .= "<a href='" .
-					vsprintf($render_link['href_format'], $fields) .
-					"' title='{$render_link['title']}' class='btn btn-default'><span class='glyphicon glyphicon-{$render_link['icon']}'></span> $btn_label</a>";
+				$addl_data .= "<a href='$href' title='{$render_link['title']}' class='btn btn-default'><span class='glyphicon glyphicon-{$render_link['icon']}'></span> $btn_label</a>";
 			}
 		}
 
