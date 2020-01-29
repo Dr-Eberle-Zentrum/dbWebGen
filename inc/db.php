@@ -2,6 +2,10 @@
     //------------------------------------------------------------------------------------------
     function db_connect() {
     //------------------------------------------------------------------------------------------
+        static $db = false; // one connection per request is enuff
+        if($db !== false)
+            return $db;
+
         global $DB;
         switch($DB['type']) {
             case DB_POSTGRESQL:
@@ -13,11 +17,12 @@
         }
 
         try {
-            return new PDO($conn, $DB['user'], $DB['pass']);
+            $db = new PDO($conn, $DB['user'], $DB['pass']);
         }
         catch(PDOException $e) {
-            return FALSE;
+            return false;
         }
+        return $db;
     }
 
     //------------------------------------------------------------------------------------------
