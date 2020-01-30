@@ -12,6 +12,12 @@
 			return false;
 		}
 		//--------------------------------------------------------------------------------------
+		public function has_prefill_values_via_url() {
+		//--------------------------------------------------------------------------------------
+			return safehash($_GET, 'mode') === MODE_NEW 
+				&& isset($_GET[PREFILL_PREFIX . $this->field_name]);
+		}
+		//--------------------------------------------------------------------------------------
 		public function get_linkage_maxnum() {
 		//--------------------------------------------------------------------------------------
 			return isset($this->field['linkage'])
@@ -402,7 +408,9 @@
 					$this->linked_items_div .= get_linked_item_html(
 						$this->get_form_id(), $table, $this->table_name,
 						$this->field_name, $has_additional_editable_fields,
-						$val, $txt, get_the_primary_key_value_from_url($table, ''), true);
+						$val, $txt, get_the_primary_key_value_from_url($table, ''), 
+						!$this->has_prefill_values_via_url() /* has already existed - generally true, unless predefined value */
+					);
 				}
 			}
 			else {
@@ -418,7 +426,9 @@
 						$this->linked_items_div .= get_linked_item_html(
 							$this->get_form_id(), $table, $this->table_name, 
 							$this->field_name, $has_additional_editable_fields,
-							$obj->val, $obj->txt, get_the_primary_key_value_from_url($table, ''), true);
+							$obj->val, $obj->txt, get_the_primary_key_value_from_url($table, ''), 
+							!$this->has_prefill_values_via_url() /* has already existed - generally true, unless predefined value */
+						);
 					}
 					else {
 						$output_buf .= sprintf(
