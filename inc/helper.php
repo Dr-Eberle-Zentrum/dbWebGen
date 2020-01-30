@@ -1915,4 +1915,49 @@ END;
 			$field = $record[$field];
 		return vsprintf($render_link['href_format'], $fields);
 	}
+
+	//------------------------------------------------------------------------------------------
+	function get_prefill_urlparams_from_record($table, $record, $enable_edit = true) {
+	//------------------------------------------------------------------------------------------
+		$auto_keys = $table['primary_key']['auto'] === true 
+			? $table['primary_key']['columns'] 
+			: [];
+
+		$params = [];
+		foreach($table['fields'] as $field_name => $field) {
+			if(in_array($field_name, $auto_keys)
+				|| !is_field_editable($field)
+				|| $record[$field_name] === null
+				|| $record[$field_name] === ''
+				|| (is_array($record[$field_name]) && count($record[$field_name]) === 0)
+			) {
+				continue;
+			}
+
+			if($enable_edit) {
+				$params[FIELD_SETTINGS_PREFIX . $field_name] = 'e';
+			}
+
+			if($field['type'] === T_LOOKUP) {
+				if($field['lookup']['cardinality'] === CARDINALITY_SINGLE) {
+					$params[PREFILL_PREFIX . $field_name] = $record[$field_name . FK_FIELD_POSTFIX];
+				} else {
+					$arr = json_decode($record[$field_name]);
+					if(is_array($arr)) {
+						$params[PREFILL_PREFIX . $field_name] = json_encode(json_decode($record[$field_name])[0]);
+					}
+					else {
+						if($enable_edit) {
+							unset($params[FIELD_SETTINGS_PREFIX . $field_name]);
+						}
+					}
+				}
+			}
+			else {
+				$params[PREFILL_PREFIX . $field_name] = $record[$field_name];
+			}
+		}
+		//debug_log($params);
+		return $params;
+	}
 ?>
