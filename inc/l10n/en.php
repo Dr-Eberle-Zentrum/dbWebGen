@@ -494,7 +494,10 @@ HTML
                 <b>Example</b>: <code>select * from users where lastname = #{Name|Norris}</code>
             </p>
             <p>
-                Every parameter can optionally be given a label. The label is then displayed in the query display and is defined as follows: <code>#{my_param:label|default_val}</code>, for instance <code>#{a:Minimum Age of Person|18}</code>. Note that if you use a parameter multiple times in the query, only the last occurrence of the parameter fully defines the parameter.
+                Every parameter can optionally be given a label. The label is then displayed in the query display and is defined as follows: <code>#{my_param:label|default_val}</code>, for instance <code>#{a:Minimum Age of Person|18}</code>.
+            </p>
+            <p>
+                If a parameter occurs multiple times within the query, it has to be specified fully only once (preferably at first occurrence). All other mentions of the parameter should be only using the parameter name, omitting the following pipe and other facets, e.g. <code>#{p}</code> to reference an already defined parameter <code>p</code>.
             </p>
             <p>
                 For experts: additionally one can define to display a dropdown box in the query view, by referencing a table field setting in the project settings. This exemplary works as follows: <code>#{Name||table:person,field:fullname}</code>. This will display a dropdown box as configured in the table <code>person</code> for the field <code>fullname</code>.

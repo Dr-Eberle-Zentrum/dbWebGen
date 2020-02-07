@@ -500,13 +500,16 @@ HTML
                 <b>Beispiel</b>: <code>select * from users where lastname = #{Name|Norris}</code>
             </p>
             <p>
-                Jedem Parameter kann optional (zumindest beim letzten Vorkommen in der Abfrage) ein Label gegeben, werden, der dann in der Ausführungsansicht verwendet wird. Das Muster ist dann wie folgt: <code>#{my_param:label|default_val}</code>, also z.B. <code>#{a:Mindestalter der Person|18}</code>
+                Dem Parameter kann optional ein Label gegeben, werden, der dann in der Ausführungsansicht verwendet wird. Das Muster ist dann wie folgt: <code>#{my_param:label|default_val}</code>, also z.B. <code>#{a:Mindestalter der Person|18}</code>
+            </p>
+            <p>
+                Wenn ein Parameter mehrmals vorkommt, so reicht es, diesen einmal vollständig wie oben beschrieben zu spezifizieren. Alle weitere Vorkommen sollten nur mit Paremetername ohne folgenden senkrechten Strich notiert sein, z.B. <code>#{p}</code> für Parmeter <code>p</code>.
             </p>
             <p>
                 Expertenmodus: zusätzlich kann optional ein Dropdown-Feld aus einer Tabelle angegeben werden, das dann dem Benutzer in der Abfragenansicht angeboten wird, nach folgendem Muster: <code>#{Name||table:person,field:fullname}</code>. Hier werden aus der Tabelle <code>person</code> entsprechend den Projekteinstellungen für das Feld <code>fullname</code> eine Dropdown-Box angeboten zur Auswahl.
             </p>
             <p>
-                Es ist auch möglich, Dropdowns mit Mehrfachauswahl als Parameter anzugeben. Der Parameter sieht dann z.B. wie folgt aus: <code>#{x||table:person,field:full_name|flags:multi|expr:person_name|op:in}</code>. Erklärung: <code>flags:multi</code> ermöglicht Mehrfachauswahl. <code>expr:person_name</code> bestimmt, dass die Mehrfachauswahl als Einschränkung auf das Feld <code>person_name</code> gemacht wird. Und <code>op:in</code> bestimmt, dass der SQL-Befehl <code>in</code> als Operator verwendet wird. Hier könnten auch andere SQL-Mengenoperatoren vorkommen, z.B. <code>not in</code> oder <code>>= any</code>.
+                Es ist auch möglich, Dropdowns mit Mehrfachauswahl als Parameter anzugeben. Der Parameter sieht dann z.B. wie folgt aus: <code>#{x||table:person,field:full_name|flags:multi|expr:person_name|op:in}</code>. Erklärung: <code>flags:multi</code> ermöglicht Mehrfachauswahl. <code>expr:person_name</code> bestimmt, dass die Mehrfachauswahl als Einschränkung auf das Feld <code>person_name</code> gemacht wird. Und <code>op:in</code> bestimmt, dass der SQL-Befehl <code>in</code> als Operator verwendet wird. Hier ist auch <code>not in</code> möglich.
             </p>
 HTML
         ,
@@ -523,7 +526,7 @@ HTML
         'querypage.store-button-label' => 'Speichern & Visualisierungs-Link erzeugen',
         'querypage.settings-head' => 'Einstellungen für Ergebnisvisualisierung',
         'querypage.settings-viz-label' => 'Visualisierungstyp',
-        'querypage.param-query-refresh' => 'Eregbnisse aktualisieren',
+        'querypage.param-query-refresh' => 'Ergebnisse aktualisieren',
         'querypage.results-head' => 'Ergebnisvisualisierung',
         'querypage.param-required' => 'Dieses Abfragefeld muss ausgefüllt werden, sonst kann die Abfrage nicht durchgeführt werden',
         'querypage.param-hint' => 'Die mit ★ gekennzeichneten Abfragefelder müssen ausgefüllt werden.',

@@ -829,6 +829,14 @@ JS;
 					// prefer to take value from GET parameters e.g ...&p:xxx=blah
 					$val = isset($_GET['p:' . $matches['params'][$i]]) ? $_GET['p:' . $matches['params'][$i]] : $matches['defvals'][$i];
 
+					$param_patterns = [
+						// full param definition (hopefully only once, otherwise behavior might be unexpected)
+						'/#!?{' . $matches['params'][$i] . '(:[^|]+)?\|[^}]*}/',
+						
+						// param reference in the form #{x} without the pipe and modifiers!
+						'/#!?{' . $matches['params'][$i] . '}/', 	
+					];
+
 					// replace this stuff in the sql statement
 					// check if we have a multi param
 					if(QueryPage::is_multi_param($retval['flags'], $key)) {
@@ -845,7 +853,7 @@ JS;
 						if(count($val) === 0) {
 							// no constraints selected => just true
 							$retval['sql'] = preg_replace(
-								'/#!?{' . $matches['params'][$i] . '(:[^|]+)?\|[^}]*}/',
+								$param_patterns,
 								'(' . $key . ')',
 								$retval['sql']);
 
@@ -854,13 +862,13 @@ JS;
 						else {
 							$placeholders = array();
 							for($j = 0; $j < count($val); $j++) {
-								$param_name = $key . 'EFFZEH' . $j;
+								$param_name = $key . '__' . $j;
 								$placeholders[] = $param_name;
 								$retval['multiparams'][$param_name] = $val[$j];
 							}
-							// currently we only have the "in" operator, so no need to diversify yet
+							// currently this only works with operators IN and NOT IN, i.e. that expect multiple values in parentheses as right operand
 							$retval['sql'] = preg_replace(
-								'/#!?{' . $matches['params'][$i] . '(:[^|]+)?\|[^}]*}/',
+								$param_patterns,
 								sprintf(
 									'(%s %s (%s))',
 									$retval['expr'][$key],
@@ -874,7 +882,7 @@ JS;
 					else {
 						// simple param
 						$retval['sql'] = preg_replace(
-							'/#!?{' . $matches['params'][$i] . '(:[^|]+)?\|[^}]*}/',
+							$param_patterns,
 							'(' . $key . ')',
 							$retval['sql']);
 
