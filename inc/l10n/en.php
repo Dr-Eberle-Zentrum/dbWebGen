@@ -15,6 +15,7 @@
         'chart-type.timeline' => 'Timeline',
         'chart-type.plaintext' => 'Plain Text',
         'chart-type.sna' => 'Social Network Analysis',
+        'chart-type.treemap' => 'Treemap (Tile Map)',
 
         'chart.plaintext.settings' => <<<HTML
             <p>Displays the first column of the first row of the query result as plain text.</p>
@@ -307,6 +308,20 @@ HTML
         </div>
 HTML
         ,
+
+        'chart.treemap.settings' => <<<HTML
+            <p>Creates a tile based representation of hierarchically arranged nodes. Each note (first column) has a parent node (second column; except the root node) and a weight that determines its size (third column).</p>
+            <p><a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/treemap#data-format">Expected columns</a>:
+            <ul class='columns'>
+                <li>1. Node name (string)</li>
+                <li>2. Parent node name (string)</li>
+                <li>3. Weight (numeric; greater than zero)</li>
+                <li>4. Color scale (optional, numeric; relative value determining the color of the node's tile)</li>
+            </ul>
+            </p>
+HTML
+        ,
+
         'delete.success' => 'Record successfully deleted.',
         'delete.confirm-head' => 'Confirm Delete',
         'delete.confirm-msg' => 'Please confirm that you want to delete this record. This action cannot be undone. Note the deletion will only work if the record is not referenced by some other record.',

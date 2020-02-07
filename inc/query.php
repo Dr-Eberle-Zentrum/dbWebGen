@@ -32,7 +32,8 @@
 			'timeline' => 'chart-type.timeline',
 			'pie' => 'chart-type.pie',
 			'plaintext' => 'chart-type.plaintext',
-			'sna' => 'chart-type.sna'
+			'sna' => 'chart-type.sna',
+			'treemap' => 'chart-type.treemap'
 		);
 
 		//--------------------------------------------------------------------------------------

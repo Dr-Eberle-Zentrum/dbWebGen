@@ -15,6 +15,7 @@
         'chart-type.timeline' => 'Zeitleiste',
         'chart-type.plaintext' => 'Unformattierter Text',
         'chart-type.sna' => 'Netzwerkanalyse',
+        'chart-type.treemap' => 'Treemap (Kacheldiagramm)',
 
         'chart.plaintext.settings' => <<<HTML
             <p>Erzeugt eine reine Textausgabe des Abfrageergebnisses. Es wird nur die erste Spalte der ersten Ergebniszeile ausgegeben, unabhängig davon, wie das Abfrageergebnis aussieht.</p>
@@ -310,6 +311,19 @@ HTML
                 <label>$4 Tooltips anzeigen</label>
             </div>
         </div>
+HTML
+        ,
+
+        'chart.treemap.settings' => <<<HTML
+            <p>Erzeugt eine Kachel-basierte Repräsentation von hierarchischen Daten. Jeder Knoten (erste Spalte) hat einen übergeordneten Knoten (zweite Spalte; außer der Wurzelknoten), sowie einen numerischen Wert, der die Größe der Kachel bestimmt (dritte Spalte).</p>
+            <p><a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/treemap#data-format">Erwartete Spalten</a>:
+            <ul class='columns'>
+                <li>1. Knoten (string)</li>
+                <li>2. Elternknoten (string)</li>
+                <li>3. Gewichtung (numerisch; größer Null)</li>
+                <li>4. Farbskala (optional, numerisch; relativer Wert, um die Farbe der Kachel zu bestimmen)</li>
+            </ul>
+            </p>
 HTML
         ,
 
