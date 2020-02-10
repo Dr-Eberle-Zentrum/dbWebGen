@@ -16,6 +16,7 @@
         'chart-type.plaintext' => 'Plain Text',
         'chart-type.sna' => 'Social Network Analysis',
         'chart-type.treemap' => 'Treemap (Tile Map)',
+        'chart-type.custom' => 'Custom Google Chart',
 
         'chart.plaintext.settings' => <<<HTML
             <p>Displays the first column of the first row of the query result as plain text.</p>
@@ -55,6 +56,23 @@ HTML
             <p>A candlestick chart is used to show an opening and closing value overlaid on top of a total variance. It requires <a target=_blank href="https://developers.google.com/chart/interactive/docs/gallery/candlestickchart#data-format">four columns</a> in the query result.</p>
 HTML
         ,
+
+        'chart.custom.settings' => <<<HTML
+            <p>Creates custom Google chart. The required chart packages, the name of the chart class as well as the any chart options have to be specified.</p>
+            <p>Available chart types and their respective columns and possible options are explained in the <a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery">Google Charts documentation</a>.</p>
+            <div class="form-group">
+                <label>Google Chart Packages</label>
+                <div>Enter a comma-separated list of required Google charts packages, e.g. <code>corechart</code>:</div>
+                $1
+            </div>
+            <div class="form-group">
+                <label>Google Chart Class</label>
+                <div>Enter the name of the chart class to be visualized, e.g. <code>LineChart</code>:</div>
+                $2
+            </div>
+HTML
+        ,
+
         'chart.geo.region-helptext' => <<<HELPTEXT
             Can be one of the following:<ul style="padding-left:1.25em">
                 <li><code>world</code> - A geochart of the entire world.</li>

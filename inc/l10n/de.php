@@ -16,6 +16,7 @@
         'chart-type.plaintext' => 'Unformattierter Text',
         'chart-type.sna' => 'Netzwerkanalyse',
         'chart-type.treemap' => 'Treemap (Kacheldiagramm)',
+        'chart-type.custom' => 'Benutzerdefiniertes Google-Chart',
 
         'chart.plaintext.settings' => <<<HTML
             <p>Erzeugt eine reine Textausgabe des Abfrageergebnisses. Es wird nur die erste Spalte der ersten Ergebniszeile ausgegeben, unabhängig davon, wie das Abfrageergebnis aussieht.</p>
@@ -55,6 +56,22 @@ HTML
 
         'chart.candlestick.settings' => <<<HTML
             <p>Zeigt Eröffnungs- und Schlusswert über einer Varianz. Benötigt <a target=_blank href="https://developers.google.com/chart/interactive/docs/gallery/candlestickchart#data-format">4 Spalten</a> im Abfrageergebnis.</p>
+HTML
+        ,
+
+        'chart.custom.settings' => <<<HTML
+            <p>Erzeugt ein benutzerdefiniertes Google-Chart. Die einzubindenden Google-Chart-Pakete, der Name der Chart-Klasse sowie die Optionen müssen angegeben werden.</p>
+            <p>Die möglichen Chart-Typen und jeweiligs benötigten Spalten und möglichen Optionen sind der <a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery">Google-Charts-Dokumentation</a> zu entnehmen</p>
+            <div class="form-group">
+                <label>Google-Chart-Pakete</label>
+                <div>Geben Sie eine kommaseparierte Liste der einzubindenden Pakete an, z.B. <code>corechart</code>:</div>
+                $1
+            </div>
+            <div class="form-group">
+                <label>Google-Chart-Klasse</label>
+                <div>Geben Sie den Namen der Chart-Klasse an, z.B. <code>LineChart</code>:</div>
+                $2
+            </div>
 HTML
         ,
 
