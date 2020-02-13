@@ -10,7 +10,7 @@
 			return l10n(
 				'chart.annotated-timeline.settings',
 				$this->page->render_checkbox($this->ctrlname('scaleColumns'), 'ON', false)
-			);
+			) . parent::settings_html();
 		}
 
 		//--------------------------------------------------------------------------------------
