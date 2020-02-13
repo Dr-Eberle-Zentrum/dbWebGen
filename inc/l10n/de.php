@@ -138,7 +138,8 @@ HTML
                     <li>Wert der y-Achse (numerisch oder Text)</li>
                     <li>Wert der z-Achse (numerisch oder Text)</li>
                     <li>Stil des Datenpunktes (verpflichtender Farbwert bei Farbskalierung bzw. Größenwert bei Größenskalierung, sonst ignoriert)</li>
-                    <li>Tooltip (optional; Text für Tooltip, wenn Mauscursor über dem Datenpunkt)</li>
+                    <li>Tooltip (optionaler Text für Tooltip, wenn Mauscursor über dem Datenpunkt)</li>
+                    <li>Gruppe (optionaler Gruppenwert des Datenobjekts; falls angegeben, wird dieser für Animation benutzt)</li>
                 </ol>
             </p>
             <div class="form-group">

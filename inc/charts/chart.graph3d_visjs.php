@@ -75,6 +75,8 @@
                     $dataObj['style'] = $row[3];
                 if(isset($row[4]) && $row[4] !== null)
                     $dataObj['tooltip'] = $row[4];
+                if(isset($row[5]) && $row[5] !== null)
+                    $dataObj['filter'] = $row[5];
 
                 $dataArray[] = $dataObj;
             }

@@ -135,6 +135,7 @@ HTML
                     <li>z axis value (numeric or string)</li>
                     <li>Style of data object (required color value for color scaling or size value for size scaling, otherwise ignored)</li>
                     <li>Tooltip (optional; text für tooltip when cursor hovers over data object)</li>
+                    <li>Group (optional grouping value; if provided, it will be used for animation)</li>
                 </ol>
             </p>
             <div class="form-group">
