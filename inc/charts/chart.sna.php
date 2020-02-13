@@ -377,8 +377,11 @@ JS;
 						if($c < $min) $min = $c;
 					}
 				}
-				foreach($Cb as $v => $c)
-					$Cb[$v] = ($c - $min) / ($max - $min);
+				$diff = $max - $min;
+				if($diff != 0) {
+					foreach($Cb as $v => &$c)
+						$c = ($c - $min) / $diff;
+				}
 			}
 		}
 	}
