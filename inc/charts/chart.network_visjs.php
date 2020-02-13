@@ -185,6 +185,11 @@ OPTIONS;
 						$nodes[$row[$col]] = array('id' => $row[$col], 'label' => $row[$col]);
 			}
 
+			if(count($edges) === 0) {
+				proc_info(l10n('chart.empty-result'));
+				return '';
+			}
+
 
 			do { // check nodes query to define nodes list
 				$nodes_sql = trim($this->page->get_post($this->ctrlname('nodequery'), ''));

@@ -189,9 +189,6 @@
 		// returns js code to fill the chart div
 		public function get_js($query_result) {
 		//--------------------------------------------------------------------------------------
-			// for those chart types that do not have built in scrollbar (like table) we need to subtract scrollbar width
-			$subtract_width = $this->shall_subtract_scrollbar() ? 20 : 0;
-
 			$table_cols = '';
 			$columns = $this->get_columns($query_result);
 			foreach($columns as $col_obj)
@@ -204,10 +201,17 @@
 				if($row_nr == 0 && count($row) != count($columns))
 					proc_error(l10n('error.chart-duplicate-cols'));
 				// <<
-
 				$data_array .= ($row_nr == 0 ? '' : ",\n") . $this->data_to_js($row, $row_nr++);
 			}
+			if($row_nr === 0) {
+				proc_info(l10n('chart.empty-result'));
+				return '';
+			}
 			$can_download_js = json_encode($this->can_download());
+			
+			// for those chart types that do not have built in scrollbar (like table) we need to subtract scrollbar width
+			$subtract_width = $this->shall_subtract_scrollbar() ? 20 : 0;
+
 			$viz_ui = <<<JS
 				var data_array = [
 					{$data_array}

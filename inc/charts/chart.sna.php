@@ -138,6 +138,11 @@
 			while($e = $query_result->fetch(PDO::FETCH_ASSOC))
 				$E[] = array($e['source'], $e['target']);
 
+			if(count($E) === 0) {
+				proc_info(l10n('chart.empty-result'));
+				return '';
+			}
+
 			$sna = new NetworkSNA;
 			$sna->init($E);
 			$sna->calc_degree_centralities($Cd, false);
