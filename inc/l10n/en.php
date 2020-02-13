@@ -17,6 +17,9 @@
         'chart-type.sna' => 'Social Network Analysis',
         'chart-type.treemap' => 'Treemap (Tile Map)',
         'chart-type.custom' => 'Custom Google Chart',
+        'chart-type.graph3d-visjs' => '3D Graph (vis.js)',
+
+        'chart.empty-result' => 'Das Abfrageergebnis ist leer, daher wird keine Visualisierung angezeigt',
 
         'chart.plaintext.settings' => <<<HTML
             <p>Displays the first column of the first row of the query result as plain text.</p>
@@ -122,6 +125,38 @@ HTML
             </div>
 HTML
         ,
+
+        'chart.graph3d-visjs.settings' => <<<HTML
+            <p>Generates different types of 3D charts.</p>
+            <p>The following column order must be respected in the query result (the labels of the first three columns are used as labels of the x, y, and z axes, respectively):
+                <ol style="padding-left:1.25em">
+                    <li>x axis value (numeric or string)</li>
+                    <li>y axis value (numeric or string)</li>
+                    <li>z axis value (numeric or string)</li>
+                    <li>Style of data object (required color value for color scaling or size value for size scaling, otherwise ignored)</li>
+                    <li>Tooltip (optional; text für tooltip when cursor hovers over data object)</li>
+                </ol>
+            </p>
+            <div class="form-group">
+                <label class="control-label">Chart Type</label>
+                <p>$1</p>
+                <label class="control-label">Custom Options (JavaScript Object) $2</label>
+                <p>$3</p>
+            </div>
+HTML
+        ,
+        'chart.graph3d-visjs.options.help-head' => 'Graph Options',
+        'chart.graph3d-visjs.options.help-body' => 'Available options for the 3D graph can be found in the <a target="_blank" href="https://visjs.github.io/vis-graph3d/docs/graph3d/index.html#Configuration_Options">Graph3d documentation of vis.js</a>',
+        'chart.graph3d-visjs.style.bar' => 'Bars',
+        'chart.graph3d-visjs.style.bar-color' => 'Bars with color scaling',
+        'chart.graph3d-visjs.style.bar-size' => 'Bars with size scaling',
+        'chart.graph3d-visjs.style.dot' => 'Dots',
+        'chart.graph3d-visjs.style.dot-line' => 'Dots with lines',
+        'chart.graph3d-visjs.style.dot-color' => 'Dots with color scaling',
+        'chart.graph3d-visjs.style.dot-size' => 'Dots with size scaling',
+        'chart.graph3d-visjs.style.line' => 'Lines',
+        'chart.graph3d-visjs.style.grid' => 'Grid',
+        'chart.graph3d-visjs.style.surface' => 'Surface',
 
         'chart.leaflet.settings' => <<<HTML
             <p><a target="_blank" href="http://leafletjs.com/">Leaflet</a> offers mobile-friendly interactive maps.</p>

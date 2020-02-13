@@ -35,6 +35,7 @@
 			'sna' => 'chart-type.sna',
 			'treemap' => 'chart-type.treemap',
 			'custom' => 'chart-type.custom',
+			'graph3d_visjs' => 'chart-type.graph3d-visjs',
 		);
 
 		//--------------------------------------------------------------------------------------

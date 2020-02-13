@@ -17,6 +17,9 @@
         'chart-type.sna' => 'Netzwerkanalyse',
         'chart-type.treemap' => 'Treemap (Kacheldiagramm)',
         'chart-type.custom' => 'Benutzerdefiniertes Google-Chart',
+        'chart-type.graph3d-visjs' => '3D-Diagramm (vis.js)',
+
+        'chart.empty-result' => 'Das Abfrageergebnis ist leer, daher wird keine Visualisierung angezeigt',
 
         'chart.plaintext.settings' => <<<HTML
             <p>Erzeugt eine reine Textausgabe des Abfrageergebnisses. Es wird nur die erste Spalte der ersten Ergebniszeile ausgegeben, unabhängig davon, wie das Abfrageergebnis aussieht.</p>
@@ -127,6 +130,38 @@ HTML
 HTML
         ,
 
+        'chart.graph3d-visjs.settings' => <<<HTML
+            <p>Erzeugt ein dreidimensionales Diagramm mit unterschiedlichen möglichen Darstellungsformen.</p>
+            <p>Die folgende Spaltenreihenfolge muss im Ergebnis eingehalten werden (die Bezeicher der ersten drei Spalten werden als Titel der x-, y- und z-Achsen verwendet):
+                <ol style="padding-left:1.25em">
+                    <li>Wert der x-Achse (numerisch oder Text)</li>
+                    <li>Wert der y-Achse (numerisch oder Text)</li>
+                    <li>Wert der z-Achse (numerisch oder Text)</li>
+                    <li>Stil des Datenpunktes (verpflichtender Farbwert bei Farbskalierung bzw. Größenwert bei Größenskalierung, sonst ignoriert)</li>
+                    <li>Tooltip (optional; Text für Tooltip, wenn Mauscursor über dem Datenpunkt)</li>
+                </ol>
+            </p>
+            <div class="form-group">
+                <label class="control-label">Darstellungsform</label>
+                <p>$1</p>
+                <label class="control-label">Benutzerdefinierte Optionen (JavaScript-Objekt) $2</label>
+                <p>$3</p>
+            </div>
+HTML
+        ,
+        'chart.graph3d-visjs.options.help-head' => 'Anzeigeoptionen',
+        'chart.graph3d-visjs.options.help-body' => 'Verfügbare Anzeigeoptionen finden sich in der <a target="_blank" href="https://visjs.github.io/vis-graph3d/docs/graph3d/index.html#Configuration_Options">Graph3d-Dokumentation von vis.js</a>',
+        'chart.graph3d-visjs.style.bar' => 'Balken',
+        'chart.graph3d-visjs.style.bar-color' => 'Balken mit Farbskalierung',
+        'chart.graph3d-visjs.style.bar-size' => 'Balken mit Größenskalierung',
+        'chart.graph3d-visjs.style.dot' => 'Kugeln',
+        'chart.graph3d-visjs.style.dot-line' => 'Kugeln mit Linien',
+        'chart.graph3d-visjs.style.dot-color' => 'Kugeln mit Farbskalierung',
+        'chart.graph3d-visjs.style.dot-size' => 'Kugeln mit Größenskalierung',
+        'chart.graph3d-visjs.style.line' => 'Linien',
+        'chart.graph3d-visjs.style.grid' => 'Gitter',
+        'chart.graph3d-visjs.style.surface' => 'Fläche',
+        
         'chart.leaflet.settings' => <<<HTML
             <p><a target="_blank" href="http://leafletjs.com/">Leaflet</a> erzeugt interaktive mobilgerät-taugliche Karten.</p>
             <div class='form-group'>
