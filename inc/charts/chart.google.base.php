@@ -211,13 +211,17 @@
 			
 			// for those chart types that do not have built in scrollbar (like table) we need to subtract scrollbar width
 			$subtract_width = $this->shall_subtract_scrollbar() ? 20 : 0;
+			$chart_lang_js = json_encode(DBWEBGEN_LANG);
 
 			$viz_ui = <<<JS
 				var data_array = [
 					{$data_array}
 				];
 				var downloadable_data = $can_download_js ? data_array : null;
-				google.charts.load('current', { packages: {$this->packages_js()} } );
+				google.charts.load('current', { 
+					packages: {$this->packages_js()}, 
+					language: {$chart_lang_js}
+				});
 				google.charts.setOnLoadCallback(draw_chart);
 				function draw_chart() {
 					console.log('draw_chart');
