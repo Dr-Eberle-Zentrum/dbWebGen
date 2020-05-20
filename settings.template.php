@@ -496,11 +496,11 @@
 					- operator: string
 						The operator to compare the other field's value; see the OPERATOR_* defined in constants.php; all of them are possible to use here, except OPERATOR_AND, OPERATOR_OR, OPERATOR_GROUP_*; if any of OPERATOR_ARRAY_* is used, the referenced field must be type T_LOOKUP with CARDINALITY_MULTIPLE, otherwise errors may occur.
 					- value: any
-                        The value will be used as right hand operand of the expression. Its type should match the other field's type. For OPERATOR_EQUALS and OPERATOR_NOT_EQUALS, an array can be given here, testing for set membership (OPERATOR_EQUALS) or non-set membership (OPERATOR_NOT_EQUALS)
-                    - control_filter: string (optional)
-                        Some UI libraries (e.g. bootstraptoggle for T_BOOLEAN) mask the original control; here you can specify an expression to be used as argument for the jQuery controls is() function when looking for the field's control, e.g. for T_BOOLEAN use 'control_filter' => 'input[type=checkbox]'
-                    - control_prop: string (optional)
-                        By default the control's value to check against is retrieved using jQuery's val() function. If instead you want to check for a property, specify the control's property to check against here, e.g. for T_BOOLEAN specify 'control_prop' => 'checked'
+						The value will be used as right hand operand of the expression. Its type should match the other field's type. For OPERATOR_EQUALS and OPERATOR_NOT_EQUALS, an array can be given here, testing for set membership (OPERATOR_EQUALS) or non-set membership (OPERATOR_NOT_EQUALS)
+					- control_filter: string (optional)
+						Some UI libraries (e.g. bootstraptoggle for T_BOOLEAN) mask the original control; here you can specify an expression to be used as argument for the jQuery controls is() function when looking for the field's control, e.g. for T_BOOLEAN use 'control_filter' => 'input[type=checkbox]'
+					- control_prop: string (optional)
+						By default the control's value to check against is retrieved using jQuery's val() function. If instead you want to check for a property, specify the control's property to check against here, e.g. for T_BOOLEAN specify 'control_prop' => 'checked'
 				Expressions can be grouped and nested using OPERATOR_GROUP_OPEN (corresponds to an opening parenthesis) and OPERATOR_GROUP_CLOSE (corresponds to closing parenthesis).
 				Consider the following example:
 					'conditional_display' => array(
