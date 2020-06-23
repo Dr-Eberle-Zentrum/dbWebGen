@@ -110,6 +110,8 @@
 					]
 				]
 			]
+		- popup_hide_reverse_linkage: boolean (optional, default: false)
+			If a "create new" button is clicked from a lookup field, then the popup might contain a dropdown that allows linkage via the same linkage table from which the popup was created. Setting this to true will hide those reverse associations in popups.
 
 	======================================================================================================== */
 	$APP = array(

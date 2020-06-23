@@ -1960,4 +1960,79 @@ END;
 		//debug_log($params);
 		return $params;
 	}
-?>
+
+	//------------------------------------------------------------------------------------------
+	// see setting APP/popup_hide_reverse_linkage
+	function check_popup_hide_reverse_linkage(
+	) {
+	//------------------------------------------------------------------------------------------
+		global $TABLES;
+		global $APP;
+
+		if(!isset($APP['popup_hide_reverse_linkage'])
+			|| $APP['popup_hide_reverse_linkage'] !== true
+		) {
+			// default is false for legacy reasons
+			return;
+		}
+
+		// multi-linkage not editable in popup if same linkage table is addressed
+		if(isset($_GET['popup'])
+			&& isset($TABLES[$_GET['table']]['fields'][$_GET['lookup_field']])
+			&& $TABLES[$_GET['table']]['fields'][$_GET['lookup_field']]['type'] === T_LOOKUP
+		) {
+			$TABLES[$_GET['table']]['fields'][$_GET['lookup_field']]['editable'] = false;
+		}
+	}
+
+	//------------------------------------------------------------------------------------------
+	// called from engine.php
+	function run_default_initializations(
+		$settings_exist
+	) {
+	//------------------------------------------------------------------------------------------
+		if($settings_exist)	
+			check_popup_hide_reverse_linkage();
+	}
+
+	//------------------------------------------------------------------------------------------
+	// called from engine.php
+	function run_special_modes_processing(
+		$settings_exist
+	) {
+	//------------------------------------------------------------------------------------------
+		// SPECIAL MODES PROCESSING
+		if(!$settings_exist || is_logged_in()) switch(safehash($_GET, 'mode', '')) {
+			case MODE_DELETE:
+				require_once ENGINE_PATH_LOCAL . 'inc/delete.php';
+				if(!process_delete())
+					render_messages();
+				exit;
+
+			case MODE_CREATE_DONE:
+				require_once ENGINE_PATH_LOCAL . 'inc/create_new_done.php';
+				process_create_new_done();
+				exit;
+
+			case MODE_LOGOUT:
+				session_logout();
+				exit;
+
+			case MODE_FUNC:
+				require_once ENGINE_PATH_LOCAL . 'inc/func.php';
+				process_func();
+				exit;
+
+			case MODE_MERGE:
+				require_once ENGINE_PATH_LOCAL . 'inc/merge.php';
+				if(MergeRecordsPage::process_ajax())
+					exit;
+				break;
+
+			case MODE_FILE:
+				require_once ENGINE_PATH_LOCAL . 'inc/file.php';
+				if(FileRetrieval::processRequest())
+					exit;
+				break;
+		}
+	}
