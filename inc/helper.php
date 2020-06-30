@@ -1976,12 +1976,47 @@ END;
 			return;
 		}
 
-		// multi-linkage not editable in popup if same linkage table is addressed
-		if(isset($_GET['popup'])
-			&& isset($TABLES[$_GET['table']]['fields'][$_GET['lookup_field']])
-			&& $TABLES[$_GET['table']]['fields'][$_GET['lookup_field']]['type'] === T_LOOKUP
-		) {
-			$TABLES[$_GET['table']]['fields'][$_GET['lookup_field']]['editable'] = false;
+		// we hide if opened from a multi-lookup field, where source/target point at each other
+		if(isset($_GET['popup'])) {
+			// Popup window from create new button
+			// ?popup=SOURCE_TABLE&lookup_field=SOURCE_FIELD&table=THIS_TABLE&...
+			$source_table_name = $_GET['popup'];
+			$this_table = &$TABLES[$_GET['table']];
+			$source_field_name = $_GET['lookup_field'];
+		}
+		else if(isset($_GET['special']) && $_GET['special'] === SPECIAL_EDIT_LINKED_RECORD) {
+			// Popup window from edit linked record icon
+			// Example: ?table=THIS_TABLE&special=edit_linked_record&source_table=SOURCE_TABLE&source_field=SOURCE_FIELD&...
+			$source_table_name = $_GET['source_table'];
+			$this_table = &$TABLES[$_GET['table']];
+			$source_field_name = $_GET['source_field'];
+		}
+		else {
+			// No popup window -> nothing to do
+			return;
+		}
+
+		// check field in source table if cardinality_multiple
+		if(!isset($TABLES[$source_table_name]['fields'][$source_field_name]['linkage']))
+			return; // no multi-lookup
+		$source_table_linkage_table_name = $TABLES[$source_table_name]['fields'][$source_field_name]['linkage']['table'];
+
+		// now look in this table for a multi-lookup field pointing to the source table via the same linkage table
+		foreach($this_table['fields'] as &$field) {
+			if(
+				// field is lookup field
+				$field['type'] === T_LOOKUP
+				// ... and multi-lookup
+				&& $field['lookup']['cardinality'] === CARDINALITY_MULTIPLE
+				// ... and lookup points to source table
+				&& $field['lookup']['table'] === $source_table_name
+				// ... and linkage table is the same as in the source table
+				&& $field['linkage']['table'] === $source_table_linkage_table_name
+			) {
+				// disallow editing of this multi-lookup field
+				$field['editable'] = false;
+				return; // can happen only once (no?)
+			}
 		}
 	}
 
