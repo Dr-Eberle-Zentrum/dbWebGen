@@ -42,7 +42,7 @@
 		header('Content-Type: application/json; charset=utf8');
 	$json_ret = array();
 
-	foreach(array('host' => 'localhost', 'port' => 5432, 'name' => '', 'user' => 'postgres', 'pass' => '', 'name' => '', 'schema' => 'public') as $k => $v)
+	foreach(array('host' => 'localhost', 'port' => 5432, 'name' => '', 'user' => 'postgres', 'pass' => '', 'name' => '', 'schema' => 'public', 'lang' => 'de') as $k => $v)
 		${'db_' . $k} = isset($_POST[$k]) ? $_POST[$k] : $v;
 
 	$form = <<<FORM
@@ -74,6 +74,10 @@
 				<tr>
 					<th>Schema</th>
 					<td><input type="text" name="schema" value="$db_schema" /></td>
+				</tr>
+				<tr>
+					<th>Language (de/en)</th>
+					<td><input type="text" name="lang" value="$db_lang" /></td>
 				</tr>
 			</table>
 			<p><input type="submit" value="Generate Settings" /></p>
@@ -479,6 +483,8 @@ SQL;
 				'display' => ($cons['display_field'] !== null ? $cons['display_field'] : $cons['references_field']),
 				'label_display_expr_only' => true
 			);
+			$field['placeholder'] = ($db_lang == 'de' ? 'Auswählen: ' : 'Pick: ') 
+				. ucwords(strtolower(str_replace('_', ' ', $cons['references_table'])));
 
 			// remember the foreign keys in a hash for later
 			$foreign_keys_info[$cons['column_name']] = $field;
@@ -524,7 +530,9 @@ SQL;
 					//$TABLES[$field0['lookup']['table']]['fields'][$table_name . '_fk'] =
 					$cardinal_mult[$field0['lookup']['table']][$table_name . '_fk'] =
 					array(
-						'label' => ucwords(strtolower(str_replace('_', ' ', $field1['lookup']['table']))) . ' Associations',
+						'label' => ucwords(strtolower(str_replace('_', ' ', $table_name))),
+						'placeholder' => ($db_lang == 'de' ? 'Auswählen: ' : 'Pick: ') 
+							. ucwords(strtolower(str_replace('_', ' ', $field1['lookup']['table']))),
 						'required' => false,
 						'editable' => true,
 						'type' => c('T_LOOKUP'),
@@ -545,7 +553,9 @@ SQL;
 					//$TABLES[$field1['lookup']['table']]['fields'][$table_name . '_fk'] =
 					$cardinal_mult[$field1['lookup']['table']][$table_name . '_fk'] =
 					array(
-						'label' => ucwords(strtolower(str_replace('_', ' ', $field0['lookup']['table']))) . ' Associations',
+						'label' => ucwords(strtolower(str_replace('_', ' ', $table_name))),
+						'placeholder' => ($db_lang == 'de' ? 'Auswählen: ' : 'Pick: ') 
+							. ucwords(strtolower(str_replace('_', ' ', $field0['lookup']['table']))),
 						'required' => false,
 						'editable' => true,
 						'type' => c('T_LOOKUP'),
@@ -583,7 +593,7 @@ SQL;
 
 	if(!isset($_GET['only']) || $_GET['only'] == 'APP') {
 		$APP = array(
-			'title' => $db_name . ' Database',
+			'title' => $db_name,
 			'view_display_null_fields' => false,
 			'page_size'	=> 10,
 			'max_text_len' => 250,
