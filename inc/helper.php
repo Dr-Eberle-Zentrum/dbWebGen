@@ -1960,4 +1960,114 @@ END;
 		//debug_log($params);
 		return $params;
 	}
-?>
+
+	//------------------------------------------------------------------------------------------
+	// see setting APP/popup_hide_reverse_linkage
+	function check_popup_hide_reverse_linkage(
+	) {
+	//------------------------------------------------------------------------------------------
+		global $TABLES;
+		global $APP;
+
+		if(!isset($APP['popup_hide_reverse_linkage'])
+			|| $APP['popup_hide_reverse_linkage'] !== true
+		) {
+			// default is false for legacy reasons
+			return;
+		}
+
+		// we hide if opened from a multi-lookup field, where source/target point at each other
+		if(isset($_GET['popup'])) {
+			// Popup window from create new button
+			// ?popup=SOURCE_TABLE&lookup_field=SOURCE_FIELD&table=THIS_TABLE&...
+			$source_table_name = $_GET['popup'];
+			$this_table = &$TABLES[$_GET['table']];
+			$source_field_name = $_GET['lookup_field'];
+		}
+		else if(isset($_GET['special']) && $_GET['special'] === SPECIAL_EDIT_LINKED_RECORD) {
+			// Popup window from edit linked record icon
+			// Example: ?table=THIS_TABLE&special=edit_linked_record&source_table=SOURCE_TABLE&source_field=SOURCE_FIELD&...
+			$source_table_name = $_GET['source_table'];
+			$this_table = &$TABLES[$_GET['table']];
+			$source_field_name = $_GET['source_field'];
+		}
+		else {
+			// No popup window -> nothing to do
+			return;
+		}
+
+		// check field in source table if cardinality_multiple
+		if(!isset($TABLES[$source_table_name]['fields'][$source_field_name]['linkage']))
+			return; // no multi-lookup
+		$source_table_linkage_table_name = $TABLES[$source_table_name]['fields'][$source_field_name]['linkage']['table'];
+
+		// now look in this table for a multi-lookup field pointing to the source table via the same linkage table
+		foreach($this_table['fields'] as &$field) {
+			if(
+				// field is lookup field
+				$field['type'] === T_LOOKUP
+				// ... and multi-lookup
+				&& $field['lookup']['cardinality'] === CARDINALITY_MULTIPLE
+				// ... and lookup points to source table
+				&& $field['lookup']['table'] === $source_table_name
+				// ... and linkage table is the same as in the source table
+				&& $field['linkage']['table'] === $source_table_linkage_table_name
+			) {
+				// disallow editing of this multi-lookup field
+				$field['editable'] = false;
+				return; // can happen only once (no?)
+			}
+		}
+	}
+
+	//------------------------------------------------------------------------------------------
+	// called from engine.php
+	function run_default_initializations(
+		$settings_exist
+	) {
+	//------------------------------------------------------------------------------------------
+		if($settings_exist)	
+			check_popup_hide_reverse_linkage();
+	}
+
+	//------------------------------------------------------------------------------------------
+	// called from engine.php
+	function run_special_modes_processing(
+		$settings_exist
+	) {
+	//------------------------------------------------------------------------------------------
+		// SPECIAL MODES PROCESSING
+		if(!$settings_exist || is_logged_in()) switch(safehash($_GET, 'mode', '')) {
+			case MODE_DELETE:
+				require_once ENGINE_PATH_LOCAL . 'inc/delete.php';
+				if(!process_delete())
+					render_messages();
+				exit;
+
+			case MODE_CREATE_DONE:
+				require_once ENGINE_PATH_LOCAL . 'inc/create_new_done.php';
+				process_create_new_done();
+				exit;
+
+			case MODE_LOGOUT:
+				session_logout();
+				exit;
+
+			case MODE_FUNC:
+				require_once ENGINE_PATH_LOCAL . 'inc/func.php';
+				process_func();
+				exit;
+
+			case MODE_MERGE:
+				require_once ENGINE_PATH_LOCAL . 'inc/merge.php';
+				if(MergeRecordsPage::process_ajax())
+					exit;
+				break;
+
+			case MODE_FILE:
+				require_once ENGINE_PATH_LOCAL . 'inc/file.php';
+				if(FileRetrieval::processRequest())
+					exit;
+				break;
+		}
+	}

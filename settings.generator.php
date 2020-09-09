@@ -42,7 +42,7 @@
 		header('Content-Type: application/json; charset=utf8');
 	$json_ret = array();
 
-	foreach(array('host' => 'localhost', 'port' => 5432, 'name' => '', 'user' => 'postgres', 'pass' => '', 'name' => '', 'schema' => 'public') as $k => $v)
+	foreach(array('host' => 'localhost', 'port' => 5432, 'name' => '', 'user' => 'postgres', 'pass' => '', 'name' => '', 'schema' => 'public', 'lang' => 'de') as $k => $v)
 		${'db_' . $k} = isset($_POST[$k]) ? $_POST[$k] : $v;
 
 	$form = <<<FORM
@@ -74,6 +74,10 @@
 				<tr>
 					<th>Schema</th>
 					<td><input type="text" name="schema" value="$db_schema" /></td>
+				</tr>
+				<tr>
+					<th>Language (de/en)</th>
+					<td><input type="text" name="lang" value="$db_lang" /></td>
 				</tr>
 			</table>
 			<p><input type="submit" value="Generate Settings" /></p>
@@ -173,7 +177,7 @@ SQL;
 
 			// put default text line fields
 			$field = array(
-				'label' => ucwords(strtolower(str_replace('_', ' ', $col['column_name']))),
+				'label' => strtolower($col['column_name']) === 'id' ? 'ID' : ucwords(strtolower(str_replace('_', ' ', $col['column_name']))),
 				'required' => $col['is_nullable'] == 'YES' ? false : true,
 				'editable' => $col['is_updatable'] == 'YES' ? true : false,
 				'type' => c('T_TEXT_LINE') // default
@@ -211,7 +215,7 @@ SQL;
 			if($num_checks == 1) { // only if 1 single check constraint on this column
 				$enum_vals = array();
 				// see whether we have a range check
-				if(1 == preg_match('/=\sANY\s\(+ARRAY\[(?P<val>.+)\]\)+/', $consrc, $extract))
+				if(1 == preg_match('/=\sANY\s\(+ARRAY\[(?P<val>.+?)\]\)+/', $consrc, $extract))
 				{
 					// here we have something like:
 					//    1::numeric, 1.3, 1.7, 2::numeric
@@ -270,6 +274,8 @@ SQL;
 							$field['max'] = pow(2, 32) / 2;
 							$field['min'] = -$field['max'];
 						}
+						if($col['column_default'] !== null && $field['editable'] === true)
+							$field['default'] = intval($col['column_default']);
 						break;
 
 					case 'smallint': 
@@ -279,6 +285,8 @@ SQL;
 							$field['max'] = pow(2, 16) / 2;
 							$field['min'] = -$field['max'];
 						}
+						if($col['column_default'] !== null && $field['editable'] === true)
+							$field['default'] = intval($col['column_default']);
 						break;
 
 					case 'bigint':
@@ -288,6 +296,8 @@ SQL;
 							$field['max'] = pow(2, 64) / 2;
 							$field['min'] = -$field['max'];
 						}
+						if($col['column_default'] !== null && $field['editable'] === true)
+							$field['default'] = intval($col['column_default']);
 						break;
 
 					case 'numeric':
@@ -303,12 +313,16 @@ SQL;
 							else
 								$field['step'] = 1;
 						}
+						if($col['column_default'] !== null && $field['editable'] === true)
+							$field['default'] = floatval($col['column_default']);
 						break;
 
 					case 'bit':
 						$field['type'] = c('T_ENUM');
 						$field['values'] = array('0' => '0', '1' => '1');
 						$field['width_columns'] = 2;
+						if($col['column_default'] !== null && $field['editable'] === true)
+							$field['default'] = intval($col['column_default']);
 						break;
 
 					case 'bit varying': case 'character varying': case 'character': case 'text':
@@ -321,6 +335,30 @@ SQL;
 						}
 						else {
 							$field['type'] = c('T_TEXT_LINE'); // most text fields are single line, even if unlimited characters
+						}
+						if($col['column_default'] !== null && $field['editable'] === true)
+							$field['default'] = strval($col['column_default']);
+						break;
+					
+					case 'timestamp': case 'date': case 'time':
+						$format = 'YYYY-MM-DD';
+						if($col['data_type'] === 'timestamp') 
+							$format = 'YYYY-MM-DD HH:mm';
+						else if($col['data_type'] === 'time') 
+							$format = 'HH:mm:ss';
+						$field['type'] = c('T_TEXT_LINE');
+						$field['width_columns'] = 3;
+						$field['datetime_picker'] = [
+							'format' => $format,
+							'showTodayButton' => true
+						];
+						if($col['column_default'] !== null 
+							&& $field['editable'] === true 
+							&& is_array($parse_result = date_parse($col['column_default']))
+							&& (!isset($parse_result['error_count'])
+								|| $parse_result['error_count'] === 0) 
+						) {
+							$field['default'] = strval($col['column_default']);
 						}
 						break;
 
@@ -343,6 +381,7 @@ SQL;
 							}
 							
 							$field['map_picker'] = array(
+								'script' => 'map_picker.js',
 								'draw_options' => array(
 									'polyline' => in_array($geom_type, array('polyline', 'linestring', 'geometry')),
 									'polygon' => in_array($geom_type, array('polygon', 'geometry')),
@@ -444,6 +483,8 @@ SQL;
 				'display' => ($cons['display_field'] !== null ? $cons['display_field'] : $cons['references_field']),
 				'label_display_expr_only' => true
 			);
+			$field['placeholder'] = ($db_lang == 'de' ? 'Auswählen: ' : 'Pick: ') 
+				. ucwords(strtolower(str_replace('_', ' ', $cons['references_table'])));
 
 			// remember the foreign keys in a hash for later
 			$foreign_keys_info[$cons['column_name']] = $field;
@@ -489,7 +530,9 @@ SQL;
 					//$TABLES[$field0['lookup']['table']]['fields'][$table_name . '_fk'] =
 					$cardinal_mult[$field0['lookup']['table']][$table_name . '_fk'] =
 					array(
-						'label' => $table_name . ' list',
+						'label' => ucwords(strtolower(str_replace('_', ' ', $table_name))),
+						'placeholder' => ($db_lang == 'de' ? 'Auswählen: ' : 'Pick: ') 
+							. ucwords(strtolower(str_replace('_', ' ', $field1['lookup']['table']))),
 						'required' => false,
 						'editable' => true,
 						'type' => c('T_LOOKUP'),
@@ -510,7 +553,9 @@ SQL;
 					//$TABLES[$field1['lookup']['table']]['fields'][$table_name . '_fk'] =
 					$cardinal_mult[$field1['lookup']['table']][$table_name . '_fk'] =
 					array(
-						'label' => $table_name . ' list',
+						'label' => ucwords(strtolower(str_replace('_', ' ', $table_name))),
+						'placeholder' => ($db_lang == 'de' ? 'Auswählen: ' : 'Pick: ') 
+							. ucwords(strtolower(str_replace('_', ' ', $field0['lookup']['table']))),
 						'required' => false,
 						'editable' => true,
 						'type' => c('T_LOOKUP'),
@@ -548,14 +593,15 @@ SQL;
 
 	if(!isset($_GET['only']) || $_GET['only'] == 'APP') {
 		$APP = array(
-			'title' => $db_name . ' Database',
+			'title' => $db_name,
 			'view_display_null_fields' => false,
 			'page_size'	=> 10,
 			'max_text_len' => 250,
 			'pages_prevnext' => 2,
 			'mainmenu_tables_autosort' => true,
 			'search_lookup_resolve' => true,
-			'search_string_transformation' => 'lower((%s)::text)'
+			'search_string_transformation' => 'lower((%s)::text)',
+			'popup_hide_reverse_linkage' => true
 		);
 		echo '<?php', PHP_EOL, '$APP = ';
 		prettyDump($APP);
