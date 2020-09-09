@@ -600,7 +600,8 @@ SQL;
 			'pages_prevnext' => 2,
 			'mainmenu_tables_autosort' => true,
 			'search_lookup_resolve' => true,
-			'search_string_transformation' => 'lower((%s)::text)'
+			'search_string_transformation' => 'lower((%s)::text)',
+			'popup_hide_reverse_linkage' => true
 		);
 		echo '<?php', PHP_EOL, '$APP = ';
 		prettyDump($APP);
