@@ -261,7 +261,7 @@ SQL;
 				switch($col['data_type']) {
 					case 'boolean':
 						$field['type'] = c('T_ENUM');
-						$field['values'] = array(1 => 'Yes', 0 => 'No');
+						$field['values'] = ($db_lang == 'de' ? [1 => 'Ja', 0 => 'Nein'] : [1 => 'Yes', 0 => 'No']);
 						if($col['column_default'] !== null)
 							$field['default'] = $col['column_default'] === true ? 1 : 0;
 						$field['width_columns'] = 2;
