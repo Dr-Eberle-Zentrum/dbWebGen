@@ -2071,3 +2071,16 @@ END;
 				break;
 		}
 	}
+
+	//------------------------------------------------------------------------------------------
+	function get_lookup_dropdown_sort(
+		$field
+	) {
+	//------------------------------------------------------------------------------------------
+		if(isset($field['lookup']['dropdown_sort']) 
+			&& $field['lookup']['dropdown_sort'] === 'desc'
+		) {
+			return 'desc';
+		}
+		return 'asc';
+	}

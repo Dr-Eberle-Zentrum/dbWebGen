@@ -284,6 +284,8 @@
 					Or it can be a hash array with 'columns' => array of columns, which is used in 'expression' => expression referring to indexes in 'columns' as %1, %2, etc., e.g.: 'display' => array('columns' => array('firstname', 'lastname'), 'expression' => "concat_ws(' ', %1 %2)" )
 				- sort: boolean (optional) (default: true)
 					In case of multiple lookup values, this setting determines whether the linked records are sorted using the display expression. Only relevant for CARDINALITY_MULTIPLE.
+				- dropdown_sort: string (optional) (default: asc)
+					'desc' will sort the dropdown box in descending order, everything else will sort ascending (default)
 				- default: any type (optional)
 					Default option for this foreign key reference to select in MODE_NEW. The type should be automatically convertible to string
 				- related_label: string (optional)

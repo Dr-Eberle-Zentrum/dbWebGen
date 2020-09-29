@@ -57,14 +57,16 @@
 
 			if($field['lookup']['field'] == $field['lookup']['display']) {
 				// look only in display field
-				$sql = sprintf("select %s id, %s \"label\" from %s t where ($string_trafo) like concat('%%',($string_trafo),'%%') order by 2 %s",
+				$sql = sprintf("select %s id, %s \"label\" from %s t where ($string_trafo) like concat('%%',($string_trafo),'%%') order by 2 %s %s",
 					db_esc($field['lookup']['field']), $display_expr, db_esc($field['lookup']['table']), $display_expr, '?',
+					get_lookup_dropdown_sort($field),
 					$limit > 0 ? ('LIMIT ' . strval($limit + 1)) : '');
 			}
 			else {
 				// look in display field and primary key field
-				$sql = sprintf("select %s id, %s \"label\" from %s t where concat(($string_trafo),($string_trafo)) like concat('%%',($string_trafo),'%%') order by 2 %s",
+				$sql = sprintf("select %s id, %s \"label\" from %s t where concat(($string_trafo),($string_trafo)) like concat('%%',($string_trafo),'%%') order by 2 %s %s",
 					db_esc($field['lookup']['field']), $display_expr, db_esc($field['lookup']['table']), $display_expr, db_esc($field['lookup']['field']), '?',
+					get_lookup_dropdown_sort($field),
 					$limit > 0 ? ('LIMIT ' . strval($limit + 1)) : '');
 			}
 

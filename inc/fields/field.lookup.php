@@ -290,8 +290,13 @@
 				// we're in async mode and there is nothing to pre-select, so do not add any options!
 			}
 			else {
-				$sql = sprintf('select %s val, %s txt from %s t %s order by txt',
-					db_esc($this->get_lookup_field_name()), resolve_display_expression($this->get_lookup_display(), 't'), db_esc($this->get_lookup_table_name()), $where_clause);
+				$sql = sprintf('select %s val, %s txt from %s t %s order by txt %s',
+					db_esc($this->get_lookup_field_name()), 
+					resolve_display_expression($this->get_lookup_display(), 't'), 
+					db_esc($this->get_lookup_table_name()), 
+					$where_clause,
+					get_lookup_dropdown_sort($this->field)
+				);
 
 				$stmt = $db->prepare($sql);
 				if(false === $stmt)
@@ -414,10 +419,12 @@
 				}
 			}
 			else {
-				$q = sprintf('select %s val, %s txt from %s t order by txt',
+				$q = sprintf('select %s val, %s txt from %s t order by txt %s',
 					db_esc($this->get_lookup_field_name()),
 					resolve_display_expression($this->get_lookup_display(), 't'),
-					db_esc($this->get_lookup_table_name()));
+					db_esc($this->get_lookup_table_name()),
+					get_lookup_dropdown_sort($this->field)
+				);
 				
 				$res = $db->query($q);
 				// fill dropdown and linked fields list
