@@ -601,7 +601,7 @@
 			// if value is empty then only fail if param is NULL
 			if($linkage_details['details'][$field_name] === '') {
 				// find column index
-				$col_index = array_search(field_name, $linkage_details['columns']);
+				$col_index = array_search($field_name, $linkage_details['columns']);
 				
 				// not found? -> missing
 				if($col_index === false)
