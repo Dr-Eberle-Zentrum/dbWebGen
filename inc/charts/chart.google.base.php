@@ -98,10 +98,10 @@
 				// then the js_type is already set
 				if(!isset($col_info['js_type'])) {
 					switch($col_info['native_type']) {
-						case 'int': case 'int2': case 'int4': case 'int8': case 'numeric': case 'float4': case 'float8':
+						case 'integer': case 'int': case 'int2': case 'int4': case 'int8': case 'numeric': case 'float4': case 'float8':
 							$col_info['js_type'] = 'number'; break;
 
-						case 'text': case 'varchar': case 'bpchar':
+						case 'string': case 'text': case 'varchar': case 'bpchar':
 							$col_info['js_type'] = 'string'; break;
 
 						case 'bool':

@@ -130,8 +130,9 @@
 	/* ========================================================================================================
 		$DB has database connection details
 
-		- type: { DB_POSTGRESQL, DB_MYSQL }
-			Database type, currently only postgres and mysql supported
+		- type: { DB_POSTGRESQL, DB_MYSQL, DB_SQLITE }
+			Database type. PostgreSQL and MySQL are supported.
+			SQLite support is experimental and currently only intended for opening a database file and querying the database. Browsing and editing records will NOT work as expected.
 		- host: string
 			Database server (IP or hostname)
 		- port: int

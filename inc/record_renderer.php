@@ -49,8 +49,12 @@
             $table_body = "<tbody>\n";
             $col_longest_content = array();
             $this->num_results = 0;
+            $columns_backup = false; // later needed for SQLite - for reasons unknown
             while($record = $this->stmt->fetch(PDO::FETCH_ASSOC)) {
                 #debug_log($record);
+                if($columns_backup === false) {
+                    $columns_backup = array_keys($record);
+                }
                 $this->num_results++;
 
                 $id_str = '';
@@ -149,7 +153,13 @@
             $col_no = 0;
             for($i=0; $i<$this->stmt->columnCount(); $i++) {
                 $meta = $this->stmt->getColumnMeta($i);
-                $col = $meta['name'];
+
+                if(!$meta) { // e.g. SQLite returns false here, don't know why
+                    $col = $columns_backup[$i];
+                } else {
+                    $col = $meta['name'];
+                }
+
                 if(!isset($this->fields[$col]))
                     continue;
 
