@@ -423,6 +423,7 @@
 					* currency (string): currency symbol (required only if "c" part of template)
 					* before (string): text to display before (required only if "b" part of template)
 					* after (string): text to display after (required only if "a" part of template)
+					* strip_trailing_decimal_zeros (optional, default: false) (bool): if true, will strip any trailing zeros after the decimal point
 				Note: if number_format is provided, the setting max_decimals is ignored
 			- conditional_form_label: array (optional)
 				In MODE_NEW & MODE_EDIT forms, this controls field labels based on the value of another field (currently the other field must be T_ENUM or T_LOOKUP).

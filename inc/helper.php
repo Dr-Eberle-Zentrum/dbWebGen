@@ -920,7 +920,19 @@ STR;
 						case 'c': $disp .= $fmt['currency']; break;
 						case 'm': $disp .= $val < 0 ? $minus : ''; break;
 						case 's': $disp .= $val == 0 ? '' : ($val > 0 ? $plus : $minus); break;
-						case 'n': $disp .= number_format(abs($val), $fmt['decimals'], $fmt['dec_point'], $fmt['thousands_sep']); break;
+						case 'n': 
+							$num = number_format(abs($val), $fmt['decimals'], $fmt['dec_point'], $fmt['thousands_sep']);
+							if(isset($fmt['strip_trailing_decimal_zeros']) && $fmt['strip_trailing_decimal_zeros'] === true) {
+								[$left, $right] = explode($fmt['dec_point'], $num);
+								if(is_string($right)) {
+									$right = rtrim($right, '0');
+									$num = $left;
+									if(strlen($right) > 0)
+										$num .= $fmt['dec_point'] . $right;
+								}
+							}
+							$disp .= $num;
+							break;
 						case ' ': $disp .= $flag; break;
 						case 'e'; $disp .= '&nbsp;';
 					}
