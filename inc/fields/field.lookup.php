@@ -249,6 +249,12 @@
 		}
 
 		//--------------------------------------------------------------------------------------
+		protected function get_lookup_condition($table_alias = null) {
+		//--------------------------------------------------------------------------------------
+			return get_lookup_condition($this->get_lookup_settings(), $table_alias);
+		}
+
+		//--------------------------------------------------------------------------------------
 		protected function render_cardinality_single(&$output_buf) {
 		//--------------------------------------------------------------------------------------
 			$db = db_connect();
@@ -256,8 +262,14 @@
 				return proc_error(l10n('error.db-connect'));
 
 			$num_results = null;
-			if($this->has_async_threshold() && !db_get_single_val(sprintf('select count(*) c from %s', db_esc($this->get_lookup_table_name())), array(), $num_results, $db))
+			if($this->has_async_threshold() 
+				&& !db_get_single_val(
+						sprintf('select count(*) c from %s where %s', db_esc($this->get_lookup_table_name()), $this->get_lookup_condition()), 
+						array(), $num_results, $db
+					)
+			) {
 				$num_results = null;
+			}
 
 			$output_buf .= sprintf(
 				"<select %s %s class='form-control %s' id='%s_dropdown' name='%s%s' data-table='%s' data-fieldname='%s' data-placeholder='%s' data-thistable='%s' %s %s %s data-lookuptype='single' %s %s title='%s' %s>\n",
@@ -283,17 +295,18 @@
 
 			$where_clause = '';
 			if($this->is_lookup_async($num_results) && $this->has_submitted_value() && $this->get_submitted_value() != '') // NULL_OPTION
-				$where_clause = sprintf('where %s = ?', db_esc($this->get_lookup_field_name()));
+				$where_clause = sprintf('and %s = ?', db_esc($this->get_lookup_field_name()));
 
 			
 			if($this->is_lookup_async($num_results) && $where_clause === '') {
 				// we're in async mode and there is nothing to pre-select, so do not add any options!
 			}
 			else {
-				$sql = sprintf('select %s val, %s txt from %s t %s order by txt %s',
+				$sql = sprintf('select %s val, %s txt from %s t where %s %s order by txt %s',
 					db_esc($this->get_lookup_field_name()), 
 					resolve_display_expression($this->get_lookup_display(), 't'), 
 					db_esc($this->get_lookup_table_name()), 
+					$this->get_lookup_condition('t'),
 					$where_clause,
 					get_lookup_dropdown_sort($this->field)
 				);
@@ -355,8 +368,14 @@
 				return proc_error(l10n('error.db-connect'));
 
 			$num_results = null;
-			if($this->has_async_threshold() && !db_get_single_val(sprintf('select count(*) c from %s', db_esc($this->get_lookup_table_name())), array(), $num_results, $db))
+			if($this->has_async_threshold() 
+				&& !db_get_single_val(
+					sprintf('select count(*) c from %s where %s', db_esc($this->get_lookup_table_name()), $this->get_lookup_condition()),
+					array(), $num_results, $db
+				)
+			) {
 				$num_results = null;
+			}
 			if($num_results !== null)
 				$num_results -= count($linked_items);
 
@@ -391,11 +410,12 @@
 			if($this->is_lookup_async($num_results)) {
 				// just prepare the list of already existing linked items
 				$existing_linkage = array();
-				$sql = sprintf('select %s val, %s txt from %s t where %s = ?',
+				$sql = sprintf('select %s val, %s txt from %s t where %s = ? and %s',
 					db_esc($this->get_lookup_field_name()),
 					resolve_display_expression($this->get_lookup_display(), 't'),
 					db_esc($this->get_lookup_table_name()),
-					db_esc($this->get_lookup_field_name()));
+					db_esc($this->get_lookup_field_name()),
+					$this->get_lookup_condition('t'));
 
 				$stmt = $db->prepare($sql);
 				if($stmt === false)
@@ -419,10 +439,11 @@
 				}
 			}
 			else {
-				$q = sprintf('select %s val, %s txt from %s t order by txt %s',
+				$q = sprintf('select %s val, %s txt from %s t where %s order by txt %s',
 					db_esc($this->get_lookup_field_name()),
 					resolve_display_expression($this->get_lookup_display(), 't'),
 					db_esc($this->get_lookup_table_name()),
+					$this->get_lookup_condition('t'),
 					get_lookup_dropdown_sort($this->field)
 				);
 				
