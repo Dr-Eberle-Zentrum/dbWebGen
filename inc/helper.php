@@ -2096,3 +2096,24 @@ END;
 		}
 		return 'asc';
 	}
+
+	//------------------------------------------------------------------------------------------
+	function get_lookup_condition(
+		$lookup_settings,
+		$table_alias = null
+	) {
+	//------------------------------------------------------------------------------------------
+		if(!isset($lookup_settings['condition']))
+			return '(true)';
+
+		$cond = $lookup_settings['condition'];
+		$expression = $cond['expression'];
+		for($i = count($cond['columns']) - 1; $i >= 0; $i--) {
+			$expression = str_replace(
+				'%' . ($i + 1),
+				db_esc($cond['columns'][$i], $table_alias),
+				$expression
+			);
+		}
+		return "($expression)";
+	}

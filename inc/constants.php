@@ -6,6 +6,7 @@
 	// supported databases
 	define('DB_POSTGRESQL', 'postgresql');
 	define('DB_MYSQL', 'mysql');
+	define('DB_SQLITE', 'sqlite'); // experimental !!!
 
 	// default cache time-to-live (for charts)
 	define('DEFAULT_CACHE_TTL', 3600);

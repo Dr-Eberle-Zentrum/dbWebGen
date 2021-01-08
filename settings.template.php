@@ -130,8 +130,9 @@
 	/* ========================================================================================================
 		$DB has database connection details
 
-		- type: { DB_POSTGRESQL, DB_MYSQL }
-			Database type, currently only postgres and mysql supported
+		- type: { DB_POSTGRESQL, DB_MYSQL, DB_SQLITE }
+			Database type. PostgreSQL and MySQL are supported.
+			SQLite support is experimental and currently only intended for opening a database file and querying the database. Browsing and editing records will NOT work as expected.
 		- host: string
 			Database server (IP or hostname)
 		- port: int
@@ -337,6 +338,16 @@
 					Suppress the rendering of a hyperlink to the linked item in MODE_VIEW and MODE_LIST.
 				- link_to_lookup_record: boolean (optional) (default: false)
 					If this is set to true, then the displayed hyperlink will point to the associated record instead of pointing to the record in the linkage table. This setting is only relevant for CARDINALITY_MULTIPLE fields where the linkage table is defined and its 'actions' setting allows MODE_VIEW. Otherwise the link will point to the associated record regardless of the 'link_to_lookup_record' setting. Also note that this setting has no effect if 'no_link' is set to true.
+				- condition: array (optional)
+					Allows specifying a condition on the lookup records. Only records that satisfy the condition are displayed in the dropdown.
+					Must be a hash array with two keys:
+						- columns: array of column names used in the expression
+						- expression: string with conditional SQL expression; may refer to columns by using their 1-based index in the column array, e.g. %1, %2, so forth.
+					Example: restrict lookup items to those where type is car and origin is US or EU: 
+						'condition' => [
+							'columns' => ['type', 'origin'],
+							'expression' => "%1 = 'car' and %2 in ('US', 'EU')"
+						]
 			- linkage: array
 				If cardinality=CARDINALITY_MULTIPLE, we need to define here the m:n relationship table that links records from this table (via fk_self) with records of the other table (via fk_other)
 				- table: string

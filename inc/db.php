@@ -14,6 +14,9 @@
             case DB_MYSQL:
                 $conn = "mysql:dbname={$DB['db']};host={$DB['host']};port={$DB['port']};charset=utf8";
                 break;
+            case DB_SQLITE:
+                $conn = "sqlite:{$DB['db']}";
+                break;
         }
 
         try {
@@ -31,6 +34,7 @@
         global $DB;
         switch($DB['type']) {
             case DB_POSTGRESQL:
+            case DB_SQLITE:
                 $escape_char = '"';
                 $separator_char = '.';
                 break;
@@ -61,6 +65,7 @@
 
         switch($DB['type']) {
             case DB_POSTGRESQL:
+            case DB_SQLITE:
                 $escape_char = '"';
                 break;
 
@@ -146,6 +151,8 @@
                 if($cast_to_text)
                     $expr = db_cast_text($expr);
                 return "concat('[',group_concat(json_quote($expr) separator ','),']')";
+            case DB_SQLITE:
+                return '[]'; // not supported
         }
     }
 
@@ -158,6 +165,8 @@
                 return "array_to_string(array_agg($expr), '$separator')";
             case DB_MYSQL:
                 return "group_concat(($expr) separator '$separator')";
+            case DB_SQLITE:
+                return "group_concat(($expr), '$separator')";
         }
     }
 
@@ -168,8 +177,10 @@
         switch($DB['type']) {
             case DB_POSTGRESQL:
                 return "$expr::text";
-            case DB_MYSQL:
+            case DB_MYSQL:            
                 return "cast($expr as char)";
+            case DB_SQLITE:            
+                return "cast($expr as text)";
         }
     }
 
@@ -182,6 +193,8 @@
                 return $bool ? 't' : 'f';
             case DB_MYSQL:
                 return $bool;
+            case DB_SQLITE:
+                return $bool ? 1 : 0;
         }
     }
 
