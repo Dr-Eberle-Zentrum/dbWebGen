@@ -340,14 +340,26 @@ SQL;
 							$field['default'] = strval($col['column_default']);
 						break;
 					
-					case 'timestamp': case 'date': case 'time':
+					case 'timestamp': 
+					case 'timestamp without time zone':
+					case 'timestamp with time zone': 
+					case 'date': 
+					case 'time':
+					case 'time with time zone':
+					case 'time without time zone':
 						$format = 'YYYY-MM-DD';
-						if($col['data_type'] === 'timestamp') 
+						$placeholder = ($db_lang == 'de' ? 'JJJJ-MM-TT' : $format);
+						if(substr($col['data_type'], 0, 9) === 'timestamp') {
 							$format = 'YYYY-MM-DD HH:mm';
-						else if($col['data_type'] === 'time') 
+							$placeholder .= ' h:m';
+						}
+						else if(substr($col['data_type'], 0, 4) === 'time') {
 							$format = 'HH:mm:ss';
+							$placeholder = 'h:m:s';
+						}
 						$field['type'] = c('T_TEXT_LINE');
 						$field['width_columns'] = 3;
+						$field['placeholder'] = $placeholder;
 						$field['datetime_picker'] = [
 							'format' => $format,
 							'showTodayButton' => true
