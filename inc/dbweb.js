@@ -657,8 +657,10 @@ function remove_linked_item(e) {
     });
 
     // only need to insert in non-async boxes
-    if(!dropdown_box.hasClass('lookup-async'))
-	   insert_option_sorted(dropdown_id, removed_id, label, removed_text, false);
+    if(!dropdown_box.hasClass('lookup-async')) {
+       insert_option_sorted(dropdown_id, removed_id, label, removed_text, false);
+       dropdown_box.val(""); // make sure the ingested option is not selected
+    }
 
     // ensure box and create new are enabled
     multi_lookup_field_allow(field, true);
