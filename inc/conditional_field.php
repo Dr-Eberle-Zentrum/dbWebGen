@@ -163,7 +163,7 @@
                             if(!controlled_fields.hasOwnProperty(cf))
                                 continue;
                             $('form [name]').filter(function() { return $(this).attr('name') == cf }).on('change', function() {
-                                var cf_arr = controlled_fields[cf];
+                                var cf_arr = controlled_fields[$(this).attr('name')];
                                 for(var i = 0; i < cf_arr.length; i++) {
                                     var cond_result = cfd_eval_condition(expressions[cf_arr[i]]);
                                     var cf_ctrl = $('form [name]').filter(function() { return $(this).attr('name') == cf_arr[i] }).parents('div.form-group');
