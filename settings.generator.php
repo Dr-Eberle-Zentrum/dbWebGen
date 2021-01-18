@@ -37,6 +37,10 @@
 		echo formatOutput($s);
 	}
 
+	function makeLabel($identifier) {
+		return ucwords(strtolower(str_replace('_', ' ', $identifier)));
+	}
+
 	$tables_setup_json = isset($_GET['special']) && $_GET['special'] === 'tables_setup';
 	if($tables_setup_json)
 		header('Content-Type: application/json; charset=utf8');
@@ -147,9 +151,9 @@ SQL;
 	foreach($tables as $table_name) {
 		// general table info
 		$TABLES[$table_name] = array(
-			'display_name' => ucwords(strtolower(str_replace('_', ' ', $table_name))),
+			'display_name' => makeLabel($table_name),
 			'description' => '',
-			'item_name' => ucwords(strtolower(str_replace('_', ' ', $table_name))),
+			'item_name' => makeLabel($table_name),
 			'actions' => array(c('MODE_EDIT'), c('MODE_NEW'), c('MODE_VIEW'), c('MODE_LIST'), c('MODE_DELETE'), c('MODE_LINK')),
 			'fields' => array()
 		);
@@ -177,7 +181,7 @@ SQL;
 
 			// put default text line fields
 			$field = array(
-				'label' => strtolower($col['column_name']) === 'id' ? 'ID' : ucwords(strtolower(str_replace('_', ' ', $col['column_name']))),
+				'label' => strtolower($col['column_name']) === 'id' ? 'ID' : makeLabel($col['column_name']),
 				'required' => $col['is_nullable'] == 'YES' ? false : true,
 				'editable' => $col['is_updatable'] == 'YES' ? true : false,
 				'type' => c('T_TEXT_LINE') // default
@@ -496,7 +500,7 @@ SQL;
 				'label_display_expr_only' => true
 			);
 			$field['placeholder'] = ($db_lang == 'de' ? 'Auswählen: ' : 'Pick: ') 
-				. ucwords(strtolower(str_replace('_', ' ', $cons['references_table'])));
+				. makeLabel($cons['references_table']);
 
 			// remember the foreign keys in a hash for later
 			$foreign_keys_info[$cons['column_name']] = $field;
@@ -526,7 +530,7 @@ SQL;
 		// check whether this is a N:M table (for CARDINALITY_MULTIPLE)
 		// this is the case if this table has:
 		// * exactly two primary key fields
-		// * both are foreign keys to two different tables
+		// * both are foreign keys to any table
 		// If both conditions hold we add this table as a linkage table in CARDINALITY_MULTIPLE field in both referenced tables
 		if(count($primary_key['columns']) == 2) {
 			$field1 = $field2 = null;
@@ -536,55 +540,57 @@ SQL;
 				$field0 = $foreign_keys_info[$primary_key['columns'][0]];
 				$field1 = $foreign_keys_info[$primary_key['columns'][1]];
 
-				if($field0['lookup']['table'] != $field1['lookup']['table']) {
-					// here we go, add cardinality multiple lookup to both involved tables
+				// here we go, add cardinality multiple lookup to both involved tables
 
-					//$TABLES[$field0['lookup']['table']]['fields'][$table_name . '_fk'] =
-					$cardinal_mult[$field0['lookup']['table']][$table_name . '_fk'] =
-					array(
-						'label' => ucwords(strtolower(str_replace('_', ' ', $table_name))),
-						'placeholder' => ($db_lang == 'de' ? 'Auswählen: ' : 'Pick: ') 
-							. ucwords(strtolower(str_replace('_', ' ', $field1['lookup']['table']))),
-						'required' => false,
-						'editable' => true,
-						'type' => c('T_LOOKUP'),
-						'lookup' => array(
-							'cardinality' => c('CARDINALITY_MULTIPLE'),
-							'table'  => $field1['lookup']['table'],
-							'field'  => $field1['lookup']['field'],
-							'display' => $field1['lookup']['display'],
-							'label_display_expr_only' => true
-						),
-						'linkage' => array(
-							'table' => $table_name,
-							'fk_self' => $primary_key['columns'][0],
-							'fk_other' => $primary_key['columns'][1]
-						)
-					);
+				$recursive_linkage = ($field0['lookup']['table'] === $field1['lookup']['table']);
 
-					//$TABLES[$field1['lookup']['table']]['fields'][$table_name . '_fk'] =
-					$cardinal_mult[$field1['lookup']['table']][$table_name . '_fk'] =
-					array(
-						'label' => ucwords(strtolower(str_replace('_', ' ', $table_name))),
-						'placeholder' => ($db_lang == 'de' ? 'Auswählen: ' : 'Pick: ') 
-							. ucwords(strtolower(str_replace('_', ' ', $field0['lookup']['table']))),
-						'required' => false,
-						'editable' => true,
-						'type' => c('T_LOOKUP'),
-						'lookup' => array(
-							'cardinality' => c('CARDINALITY_MULTIPLE'),
-							'table'  => $field0['lookup']['table'],
-							'field'  => $field0['lookup']['field'],
-							'display' => $field0['lookup']['display'],
-							'label_display_expr_only' => true
-						),
-						'linkage' => array(
-							'table' => $table_name,
-							'fk_self' => $primary_key['columns'][1],
-							'fk_other' => $primary_key['columns'][0]
-						)
-					);
-				}
+				//$TABLES[$field0['lookup']['table']]['fields'][$table_name . '_fk'] =
+				$cardinal_mult[$field0['lookup']['table']][$table_name . '_fk'] =
+				array(
+					'label' => makeLabel($table_name) . 
+						($recursive_linkage ? (' (' . makeLabel($primary_key['columns'][1]) . ')') : ''),
+					'placeholder' => ($db_lang == 'de' ? 'Auswählen: ' : 'Pick: ') 
+						. makeLabel($field1['lookup']['table']),
+					'required' => false,
+					'editable' => true,
+					'type' => c('T_LOOKUP'),
+					'lookup' => array(
+						'cardinality' => c('CARDINALITY_MULTIPLE'),
+						'table'  => $field1['lookup']['table'],
+						'field'  => $field1['lookup']['field'],
+						'display' => $field1['lookup']['display'],
+						'label_display_expr_only' => true
+					),
+					'linkage' => array(
+						'table' => $table_name,
+						'fk_self' => $primary_key['columns'][0],
+						'fk_other' => $primary_key['columns'][1]
+					)
+				);
+
+				//$TABLES[$field1['lookup']['table']]['fields'][$table_name . '_fk'] =
+				$cardinal_mult[$field1['lookup']['table']][$table_name . ($recursive_linkage? '_rev' : '') . '_fk'] =
+				array(
+					'label' => makeLabel($table_name) . 
+						($recursive_linkage ? (' (' . makeLabel($primary_key['columns'][0]) . ')') : ''),
+					'placeholder' => ($db_lang == 'de' ? 'Auswählen: ' : 'Pick: ') 
+						. makeLabel($field0['lookup']['table']),
+					'required' => false,
+					'editable' => !$recursive_linkage,
+					'type' => c('T_LOOKUP'),
+					'lookup' => array(
+						'cardinality' => c('CARDINALITY_MULTIPLE'),
+						'table'  => $field0['lookup']['table'],
+						'field'  => $field0['lookup']['field'],
+						'display' => $field0['lookup']['display'],
+						'label_display_expr_only' => true
+					),
+					'linkage' => array(
+						'table' => $table_name,
+						'fk_self' => $primary_key['columns'][1],
+						'fk_other' => $primary_key['columns'][0]
+					)
+				);
 			}
 		}
 	}
