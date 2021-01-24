@@ -184,7 +184,8 @@ SQL;
 				'label' => strtolower($col['column_name']) === 'id' ? 'ID' : makeLabel($col['column_name']),
 				'required' => $col['is_nullable'] == 'YES' ? false : true,
 				'editable' => $col['is_updatable'] == 'YES' ? true : false,
-				'type' => c('T_TEXT_LINE') // default
+				'type' => c('T_TEXT_LINE'), // default
+				'orig_type' => $col['data_type']
 			);
 
 			// if nextval from a sequence is the default value, make it not editable
