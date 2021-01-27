@@ -329,7 +329,12 @@
 						$sel = ($this->has_submitted_value() && $this->get_submitted_value() == strval($obj->val) ? ' selected="selected" ' : '');
 						if($sel != '')
 							$selection_done = 'done';
-						else if($sel == '' && $this->is_required() && $this->has_lookup_default() && strval($this->get_lookup_default()) === strval($obj->val)) {
+						else if( // set default value if...
+							// ... either it is a required field with a lookup default value given that matches 
+							($sel == '' && $this->is_required() && $this->has_lookup_default() && strval($this->get_lookup_default()) === strval($obj->val))
+							// ... or the field has a default value set that matches
+							|| ($sel == '' && ($def = $this->get_default_value(null)) !== null && strval($def) === strval($obj->val))
+						) {
 							$sel = ' selected="selected" ';
 							$selection_done = 'default';
 						}
