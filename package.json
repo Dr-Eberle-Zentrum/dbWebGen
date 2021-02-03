@@ -4,7 +4,9 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
+    "@json-editor/json-editor": "1.1.0-beta.2",
     "bootstrap": "3.4.1",
+    "bootstrap-toggle": "2.2.2",
     "eonasdan-bootstrap-datetimepicker": "4.17.47",
     "ionicons": "2.0.1",
     "jquery": "1.12.0",
@@ -12,16 +14,14 @@
     "leaflet-draw": "0.4.14",
     "leaflet-minimap": "3.6.1",
     "leaflet-omnivore": "0.3.1",
-    "leaflet-providers": "*",
+    "leaflet-providers": "^1.11.0",
     "select2": "4.0.6-rc.1",
     "select2-bootstrap-theme": "*",
     "terraformer": "1.0.6",
     "terraformer-wkt-parser": "1.1.1",
     "transliteration": "1.6.2",
+    "trumbowyg": "^2.23.0",
     "vis": "4.16.1",
-    "vis-graph3d": "^5.4.3",
-    "bootstrap-toggle": "2.2.2",
-    "@json-editor/json-editor": "1.1.0-beta.2",
-    "trumbowyg": "^2.0.18"
+    "vis-graph3d": "^5.4.3"
   }
 }
