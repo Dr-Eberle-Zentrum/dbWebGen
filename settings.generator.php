@@ -359,8 +359,8 @@ SQL;
 							$placeholder .= ' h:m';
 						}
 						else if(substr($col['data_type'], 0, 4) === 'time') {
-							$format = 'HH:mm:ss';
-							$placeholder = 'h:m:s';
+							$format = 'HH:mm';
+							$placeholder = 'h:m';
 						}
 						$field['type'] = c('T_TEXT_LINE');
 						$field['width_columns'] = 3;
