@@ -2086,15 +2086,26 @@ END;
 
 	//------------------------------------------------------------------------------------------
 	function get_lookup_dropdown_sort(
-		$field
+		$field, $table_alias, $default_field
 	) {
 	//------------------------------------------------------------------------------------------
-		if(isset($field['lookup']['dropdown_sort']) 
-			&& $field['lookup']['dropdown_sort'] === 'desc'
-		) {
-			return 'desc';
+		if(!isset($field['lookup']['dropdown_sort'])) {
+			return sprintf('%s asc', $default_field);
 		}
-		return 'asc';
+		$sort = $field['lookup']['dropdown_sort'];
+		if(is_string($sort) && strtolower($sort) === 'desc') {
+			return sprintf('%s desc', $default_field);
+		}
+		// last option: must be an array here
+		if(!is_array($sort)) {
+			return sprintf('%s asc', $default_field);
+		}
+		
+		$sort_expr = [];
+		foreach($sort as $field_name => $direction) {
+			$sort_expr[] = sprintf('%s %s', db_esc($field_name, $table_alias), $direction);
+		}
+		return implode(' ', $sort_expr);
 	}
 
 	//------------------------------------------------------------------------------------------

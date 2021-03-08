@@ -302,13 +302,13 @@
 				// we're in async mode and there is nothing to pre-select, so do not add any options!
 			}
 			else {
-				$sql = sprintf('select %s val, %s txt from %s t where %s %s order by txt %s',
+				$sql = sprintf('select %s val, %s txt from %s t where %s %s order by %s',
 					db_esc($this->get_lookup_field_name()), 
 					resolve_display_expression($this->get_lookup_display(), 't'), 
 					db_esc($this->get_lookup_table_name()), 
 					$this->get_lookup_condition('t'),
 					$where_clause,
-					get_lookup_dropdown_sort($this->field)
+					get_lookup_dropdown_sort($this->field, 't', 'txt')
 				);
 
 				$stmt = $db->prepare($sql);
@@ -329,7 +329,12 @@
 						$sel = ($this->has_submitted_value() && $this->get_submitted_value() == strval($obj->val) ? ' selected="selected" ' : '');
 						if($sel != '')
 							$selection_done = 'done';
-						else if($sel == '' && $this->is_required() && $this->has_lookup_default() && strval($this->get_lookup_default()) === strval($obj->val)) {
+						else if( // set default value if...
+							// ... either it is a required field with a lookup default value given that matches 
+							($sel == '' && $this->is_required() && $this->has_lookup_default() && strval($this->get_lookup_default()) === strval($obj->val))
+							// ... or the field has a default value set that matches
+							|| ($sel == '' && ($def = $this->get_default_value(null)) !== null && strval($def) === strval($obj->val))
+						) {
 							$sel = ' selected="selected" ';
 							$selection_done = 'default';
 						}
@@ -439,12 +444,12 @@
 				}
 			}
 			else {
-				$q = sprintf('select %s val, %s txt from %s t where %s order by txt %s',
+				$q = sprintf('select %s val, %s txt from %s t where %s order by %s',
 					db_esc($this->get_lookup_field_name()),
 					resolve_display_expression($this->get_lookup_display(), 't'),
 					db_esc($this->get_lookup_table_name()),
 					$this->get_lookup_condition('t'),
-					get_lookup_dropdown_sort($this->field)
+					get_lookup_dropdown_sort($this->field, 't', 'txt')
 				);
 				
 				$res = $db->query($q);
