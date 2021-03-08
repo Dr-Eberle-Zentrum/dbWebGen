@@ -44,9 +44,9 @@
 	$tables_setup_json = isset($_GET['special']) && $_GET['special'] === 'tables_setup';
 	if($tables_setup_json)
 		header('Content-Type: application/json; charset=utf8');
-	$json_ret = array();
+	$json_ret = [];
 
-	foreach(array('host' => 'localhost', 'port' => 5432, 'name' => '', 'user' => 'postgres', 'pass' => '', 'name' => '', 'schema' => 'public', 'lang' => 'de') as $k => $v)
+	foreach(['host' => 'localhost', 'port' => 5432, 'name' => '', 'user' => 'postgres', 'pass' => '', 'name' => '', 'schema' => 'public', 'lang' => 'de'] as $k => $v)
 		${'db_' . $k} = isset($_POST[$k]) ? $_POST[$k] : $v;
 
 	$form = <<<FORM
@@ -90,7 +90,7 @@ FORM;
 
 	if(count($_POST) == 0) {
 		if($tables_setup_json)
-			echo json_encode(array('error' => 'Cannot connect to database.'));
+			echo json_encode(['error' => 'Cannot connect to database.']);
 		else
 			print $form;
 		exit;
@@ -101,7 +101,7 @@ FORM;
 	}
 	catch(PDOException $e) {
 		if($tables_setup_json)
-			echo json_encode(array('error' => 'Cannot connect to database.'));
+			echo json_encode(['error' => 'Cannot connect to database.']);
 		else {
 			echo "<h2>ERROR: Cannot connect to database</h2>";
 			echo $form;
@@ -135,30 +135,30 @@ FORM;
 		AND table_name not in ('spatial_ref_sys')
 		order by table_name
 SQL;
-	$res = db_exec($tables_query, array($db_schema));
+	$res = db_exec($tables_query, [ $db_schema ]);
 
-	$tables = array();
+	$tables = [];
 	while($table_name = $res->fetchColumn())
 		$tables[] = $table_name;
 
 	// target var
-	$TABLES = array();
+	$TABLES = [];
 
 	// store the multiple cardinality fields and append them after all tables are through. we don't want those fields to show up on top of the form.
-	$cardinal_mult = array();
+	$cardinal_mult = [];
 
 	// loop through all tables and generate table info stub
 	foreach($tables as $table_name) {
 		// general table info
-		$TABLES[$table_name] = array(
+		$TABLES[$table_name] = [
 			'display_name' => makeLabel($table_name),
 			'description' => '',
 			'item_name' => makeLabel($table_name),
-			'actions' => array(c('MODE_EDIT'), c('MODE_NEW'), c('MODE_VIEW'), c('MODE_LIST'), c('MODE_DELETE'), c('MODE_LINK')),
-			'fields' => array()
-		);
+			'actions' => [c('MODE_EDIT'), c('MODE_NEW'), c('MODE_VIEW'), c('MODE_LIST'), c('MODE_DELETE'), c('MODE_LINK')],
+			'fields' => []
+		];
 
-		$cardinal_mult[$table_name]	= array();
+		$cardinal_mult[$table_name]	= [];
 	}
 
 	// loop again and fill the stubs
@@ -171,21 +171,21 @@ SQL;
 			AND table_schema = ?
 			ORDER BY ordinal_position
 SQL;
-		$res = db_exec($columns_query, array($table_name, $db_schema));
+		$res = db_exec($columns_query, [$table_name, $db_schema]);
 
-		$column_defaults = array();
+		$column_defaults = [];
 
 		while($col = $res->fetch(PDO::FETCH_ASSOC)) {
 			// used later for primary key auto increment
 			$column_defaults[$col['column_name']] = $col['column_default'];
 
 			// put default text line fields
-			$field = array(
+			$field = [
 				'label' => strtolower($col['column_name']) === 'id' ? 'ID' : makeLabel($col['column_name']),
 				'required' => $col['is_nullable'] == 'YES' ? false : true,
 				'editable' => $col['is_updatable'] == 'YES' ? true : false,
 				'type' => c('T_TEXT_LINE') // default
-			);
+			];
 
 			// if nextval from a sequence is the default value, make it not editable
 			if($field['editable']
@@ -208,7 +208,7 @@ SQL;
 				AND tc.table_schema = ?
 				AND ccu.column_name = ?
 SQL;
-			$check_query = db_exec($check_cons_query, array($table_name, $db_schema, $col['column_name']));
+			$check_query = db_exec($check_cons_query, [$table_name, $db_schema, $col['column_name']]);
 			$num_checks = 0;
 			$consrc = '';
 			while($check_cons = $check_query->fetch(PDO::FETCH_NUM)) {
@@ -217,7 +217,7 @@ SQL;
 			}
 
 			if($num_checks == 1) { // only if 1 single check constraint on this column
-				$enum_vals = array();
+				$enum_vals = [];
 				// see whether we have a range check
 				if(1 == preg_match('/=\sANY\s\(+ARRAY\[(?P<val>.+?)\]\)+/', $consrc, $extract))
 				{
@@ -323,7 +323,7 @@ SQL;
 
 					case 'bit':
 						$field['type'] = c('T_ENUM');
-						$field['values'] = array('0' => '0', '1' => '1');
+						$field['values'] = ['0' => '0', '1' => '1'];
 						$field['width_columns'] = 2;
 						if($col['column_default'] !== null && $field['editable'] === true)
 							$field['default'] = intval($col['column_default']);
@@ -384,37 +384,37 @@ SQL;
 							$column_type = strtolower($col['udt_name']);
 							// integer Find_SRID(varchar a_schema_name, varchar a_table_name, varchar a_geomfield_name);
 							$q_type = db_exec("SELECT type FROM {$column_type}_columns WHERE f_table_schema = ? AND f_table_name = ? and f_{$column_type}_column = ?",
-								array($db_schema, $table_name, $col['column_name']));
+								[$db_schema, $table_name, $col['column_name']]);
 							$geom_type = strtolower($q_type->fetchColumn());
 							$field['type'] = c('T_POSTGIS_GEOM');
 							if($column_type === 'geometry') {
 								$q_srid = db_exec('SELECT find_srid(?, ?, ?)',
-									array($db_schema, $table_name, $col['column_name']));
+									[$db_schema, $table_name, $col['column_name']]);
 								$field['SRID'] = strval($q_srid->fetchColumn());
 							}
 							else {
 								$field['SRID'] = 4326; // for geography columns we use srid 4326 (WGS 84)
 							}
 							
-							$field['map_picker'] = array(
+							$field['map_picker'] = [
 								'script' => 'map_picker.js',
-								'draw_options' => array(
-									'polyline' => in_array($geom_type, array('polyline', 'linestring', 'geometry')),
-									'polygon' => in_array($geom_type, array('polygon', 'geometry')),
-									'rectangle' => in_array($geom_type, array('polygon', 'geometry')),
+								'draw_options' =>[
+									'polyline' => in_array($geom_type, ['polyline', 'linestring', 'geometry']),
+									'polygon' => in_array($geom_type, ['polygon', 'geometry']),
+									'rectangle' => in_array($geom_type, ['polygon', 'geometry']),
 									'circle' => false,
 									'circlemarker' => false,
-									'marker' => in_array($geom_type, array('point', 'geometry'))
-								)
-							);
+									'marker' => in_array($geom_type, ['point', 'geometry'])
+								]
+							];
 						}
 						else {
 							// if type is enum, make T_ENUM
 							$enum_query = db_exec(
 								'SELECT e.enumlabel FROM pg_enum e, pg_type t WHERE e.enumtypid = t.oid AND t.typname = ? ORDER BY 1',
-								array($col['udt_name'])
+								[$col['udt_name']]
 							);
-							$enum_vals = array();
+							$enum_vals = [];
 							while($enum_val = $enum_query->fetch(PDO::FETCH_NUM))
 								$enum_vals[$enum_val[0]] = $enum_val[0];
 
@@ -434,9 +434,9 @@ SQL;
 		}
 
 		// go through PRIMARY KEY constraints
-		$primary_key = array(
-			'columns' => array()
-		);
+		$primary_key = [
+			'columns' => []
+		];
 
 		$constraints_query = <<<SQL
 			SELECT tc.constraint_name,
@@ -452,14 +452,14 @@ SQL;
 				AND tc.table_name = ?
 SQL;
 
-		$res = db_exec($constraints_query, array($db_schema, $table_name));
+		$res = db_exec($constraints_query, [$db_schema, $table_name]);
 		while($cons = $res->fetch(PDO::FETCH_ASSOC)) {
 			$primary_key['columns'][] = $cons['column_name'];
 		}
 
 		// go through FOREIGN KEY constraints
 
-		$foreign_keys_info = array();
+		$foreign_keys_info = [];
 
 		$constraints_query = <<<SQL
 			SELECT tc.constraint_name,
@@ -482,7 +482,7 @@ SQL;
 				AND tc.table_name = ?
 SQL;
 
-		$res = db_exec($constraints_query, array($db_schema, $table_name));
+		$res = db_exec($constraints_query, [$db_schema, $table_name]);
 		while($cons = $res->fetch(PDO::FETCH_ASSOC)) {
 			$field = $TABLES[$table_name]['fields'][$cons['column_name']];
 
@@ -492,13 +492,13 @@ SQL;
 				unset($field['min']);
 				unset($field['max']);
 			}
-			$field['lookup'] = array(
+			$field['lookup'] = [
 				'cardinality' => c('CARDINALITY_SINGLE'),
 				'table'  => $cons['references_table'],
 				'field'  => $cons['references_field'],
 				'display' => ($cons['display_field'] !== null ? $cons['display_field'] : $cons['references_field']),
 				'label_display_expr_only' => true
-			);
+			];
 			$field['placeholder'] = ($db_lang == 'de' ? 'Auswählen: ' : 'Pick: ') 
 				. makeLabel($cons['references_table']);
 
@@ -545,8 +545,7 @@ SQL;
 				$recursive_linkage = ($field0['lookup']['table'] === $field1['lookup']['table']);
 
 				//$TABLES[$field0['lookup']['table']]['fields'][$table_name . '_fk'] =
-				$cardinal_mult[$field0['lookup']['table']][$table_name . '_fk'] =
-				array(
+				$cardinal_mult[$field0['lookup']['table']][$table_name . '_fk'] = [
 					'label' => makeLabel($table_name) . 
 						($recursive_linkage ? (' (' . makeLabel($primary_key['columns'][1]) . ')') : ''),
 					'placeholder' => ($db_lang == 'de' ? 'Auswählen: ' : 'Pick: ') 
@@ -554,23 +553,22 @@ SQL;
 					'required' => false,
 					'editable' => true,
 					'type' => c('T_LOOKUP'),
-					'lookup' => array(
+					'lookup' => [
 						'cardinality' => c('CARDINALITY_MULTIPLE'),
 						'table'  => $field1['lookup']['table'],
 						'field'  => $field1['lookup']['field'],
 						'display' => $field1['lookup']['display'],
 						'label_display_expr_only' => true
-					),
-					'linkage' => array(
+					],
+					'linkage' => [
 						'table' => $table_name,
 						'fk_self' => $primary_key['columns'][0],
 						'fk_other' => $primary_key['columns'][1]
-					)
-				);
+					]
+				];
 
 				//$TABLES[$field1['lookup']['table']]['fields'][$table_name . '_fk'] =
-				$cardinal_mult[$field1['lookup']['table']][$table_name . ($recursive_linkage? '_rev' : '') . '_fk'] =
-				array(
+				$cardinal_mult[$field1['lookup']['table']][$table_name . ($recursive_linkage? '_rev' : '') . '_fk'] = [
 					'label' => makeLabel($table_name) . 
 						($recursive_linkage ? (' (' . makeLabel($primary_key['columns'][0]) . ')') : ''),
 					'placeholder' => ($db_lang == 'de' ? 'Auswählen: ' : 'Pick: ') 
@@ -578,19 +576,19 @@ SQL;
 					'required' => false,
 					'editable' => !$recursive_linkage,
 					'type' => c('T_LOOKUP'),
-					'lookup' => array(
+					'lookup' => [
 						'cardinality' => c('CARDINALITY_MULTIPLE'),
 						'table'  => $field0['lookup']['table'],
 						'field'  => $field0['lookup']['field'],
 						'display' => $field0['lookup']['display'],
 						'label_display_expr_only' => true
-					),
-					'linkage' => array(
+					],
+					'linkage' => [
 						'table' => $table_name,
 						'fk_self' => $primary_key['columns'][1],
 						'fk_other' => $primary_key['columns'][0]
-					)
-				);
+					]
+				];
 			}
 		}
 	}
@@ -601,7 +599,7 @@ SQL;
 	}
 
 	if($tables_setup_json) {
-		echo json_encode(array('tables' => $TABLES));
+		echo json_encode(['tables' => $TABLES]);
 		exit;
 	}
 
@@ -610,7 +608,7 @@ SQL;
 	// ================================================
 
 	if(!isset($_GET['only']) || $_GET['only'] == 'APP') {
-		$APP = array(
+		$APP = [
 			'title' => $db_name,
 			'view_display_null_fields' => false,
 			'page_size'	=> 10,
@@ -620,7 +618,7 @@ SQL;
 			'search_lookup_resolve' => true,
 			'search_string_transformation' => 'lower((%s)::text)',
 			'popup_hide_reverse_linkage' => true
-		);
+		];
 		echo '<?php', PHP_EOL, '$APP = ';
 		prettyDump($APP);
 		echo ';', PHP_EOL, PHP_EOL;
@@ -630,14 +628,14 @@ SQL;
 	// DB
 	// ================================================
 	if(!isset($_GET['only']) || $_GET['only'] == 'DB') {
-		$DB = array(
+		$DB = [
 			'type' => c('DB_POSTGRESQL'),
 			'host' => $db_host,
 			'port' => intval($db_port),
 			'user' => $db_user,
 			'pass' => $db_pass,
 			'db'   => $db_name
-		);
+		];
 		echo '$DB = ';
 		prettyDump($DB);
 		echo ';', PHP_EOL, PHP_EOL;
@@ -647,7 +645,7 @@ SQL;
 	// LOGIN
 	// ================================================
 	if(!isset($_GET['only']) || $_GET['only'] == 'LOGIN') {
-		$LOGIN = array();
+		$LOGIN = [];
 		echo '$LOGIN = ';
 		prettyDump($LOGIN);
 		echo ';', PHP_EOL, PHP_EOL;
