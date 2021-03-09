@@ -599,6 +599,20 @@
 				'render_links' => array(
 					array('icon' => 'eye-open', 'href_format' => 'somedir/%s/id/%s', 'field' => ['filename', 'id'], title => 'Show the damn file')
 				)
+		- custom_buttons: array (optional)
+			List of buttons to be displayed in MODE_LIST on top of the table. For each entry in this array a hash array with the folloing key/value pairs needs to be provided:
+				- icon: string
+					The name of a glyphicon that works with bootstrap, e.g. "eye-open" or "trash". See a list here: http://www.w3schools.com/bootstrap/bootstrap_ref_comp_glyphs.asp
+				- label: string
+					Button label
+				- href: string 
+					Hyperlink of the button
+				- tooltip: string (optional)
+					Tooltip shown when hovering over the button
+			Example: 
+				'custom_buttons' => [
+					[ 'icon' => 'upload', 'href' => '?mode=plugin&func=plugin_csv_import&table=mytable', 'label' => 'Import CSV' ]
+				]
 		- form_tabs: array (optional)
 			If a tabbed MODE_NEW / MODE_EDIT / MODE_VIEW form is desired, fill this array with the following settings:
 				- tabs: array

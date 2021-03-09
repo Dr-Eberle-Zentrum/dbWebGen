@@ -136,12 +136,30 @@
 
 		echo "<div class='col-sm-12'>\n";
 
+		$table_buttons = [];
+
 		if(is_allowed($table, MODE_NEW))
-			echo sprintf(
-				"<p class='hidden-print'><a href='?%s' class='btn btn-default'><span class='glyphicon glyphicon-plus'></span> %s</a></p>\n",
+			$table_buttons[] = sprintf(
+				"<a href='?%s' class='btn btn-default'><span class='glyphicon glyphicon-plus'></span> %s</a>",
 				http_build_query(array('table' => $table_name, 'mode' => MODE_NEW)),
 				l10n('list.button-new', $table['item_name'])
 			);
+		
+		if(isset($table['custom_buttons'])) {
+			foreach($table['custom_buttons'] as $button) {
+				$table_buttons[] = sprintf(
+					"<a href='%s' title='%s' class='btn btn-default'><span class='glyphicon glyphicon-%s'></span> %s</a>",
+					$button['href'],
+					isset($button['tooltip']) ? $button['tooltip'] : '',
+					$button['icon'],
+					$button['label'],
+				);	
+			}
+		}
+		
+		if(count($table_buttons) > 0) {
+			echo "<p class='btn-group hidden-print'>" . join("\n", $table_buttons) . "</p>\n";
+		}
 
 		if($search !== null) {
 			$info_l10n = 'search.infotext-any';
