@@ -19,27 +19,30 @@ function plugin_csv_import(
 // ----------------------------------------------------------------------------
     global $TABLES;
 
-    echo sprintf('<h2>%s</h2>', l10n('plugin.csv.heading', $TABLES[$_GET['table']]['display_name']));
-
     if(!isset($_GET['table'])
         || !isset($TABLES[$_GET['table']])
     ) {
         return proc_error(l10n('error.invalid-params'));
     }
 
+    $table_name = $_GET['table'];
+    $table_settings = $TABLES[$table_name];
+    echo sprintf('<h2>%s</h2>', l10n('plugin.csv.heading', $table_settings['display_name']));
+
     if(count($_FILES) > 0) {
-        plugin_csv_do_import();
+        plugin_csv_do_import($table_name, $table_settings);
     }
     else {
-        plugin_csv_render_upload_form();
+        plugin_csv_render_upload_form($table_name, $table_settings);
     }
 }
 
 // ----------------------------------------------------------------------------
 function plugin_csv_render_upload_form(
+    $table_name,
+    $table_settings
 ) {
 // ----------------------------------------------------------------------------
-    global $TABLES;
     $label_csvfile = l10n('plugin.csv.label.csvfile');
     $label_browse = l10n('upload-field.browse');
     $label_hasheader = l10n('plugin.csv.label.hasheader');
@@ -59,7 +62,7 @@ function plugin_csv_render_upload_form(
 
     $column_options = '';
     $skipnull_options = '';
-    foreach($TABLES[$_GET['table']]['fields'] as $field_name => $field) {
+    foreach($table_settings['fields'] as $field_name => $field) {
         if($field['type'] == T_LOOKUP && $field['lookup']['cardinality'] === CARDINALITY_MULTIPLE) {
             continue;
         }
@@ -178,6 +181,8 @@ HTML;
 
 // ----------------------------------------------------------------------------
 function plugin_csv_do_import(
+    $table_name,
+    $table_settings
 ) {
 // ----------------------------------------------------------------------------
     ini_set("auto_detect_line_endings", true);
@@ -211,7 +216,7 @@ function plugin_csv_do_import(
 
     $sql = sprintf(
         'insert into %s (%s) values (%s)', 
-        db_esc($_GET['table']), 
+        db_esc($table_name), 
         join(', ', array_map(function ($v) { return db_esc($v); }, $columns)), 
         trim(str_repeat('?, ', count($columns)), ', ')
     );
@@ -245,12 +250,47 @@ function plugin_csv_do_import(
                 throw new Exception('');
             }
         }
+
+        // if the primary key field is auto-incremented, we need to set the next sequence val appropriately
+        // currently only for PostgreSQL #FIXME
+        global $DB;
+        if($DB['type'] === DB_POSTGRESQL) {
+            // identify all fields with an auto sequence and build sequence setval query
+            // for each sequence field, delivers something like:
+            //   select setval('table_field_seq', coalesce(max(field) + 1, 1), false) from table
+            $serial_sql = <<<SQL
+                select 'select setval(' 
+                    || quote_literal(quote_ident(S.relname))
+                    || ', coalesce(max(' 
+                    || quote_ident(C.attname)
+                    || ') + 1, 1), false) from ' || quote_ident(T.relname)
+                from pg_class S,
+                    pg_depend D,
+                    pg_class T,
+                    pg_attribute C
+                where S.relkind = 'S'
+                    and S.oid = D.objid
+                    and D.refobjid = T.oid
+                    and D.refobjid = C.attrelid
+                    and D.refobjsubid = C.attnum
+                    and T.relname = ?
+SQL;
+
+            // execute the setval queries for all sequences of this table
+            if(db_prep_exec($serial_sql, [$table_name], $stmt, $db)) {
+                while($row = $stmt->fetch(PDO::FETCH_NUM)) {
+                    db_prep_exec($row[0], [], $foo, $db);
+                }
+            }
+        }
+
         if($transactionStarted) {
             try {
                 $db->commit();
             } catch(PDOException $e) {}
         }
-        proc_success(l10n('plugin.csv.success-import', $row_num));
+        $c_imported = $_POST['hasheader'] == 1 ? $row_num - 1 : $row_num;
+        proc_success(l10n('plugin.csv.success-import', $c_imported));
     }
     catch(Exception $e) {
         if($transactionStarted) {
@@ -263,8 +303,8 @@ function plugin_csv_do_import(
     fclose($csv_file);
     echo sprintf(
         '<a role="button" class="btn btn-default" href="?table=%s&mode=%s">%s</a>',
-        $_GET['table'],
+        $table_name,
         MODE_LIST,
         l10n('plugin.csv.label.back-to-table')
     );
-}    
+}
