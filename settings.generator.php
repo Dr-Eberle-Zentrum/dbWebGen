@@ -185,7 +185,9 @@ SQL;
 				'required' => $col['is_nullable'] == 'YES' ? false : true,
 				'editable' => $col['is_updatable'] == 'YES' ? true : false,
 				'type' => c('T_TEXT_LINE'), // default
-				'orig_type' => $col['data_type']
+				'pg_info' => [
+					'type' => $col['data_type']
+				]
 			];
 
 			// if nextval from a sequence is the default value, make it not editable
@@ -193,6 +195,7 @@ SQL;
 			  && preg_match('/^nextval\\(\'(.+)\'::regclass\\)$/', $col['column_default'], $matches))
 			{
 				$field['editable'] = false;
+				$field['pg_info']['sequence'] = $matches[1];
 			}
 
 			// check if there is a range check constraint on this field, then the type will be T_ENUM:

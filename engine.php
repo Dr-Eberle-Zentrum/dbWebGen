@@ -44,9 +44,15 @@
 		require_once 'settings.php';
 
 		// LOAD PLUGINS
-		if(isset($APP['plugins']))
-			foreach(array_values($APP['plugins']) as $plugin)
+		if(isset($APP['plugins'])) {
+			foreach(array_values($APP['plugins']) as $plugin) {
 				require_once $plugin; // we want to load plugins in global scope
+				$plugin_name = basename($plugin, '.php');
+				if(function_exists("plugin_{$plugin_name}_initialize")) {
+					call_user_func("plugin_{$plugin_name}_initialize");		
+				}
+			}
+		}
 		if(isset($APP['preprocess_func']) && function_exists($APP['preprocess_func']))
 			$APP['preprocess_func'](); // allow the app to do some initialization
 		if(isset($LOGIN['initializer_proc']) && function_exists($LOGIN['initializer_proc']))
