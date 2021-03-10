@@ -568,7 +568,7 @@ HTML
         'plugin.csv.label.escape' => 'Maskierungszeichen',
         'plugin.csv.help.escape' => 'Zeichen, das verwendet wird, um ein im Feldinhalt vorkommendes Feld-Begrenzungszeichen zu maskieren.',
         'plugin.csv.label.columns' => 'Import-Spalten',
-        'plugin.csv.help.columns' => 'Geben Sie in jeder CSV-Zeile enthaltenen Spalten in der korrekten Reihenfolge an.',
+        'plugin.csv.help.columns' => 'Geben Sie die in der CSV-Datei enthaltenen Spalten in der korrekten Reihenfolge an.',
         'plugin.csv.label.skipnull' => 'Fehlende Werte',
         'plugin.csv.help.skipnull' => 'Wählen Sie jene Spalten aus, in denen ein in der CSV-Datei fehlender Wert als <code>NULL</code>-Wert in die Datenbank eingetragen werden soll. Standardmäßig sind hier alle Felder vorausgewählt, die keine Pflichtfelder sind.',
         'plugin.csv.label.import' => 'Importieren!',
