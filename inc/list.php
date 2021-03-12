@@ -152,7 +152,7 @@
 					$button['href'],
 					isset($button['tooltip']) ? $button['tooltip'] : '',
 					$button['icon'],
-					$button['label'],
+					$button['label']
 				);	
 			}
 		}
