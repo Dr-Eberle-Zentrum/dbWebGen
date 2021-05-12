@@ -550,7 +550,7 @@ HTML
         'new-edit.form-loading' => 'Form Loading ...',
 
         'plugin.csv.heading' => 'CSV Import: $1',
-        'plugin.csv.error-column-count' => 'Line $1 of the CSV file contains $2 columns. This does not concur with the $3 columns to be imported! Maybe you also defined invalid delimiter, enclosure or escape characters?',
+        'plugin.csv.error-column-count' => 'Line $1 of the CSV file contains $2 columns, which is less than the $3 columns to be imported! Maybe you also defined invalid delimiter, enclosure or escape characters?',
         'plugin.csv.error-file-read' => 'Failed to read from uploaded CSV file.',
         'plugin.csv.error-no-columns' => 'No columns to be imported. Select at least one column!',
         'plugin.csv.label.csvfile' => 'CSV File',

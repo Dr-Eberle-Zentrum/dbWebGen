@@ -554,7 +554,7 @@ HTML
         'new-edit.form-loading' => 'Formular wird geladen...',
 
         'plugin.csv.heading' => 'CSV-Datei importieren: $1',
-        'plugin.csv.error-column-count' => 'Zeile $1 der CSV-Datei enthält $2 Spalten. Dies stimmt nicht mit den $3 zu importierenden Spalten überein! Möglicherweise haben Sie auch falsche Feld-Trennzeichen, Feld-Begrenzungszeichen oder Maskierungszeichen angegeben?',
+        'plugin.csv.error-column-count' => 'Zeile $1 der CSV-Datei enthält $2 Spalten, also weniger als die $3 zu importierenden Spalten! Möglicherweise haben Sie auch falsche Feld-Trennzeichen, Feld-Begrenzungszeichen oder Maskierungszeichen angegeben?',
         'plugin.csv.error-file-read' => 'Kann hochgeladene CSV Datei nicht lesen.',
         'plugin.csv.error-no-columns' => 'Keine zu importierenden Spalten angegeben.',
         'plugin.csv.label.csvfile' => 'CSV-Datei',

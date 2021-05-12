@@ -234,13 +234,23 @@ function plugin_csv_do_import(
             if(++$row_num === 1 && $_POST['hasheader'] == 1) {
                 continue;
             }
+            // detect and remove any UTF-8 BOM from first characters of first row
+            if($row_num === 1) {
+                if(substr($record[0], 0, 3) == chr(hexdec('EF')).chr(hexdec('BB')).chr(hexdec('BF'))) {
+                    $record[0] = substr($record[0], 3);
+                }
+            }
             if(count($record) === 1 && $record[0] === null) {
                 continue;
             }
-            if(count($record) !== count($columns)) {
+            if(count($record) < count($columns)) {
                 proc_error(l10n('plugin.csv.error-column-count', $row_num, count($record), count($columns)));
                 throw new Exception();
             }
+            
+            // remove unneeded columns from record, if any:
+            array_splice($record, count($columns));
+            
             for($i = 0; $i < count($record); $i++) {
                 if($record[$i] === '' && $skipnull[$i]) {
                     $record[$i] = null;
