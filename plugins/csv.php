@@ -229,7 +229,12 @@ function plugin_csv_do_import(
         try {
             $transactionStarted = $db->beginTransaction();
         } catch(PDOException $e) {}
-        
+
+        $stmt = $db->prepare($sql);
+        if($stmt === false) {
+            proc_error(l10n('error.db-prepare'), $db);
+            throw new Exception();
+        }
         while(($record = fgetcsv($csv_file, 0, $_POST['delimiter'], $_POST['enclosure'], $_POST['escape'])) !== false) {
             if(++$row_num === 1 && $_POST['hasheader'] == 1) {
                 continue;
@@ -256,8 +261,9 @@ function plugin_csv_do_import(
                     $record[$i] = null;
                 }
             }
-            if(!db_prep_exec($sql, $record, $stmt, $db)) {
-                throw new Exception('');
+            if(!$stmt->execute($record)) {
+                proc_error(l10n('error.db-execute'), $stmt);
+                throw new Exception();
             }
         }
 
@@ -310,11 +316,13 @@ SQL;
             proc_info(l10n('plugin.csv.info.aborted', $row_num));
         }
     }
-    fclose($csv_file);
-    echo sprintf(
-        '<a role="button" class="btn btn-default" href="?table=%s&mode=%s">%s</a>',
-        $table_name,
-        MODE_LIST,
-        l10n('plugin.csv.label.back-to-table')
-    );
+    finally {
+        fclose($csv_file);
+        echo sprintf(
+            '<a role="button" class="btn btn-default" href="?table=%s&mode=%s">%s</a>',
+            $table_name,
+            MODE_LIST,
+            l10n('plugin.csv.label.back-to-table')
+        );  
+    }   
 }
