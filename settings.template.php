@@ -567,6 +567,8 @@
 					Foreign key field that links to this table from the n:m table
 			e.g. in table customers:
 			'additional_steps' => array('orders' => array('label' => 'Orders of this customer', 'foreign_key' => 'customer_id'))
+		- auto_append_additional_steps: boolean (optional) (default: false)
+			If true, appends links to create related records with a predefined link to this one.
 		- custom_actions: array (optional)
 			Array of arrays, each representing a custom action that is offered in particular viewing modes through particular buttons. Each custom action is an associative array consisting at least of the following keys:
 				- mode: string

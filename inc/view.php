@@ -36,16 +36,7 @@
 
 		$record = $stmt->fetch(PDO::FETCH_ASSOC);
 		$addl_data = '';
-		if(isset($table['additional_steps'])) {
-			$addl_data .= "<div class='btn-group'><button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'><span class='glyphicon glyphicon-forward'></span> ".l10n('view.add-related-data-button')." <span class='caret'></span></button><ul class='dropdown-menu' role='menu'>\n";
-			foreach($table['additional_steps'] as $add_table => $add_info) {
-				//TODO: adapt for composite foreign key
-				$q = "?table={$add_table}&mode=".MODE_NEW.'&'.PREFILL_PREFIX . $add_info['foreign_key']."={$record[$table['primary_key']['columns'][0]]}";
-				$addl_data .= "<li><a href='$q'>". html($add_info['label']) ."</a></li>\n";
-			}
-			$addl_data .= "</ul></div>";
-		}
-
+		
 		if(is_allowed($table, MODE_EDIT) || is_own_user_record(true))
 			$addl_data .= sprintf(
 				"<a title='%s' href='%s' class='btn btn-default tabs-aware'><span class='glyphicon glyphicon-edit'></span> %s</a>",
@@ -118,28 +109,57 @@
 		}
 
 		// now check for related data in other tables
-		$rel_list = array();
+		$addl_steps = [];
+		if(!isset($table['additional_steps'])) {
+			$table['additional_steps'] = [];
+		}
+		
+		foreach($table['additional_steps'] as $add_table => $add_info) {
+			//TODO: adapt for composite foreign key
+			$q = "?table={$add_table}&mode=".MODE_NEW.'&'.PREFILL_PREFIX . $add_info['foreign_key']."={$record[$table['primary_key']['columns'][0]]}";
+			$addl_steps[]= "<li><a href='?$q'>". html($add_info['label']) ."</a></li>";
+		}
+
+		$rel_list = [];
 		foreach($TABLES as $tn => $ti) {
 			if($table_name == $tn
-			 || !in_array(MODE_LIST, $ti['actions'])
 			 || (isset($ti['show_in_related']) && $ti['show_in_related'] === false)
 			 || (isset($ti['list_in_related']) && $ti['list_in_related'] === false) // in settings.template.php this was wrongly listed, so we keep it working
-			 )
-			{
+			) {
 				continue;
 			}
 
 			foreach($ti['fields'] as $fn => $fi) {
-				if($fi['type'] == T_LOOKUP && $fi['lookup']['table'] == $table_name) {
-					$rel_list[] = array(
-						'table_name' => $tn,
-						'table_label' => $ti['display_name'],
-						'field_name' => $fn,
-						'field_label' => $fi['label'],
-						'display_label' => isset($fi['lookup']['related_label']) ? $fi['lookup']['related_label'] : null,
-						'search_type' => $fi['lookup']['cardinality'] == CARDINALITY_MULTIPLE ? SEARCH_WORD : SEARCH_EXACT,
-						'raw_fk' => $fi['lookup']['cardinality'] == CARDINALITY_SINGLE ? 1 : 0
-					);
+				if($fi['type'] == T_LOOKUP // lookup field
+					&& $fi['lookup']['table'] == $table_name // to this table
+					&& ($fi['lookup'] === CARDINALITY_SINGLE
+						|| $fi['linkage']['table'] !== $fi['lookup']['table']) // and not some fake reverse 1:n
+				) {
+					if((!isset($table['auto_append_additional_steps']) 
+						|| $table['auto_append_additional_steps'] === true)
+						&& in_array(MODE_NEW, $ti['actions'])
+					) {
+						$pre_id = urlencode($fi['lookup']['cardinality'] === CARDINALITY_SINGLE
+							? $record[$table['primary_key']['columns'][0]]
+							: json_encode([ $record[$table['primary_key']['columns'][0]] ]));
+
+						$q = sprintf('?table=%s&mode=%s&%s%s=e&%s%s=%s', $tn, MODE_NEW, FIELD_SETTINGS_PREFIX, $fn, PREFILL_PREFIX, $fn, $pre_id);
+						$addl_steps[]= "<li><a href='$q'>"
+							. html(l10n('view.related-menu-item', l10n('new-edit.heading-new', $ti['item_name']), $fi['label'])) 
+							. '</a></li>';
+					}
+
+					if(in_array(MODE_LIST, $ti['actions'])) {
+						$rel_list[] = array(
+							'table_name' => $tn,
+							'table_label' => $ti['display_name'],
+							'field_name' => $fn,
+							'field_label' => $fi['label'],
+							'display_label' => isset($fi['lookup']['related_label']) ? $fi['lookup']['related_label'] : null,
+							'search_type' => $fi['lookup']['cardinality'] == CARDINALITY_MULTIPLE ? SEARCH_WORD : SEARCH_EXACT,
+							'raw_fk' => $fi['lookup']['cardinality'] == CARDINALITY_SINGLE ? 1 : 0
+						);
+					}
 				}
 			}
 		}
@@ -168,6 +188,21 @@
 				$addl_data .= "<li><a href='?$q'>$label</a></li>\n";
 			}
 			$addl_data .= "</ul></div>";
+		}
+
+		if(count($addl_steps) > 0) {
+			$span_label = l10n('view.add-related-data-button');
+			$addl_steps = join("\n", $addl_steps);
+			$addl_data .= <<<HTML
+				<div class='btn-group'>
+					<button type='button' class='btn btn-default dropdown-toggle' data-toggle='dropdown'>
+						<span class='glyphicon glyphicon-forward'></span> $span_label <span class='caret'></span>
+					</button>
+					<ul class='dropdown-menu' role='menu'>
+						$addl_steps
+					</ul>
+				</div>
+HTML;
 		}
 
 		if($addl_data != '')
