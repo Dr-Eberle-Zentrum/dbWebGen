@@ -667,6 +667,57 @@ foreach($cardinal_mult as $table_name => $fields) {
 	$TABLES[$table_name]['fields'] += $fields;
 }
 
+// now append all incoming 1:N fields from other tables als non-editable cardinalty-multiple fields
+foreach($TABLES as $table_name => $table) {
+	// if current table has only 1 primary key column (e.g. a "normal" table),
+	// then we add a faked n:m readonly linkage to the referenced table.
+	if(count($table['primary_key']['columns']) > 1) {
+		continue; // linkage table ... ignore
+	}
+	$display_query = <<<SQL
+				select column_name 
+				from information_schema.columns 
+				where table_name = ? 
+				and table_schema = ? 
+				and data_type in ('character varying', 'text') 
+				order by ordinal_position 
+				limit 1
+SQL;
+	$stmt = db_exec($display_query, [$table_name, $db_schema]);
+	$first_text_field = ($stmt !== false ? $stmt->fetchColumn() : null);
+	$display_field = 
+		!$first_text_field || in_array($table['fields'][$table['primary_key']['columns'][0]]['type'], [c('TEXT_LINE'), c('TEXT_AREA')])
+		? $table['primary_key']['columns'][0]
+		: $first_text_field;
+
+	foreach($table['fields'] as $field_name => $field) {
+		if($field['type'] === c('T_LOOKUP') // lookup field
+			&& $field['lookup']['cardinality'] === c('CARDINALITY_SINGLE')  // cardinality: single
+			&& isset($TABLES[$field['lookup']['table']]) // target table exists
+		) {
+			// add reverse 1:n as fake cardinality multiple
+			$TABLES[$field['lookup']['table']]['fields'][$table_name . '_' . $field_name . '_rev_fk'] = [
+				'label' => makeLabel($table_name) . ' (' . makeLabel($field_name) . ')',
+				'required' => false,
+				'editable' => false,
+				'type' => c('T_LOOKUP'),
+				'lookup' => [
+					'cardinality' => c('CARDINALITY_MULTIPLE'),
+					'table'  => $table_name,
+					'field'  => $table['primary_key']['columns'][0],
+					'display' => $display_field,
+					'label_display_expr_only' => true
+				],
+				'linkage' => [
+					'table' => $table_name,
+					'fk_self' => $field_name,
+					'fk_other' => $table['primary_key']['columns'][0]
+				]
+			];
+		}
+	}
+}
+
 if($tables_setup_json) {
 	echo json_encode(['tables' => $TABLES]);
 	exit;
