@@ -132,7 +132,7 @@
 			foreach($ti['fields'] as $fn => $fi) {
 				if($fi['type'] == T_LOOKUP // lookup field
 					&& $fi['lookup']['table'] == $table_name // to this table
-					&& ($fi['lookup'] === CARDINALITY_SINGLE
+					&& ($fi['lookup']['cardinality'] === CARDINALITY_SINGLE
 						|| $fi['linkage']['table'] !== $fi['lookup']['table']) // and not some fake reverse 1:n
 				) {
 					if((!isset($table['auto_append_additional_steps']) 
