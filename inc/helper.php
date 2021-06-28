@@ -1853,7 +1853,7 @@ END;
 			$result = $geom_wkt;
 			return true;
 		}
-		$sql = "select st_astext(st_transform(st_geomfromtext(?,?),?))";
+		$sql = "select st_astext(st_transform(st_geomfromtext(?,?::int),?::int))";
 		$params = array($geom_wkt, $source_srid, $target_srid);
 		return db_get_single_val($sql, $params, $result);
 	}
