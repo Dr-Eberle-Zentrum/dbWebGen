@@ -682,10 +682,25 @@ JS;
 
 				if(!$file_provided) {
 					if($_GET['mode'] == MODE_NEW) {
-						if(is_field_required($field_info))
+						if(is_field_required($field_info)) {
+							if(isset($_FILES[$field_name])
+								&& $_FILES[$field_name]['name'] !== ''
+								&& $_FILES[$field_name]['error'] !== UPLOAD_ERR_OK
+							) {
+								return proc_error(get_file_upload_error_msg($_FILES[$field_name]['error']));
+							}
 							return proc_error(l10n('error.upload-no-file-provided', $field_info['label']));
-						else
+						}
+						else {
+							if(isset($_FILES[$field_name])
+								&& $_FILES[$field_name]['error'] !== UPLOAD_ERR_OK
+							) {
+								// here we typically have the problem that file size exceeds PHP upload limit
+								// thus the $_FILES entry exists, but only 'name' and 'error' fields are set
+								return proc_error(get_file_upload_error_msg($_FILES[$field_name]['error']));
+							}								
 							continue;
+						}
 					}
 
 					if($_GET['mode'] ==  MODE_EDIT) {
