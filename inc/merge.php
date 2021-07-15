@@ -602,6 +602,7 @@ JS;
                     'check_both_default' => $check_both_default
                 );
             }
+            unset($field);
 
             $sql = sprintf(
                 "SELECT %s, 1 ___master_slave_order___ FROM %s t WHERE %s

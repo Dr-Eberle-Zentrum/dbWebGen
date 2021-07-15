@@ -26,6 +26,7 @@
                     }
                 }
             }
+            unset($field);
             if(count(self::$expressions) == 0)
                 return ''; // nothing to do
 

@@ -200,6 +200,7 @@
 			foreach($fields as $field_name => &$field)
 				if(!is_field_hidden_in_list($field))
 					$relevant_fields[$field_name] = $field;
+			unset($field);
 
 			require_once 'record_renderer.php';
 			$rr = new RecordRenderer($table_name, $table, $relevant_fields, $res, true, true, null);

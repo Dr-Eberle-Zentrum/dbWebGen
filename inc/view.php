@@ -246,6 +246,7 @@ HTML;
 
 			$table_html .= "<div class='col-sm-9 column-value'$style>{$val}</div></div>\n";
 		}
+		unset($field_settings);
 
 		if($empty_count > 0) {
 			$btn_label = l10n($empty_count == 1 ? 'view.show-hidden-field-1' : 'view.show-hidden-field-N');

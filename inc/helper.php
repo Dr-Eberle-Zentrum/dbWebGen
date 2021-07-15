@@ -563,6 +563,7 @@
 			// here we have a required field with no defaults -> neeeds to have value in inline form data
 			$required_fields[] = $field_name;
 		}
+		unset($field);
 		
 		// if there are no required fields - go away
 		if(count($required_fields) === 0)
@@ -1792,6 +1793,7 @@ END;
 						if($f_settings['tab'] == $this->form_tabs[$t]['id'])
 							$this->sorted_fields[$f_name] = $f_settings;
 					}
+					unset($f_settings);
 				}
 				$table['fields'] = $this->sorted_fields;
 				$this->last_tab = $this->form_tabs[0]['id'];

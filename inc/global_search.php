@@ -194,6 +194,7 @@ HTML;
                     }
                 }
             }
+            unset($table);
             if($total_results == 0)
                 $msg = l10n('global-search.no-results');
             else if($total_results == 1)
@@ -242,6 +243,7 @@ HTML;
                 if($field_obj->is_included_in_global_search())
                     $where_conditions[] = $field_obj->get_global_search_condition($param_name, self::search_string_transformation($field), 't');
             }
+            unset($table);
 
             $sql = sprintf(
                 'SELECT %s FROM %s t WHERE %s LIMIT %s',

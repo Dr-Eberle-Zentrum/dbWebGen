@@ -381,6 +381,7 @@ JS;
 				if($diff != 0) {
 					foreach($Cb as $v => &$c)
 						$c = ($c - $min) / $diff;
+					unset($c);
 				}
 			}
 		}
