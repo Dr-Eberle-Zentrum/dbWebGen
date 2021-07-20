@@ -16,9 +16,9 @@
         add_javascript(ENGINE_PATH_HTTP . 'node_modules/leaflet-omnivore/leaflet-omnivore.min.js');
 
         $cur_geom = '';
-        if(isset($_GET['val']) && trim($_GET['val']) != '') {
-            $val_html = html($_GET["val"]);
-            if(!postgis_transform_wkt($_GET['val'], $field_settings->get_srid(), 4326, $geom_wkt))
+        if(isset($_REQUEST['val']) && trim($_REQUEST['val']) != '') {
+            $val_html = html($_REQUEST["val"]);
+            if(!postgis_transform_wkt($_REQUEST['val'], $field_settings->get_srid(), 4326, $geom_wkt))
                 $geom_wkt = '';
             $val_unquote = json_encode($geom_wkt);
             $cur_geom = "

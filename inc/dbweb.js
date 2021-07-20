@@ -445,17 +445,43 @@ function get_popup_position(elem, width, height) {
 }
 
 //------------------------------------------------------------------------------------------
+// based on https://stackoverflow.com/a/43482781/5529515 (by refomed)
+// and https://stackoverflow.com/a/5691308/5529515 (by php-b-grader)
+function open_window_post_data(url, data, window_options) {
+//------------------------------------------------------------------------------------------
+    let form = document.createElement("form");
+    form.target = "map_picker_" + Date.now();
+    form.method = "post";
+    form.action = url;
+    form.style.display = "none";
+    for(let key in data) {
+        let ctrl = document.createElement("input");
+        ctrl.type = "hidden";
+        ctrl.name = key;
+        ctrl.value = data[key];
+        form.appendChild(ctrl);
+    }
+    document.body.appendChild(form);
+    let wnd = window.open('', form.target, window_options);
+    if(wnd) {
+        form.submit();
+    }
+    else {
+        console.error("Cannot open map popup!");
+    }
+    document.body.removeChild(form);
+}
+
+//------------------------------------------------------------------------------------------
 function set_map_picker_handler() {
 //------------------------------------------------------------------------------------------
     $('a[data-map-url]').click(function() {
         var popup = get_popup_position(this, 800, 800);
         var url = $(this).data('map-url');
         var target_ctrl = $('#' + $(this).data('target-ctrl'));
-        if(target_ctrl.length > 0)
-            url += '&val=' + encodeURI(target_ctrl.val());
-        window.open(
+        open_window_post_data(
             url,
-            '_blank',
+            target_ctrl.length > 0 ? { val: target_ctrl.val() } : {},
             'location=0,menubar=0,resizable=1,scrollbars=1,toolbar=0,left='+popup.x+',top='+popup.y+',width='+popup.width+',height='+popup.height
         );
     });
