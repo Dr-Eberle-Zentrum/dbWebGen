@@ -280,9 +280,35 @@
 					Name of the table referenced by this foreign key field
 				- field: string
 					Field in the table referenced by this foreign key field (typically the primary key of the other table)
-				- display: string
-					Since the foreign key is typically a numeric key, this setting can be used to define what to display to the user. Can be either a string literal representing a field name in the referenced table, e.g.: 'display' => 'lastname'
-					Or it can be a hash array with 'columns' => array of columns, which is used in 'expression' => expression referring to indexes in 'columns' as %1, %2, etc., e.g.: 'display' => array('columns' => array('firstname', 'lastname'), 'expression' => "concat_ws(' ', %1 %2)" )
+				- display: (string|array)
+					This setting is required to define what to display to the user. 
+					This can be any of the following:
+					* Field name: A string representing a field name in the referenced table
+					    Example: 'display' => 'lastname'
+					* Placeholder string: A string composed of string literals and field placeholders in curly brackets
+					    Example: 'display' => '{lastname}, {firstname}'
+					    This will concatenate the field value of lastname with ', ' and field value of firstname. Note: concatenation is done with || operator in SQL, so any NULL part will nullify the whole expression.
+					    It is possible to display the value of a field from a table referenced from the lookup table using the following placeholder format: 
+					      {field:fk_table:fk_other:fk_self}
+						  field is the name of the field in the referenced table fk_table. The record is identified by linking via the foreign key fk_self (in the lookup table) to fk_other in the referenced fk_table.
+					    Example: assuming these two tables:
+						  city (city_id, name, state)
+						  states (state_id, name)
+						  where city.state is a foreign key reference to states.state_id						
+						  Suppose we want to display the city in the format "city name, state name", then this would be our 'display' for fields that link to cities:
+						  'display' => '{name}, {name:states:state_id:state}'
+					* List of placeholder string: A flat array of placeholder strings. The array parts are concatenated using SQL function CONCAT(), so any NULL parts will not nullify the complete string
+					    Example: 'display' => ['{lastname}, {firstname}', ' ({birthdate})']
+					    Asuming lastname and firstname are always not null and birthday might be null, this will produce a name in "Lastname, Firstname" format and, if birthdate is not null, will append the birthdate in parentheses.
+					* SQL expression: a hash array with 'columns' => array of columns, which is used in 'expression' => expression referring to indexes in 'columns' as %1, %2, etc.
+					    Example: 
+					      'display' => [
+						    'columns' => ['firstname', 'lastname', 'birthdate'], 
+						    'expression' => "concat_ws('', (%2 || ', ' || %1)", (' (' || %3 || ')'))"
+						  ]
+					    This will produce the exact same result as the placeholder string above:
+					  	  'display' => ['{lastname}, {firstname}', ' ({birthdate})']
+					    In fact, placeholder strings are translated into a column/expression hash array
 				- sort: boolean (optional) (default: true)
 					In case of multiple lookup values, this setting determines whether the linked records are sorted using the display expression. Only relevant for CARDINALITY_MULTIPLE.
 				- dropdown_sort: string|array (optional) (default: asc)

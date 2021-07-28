@@ -1416,18 +1416,98 @@ STR;
     }
 
 	//------------------------------------------------------------------------------------------
+	// gets the index of an $item in $array. If not in there, append $item and return index
+	function get_index_or_append($item, &$array, $strict = true)
+	//------------------------------------------------------------------------------------------
+	{
+		$i = array_search($item, $array, $strict);
+		return $i === false ? array_push($array, $item) - 1 : $i;
+	}
+
+	//------------------------------------------------------------------------------------------
 	function resolve_display_expression($display, $table_qualifier) {
 	//------------------------------------------------------------------------------------------
-		if($table_qualifier != '')
+		if($table_qualifier != '') {
 			$table_qualifier = db_esc($table_qualifier) . '.';
-		else
-			proc_error(l10n('error.query-withouth-qualifier')); // some cases absolutely require table qualifiers
+		}
+		else {
+			// some cases absolutely require table qualifiers
+			proc_error(l10n('error.query-withouth-qualifier')); 
+		}
 
-		if(!is_array($display)) // simple field name string
-			return $table_qualifier . db_esc($display);
+		if(is_string($display)) {
+			// Simple field name OR pattern using field placeholders
+			// Example simple field name: 'fullname'
+			if(mb_strpos($display, '{') === false) {
+				// Simple field name
+				return $table_qualifier . db_esc($display);
+			}
 
-		// here we have something like
-		// 'display' => [ 'columns' => ['firstname', 'lastname'], 'expression' => "concat_ws(' ', %1 %2)" ]
+			// Here we have placeholders. Make into array:
+			$display = [$display];
+		}
+
+		// Here we may have a columns/expression hash array or a simple array with strings to concatenate
+		if(!isset($display['columns']) || !isset($display['expression'])) {
+			// Here we have a numeric index array with literal expressions to concatenate like
+			//   ['{lastname}, {firstname}', ' ({birthdate})', ' ID no. {no:idcard:owner:id}]
+			// ... which should resolve into an SQL expression that yields something like
+			//   Norris, Chuck (1923-01-01) ID no. 233478SD
+			//
+			// We simply translate this into the expected columns/expression array:
+			$pattern = $display;
+			$columns = [];
+			$expression = "concat_ws(''";
+			foreach($pattern as $part) {
+				$expression .= ", coalesce((''";
+				$num_placeholders = preg_match_all(
+					'/(?<before>[^{]*)(?<placeholder>{(?<field>[^:}]+)(:(?<fk_table>[^:]+):(?<fk_other>[^:]+):(?<fk_self>[^}]+))?})(?<after>[^{]*)/',
+					$part, $match
+				);
+				for($i = 0; $i < $num_placeholders; $i++) {
+					/* 
+						Placeholder is:
+							{field:fk_table:fk_other:fk_self}   =>  (select fk_table.field from fk_table where fk_table.fk_other = %1)
+						or
+							{field}  =>  field
+					*/
+					foreach(['placeholder', 'before', 'after', 'field', 'fk_table', 'fk_other', 'fk_self'] as $group) {
+						${$group} = $match[$group][$i]; 
+					}
+					if($before != '') {
+						$expression .= " || '" . str_replace("'", "''", $before) . "'";
+					}
+
+					if($fk_table === '') {
+						// own field
+						$expression .= " || %" . (get_index_or_append($field, $columns) + 1);
+					}
+					else {
+						// foreign field
+						$expression .= sprintf(
+							' || (select %s from %s as %s where %s = %%%s)',
+							db_esc($field, '__sub__'), 
+							db_esc($fk_table),
+							db_esc('__sub__'),
+							db_esc($fk_other, '__sub__'),
+							get_index_or_append($fk_self, $columns) + 1
+						);
+					}
+
+					if($after != '') {
+						$expression .= " || '" . str_replace("'", "''", $after) . "'";
+					}
+				}
+				$expression .= "), '')";
+			}
+			$expression .= ')';
+			
+			$display = [
+				'columns' => $columns,
+				'expression' => $expression
+			];
+		}
+
 		if(!isset($display['columns']) || !is_array($display['columns']) || !isset($display['expression']))
 			proc_error(l10n('error.invalid-display-expression'));
 
