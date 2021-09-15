@@ -478,10 +478,16 @@ function set_map_picker_handler() {
     $('a[data-map-url]').click(function() {
         var popup = get_popup_position(this, 800, 800);
         var url = $(this).data('map-url');
-        var target_ctrl = $('#' + $(this).data('target-ctrl'));
+        var geomval = $(this).data('geomval');
+        if(geomval.length == 0) {
+            var target_ctrl = $('#' + $(this).data('target-ctrl'));
+            if(target_ctrl.length > 0) {
+                geomval = target_ctrl.val();
+            }
+        }
         open_window_post_data(
             url,
-            target_ctrl.length > 0 ? { val: target_ctrl.val() } : {},
+            geomval.length > 0 ? { val: geomval } : {},
             'location=0,menubar=0,resizable=1,scrollbars=1,toolbar=0,left='+popup.x+',top='+popup.y+',width='+popup.width+',height='+popup.height
         );
     });

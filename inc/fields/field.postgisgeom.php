@@ -31,16 +31,18 @@
 				'ctrl_id' => $this->get_control_id(),
 				'readonly' => $readonly ? 'true' : 'false'
 			);
-			if($val !== null)
-				$url_params['val'] = $val;
+			$maxlen_label = isset($this->field['maxlen_geom_label']) ? $this->field['maxlen_geom_label'] : 200;
 			return sprintf(
-				"<a role='button' class='%s' data-target-ctrl='%s' data-map-url='?%s' title='%s' formnovalidate><span class='glyphicon glyphicon-%s'></span> %s</a>",
+				"<a role='button' class='%s' data-geomval='%s' data-target-ctrl='%s' data-map-url='?%s' title='%s' formnovalidate><span class='glyphicon glyphicon-%s'></span> %s</a>",
 				$css_class,
+				$val === null ? '' : $val,
 				$this->get_control_id(),
 				http_build_query($url_params),
 				unquote($title),
 				$glyphicon,
-				html($label)
+				strlen($label) > $maxlen_label 
+					? html(substr($label, 0, $maxlen_label)) . ' <i>[……]</i> ' . html(substr($label, -20)) 
+					: html($label)
 			);
 		}
 
