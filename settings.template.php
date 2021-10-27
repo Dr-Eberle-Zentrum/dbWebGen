@@ -297,9 +297,11 @@
 						  where city.state is a foreign key reference to states.state_id						
 						  Suppose we want to display the city in the format "city name, state name", then this would be our 'display' for fields that link to cities:
 						  'display' => '{name}, {name:states:state_id:state}'
-					* List of placeholder string: A flat array of placeholder strings. The array parts are concatenated using SQL function CONCAT(), so any NULL parts will not nullify the complete string
+					* List of placeholder string: A flat array of placeholder strings. The array parts are concatenated using SQL function CONCAT(), which can include NULL parts without nullifying the whole expression
 					    Example: 'display' => ['{lastname}, {firstname}', ' ({birthdate})']
-					    Asuming lastname and firstname are always not null and birthday might be null, this will produce a name in "Lastname, Firstname" format and, if birthdate is not null, will append the birthdate in parentheses.
+						The equivalent SQL term would be something like: 
+							CONCAT(lastname || ', ' || firstname, ' (' || birthdate || ')')					    
+						Asuming lastname and firstname are always not null and birthday might be null, this will produce a name in "Lastname, Firstname" format and, if birthdate is not null, will append the birthdate in parentheses.
 					* SQL expression: a hash array with 'columns' => array of columns, which is used in 'expression' => expression referring to indexes in 'columns' as %1, %2, etc.
 					    Example: 
 					      'display' => [
