@@ -2187,7 +2187,7 @@ END;
 		foreach($sort as $field_name => $direction) {
 			$sort_expr[] = sprintf('%s %s', db_esc($field_name, $table_alias), $direction);
 		}
-		return implode(' ', $sort_expr);
+		return implode(', ', $sort_expr);
 	}
 
 	//------------------------------------------------------------------------------------------
