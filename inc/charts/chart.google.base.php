@@ -213,6 +213,25 @@
 			$subtract_width = $this->shall_subtract_scrollbar() ? 20 : 0;
 			$chart_lang_js = json_encode(DBWEBGEN_LANG);
 
+			global $APP;
+			$datatable_postproc = '';
+			if (isset($APP['querypage_datatable_postproc_func'])) {
+				$datatable_postproc = "{$APP['querypage_datatable_postproc_func']}(data_table);";
+			}
+			$num_column_formatting = '';
+			if (isset($APP['querypage_table_simple_number_format'])
+				&& $APP['querypage_table_simple_number_format']
+			) {
+				$num_column_formatting = <<<JS
+					let nf = new google.visualization.NumberFormat({pattern: '#.#'});
+					for (let c = 0; c < data_table.getNumberOfColumns(); c++) {
+						if (data_table.getColumnType(c) === 'number') {
+							nf.format(data_table, c);
+						}
+					}	
+JS;
+			}
+
 			$viz_ui = <<<JS
 				var data_array = [
 					{$data_array}
@@ -228,7 +247,8 @@
 					var data_table = new google.visualization.DataTable();
 					{$table_cols}
 					data_table.addRows(data_array);
-
+					{$num_column_formatting}
+					{$datatable_postproc}
 					var options = {$this->options_js()};
 					options.width = $('#chart_div').width() - {$subtract_width};
 					var chart = new {$this->class_name()}(document.getElementById('chart_div'));

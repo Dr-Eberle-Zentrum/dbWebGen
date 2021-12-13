@@ -59,6 +59,12 @@
 			* string $handle: used for 2 purposes: filename must be chart.$handle.php and class name must be dbWebGenChart_$handle
 			* string $label: to be displayed in the dropdown box in the query editor
 			* string $directory (optional, default = ''): location of the file relative to the app directory
+		- querypage_show_visualization_settings: bool (optional) (default: true)
+			Defines whether visualization settings box is shown on the query page.
+		- querypage_table_simple_number_format: bool (optional) (default: false)
+			Defines simple '#.#' format pattern for numeric tables in Google table visualizations. By default Google displays e.g. commas as grouping symbol which is not suitable for years. More fine tuning of data table formats can be achieved with the 'querypage_datatable_postproc_func' setting
+		- querypage_datatable_postproc_func: string (optional)
+			If set, specifies a javascript function to invoke after the data table for Google charts are populated. The function receives the DataTable instance as the only argument. Can be used, e.g., to adapt display formats for numbers, dates, etc.
 		- lookup_allow_edit_default: boolean (optional) (default: false)
 			Determines the default value for the setting field/lookup/allow_edit for CARDINALITY_MULTIPLE lookup fields.
 		- preprocess_func: string (optional)

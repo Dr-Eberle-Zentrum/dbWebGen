@@ -329,8 +329,16 @@ HTML;
 			$str_head = l10n('querypage.settings-head');
 			$str_viz_label = l10n('querypage.settings-viz-label');
 
+			global $APP;
+			$hidden = '';
+			if(isset($APP['querypage_show_visualization_settings'])
+				&& $APP['querypage_show_visualization_settings'] === false
+			) {
+				$hidden = 'hidden';
+			}
+
 			$this->settings_ui = <<<STR
-				<div class="panel panel-default">
+				<div class="$hidden panel panel-default">
 					<div class="panel-heading">$str_head</div>
 					<div class="panel-body">
 						<div class="form-group">
