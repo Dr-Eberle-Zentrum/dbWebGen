@@ -275,7 +275,7 @@ SQL;
 				// hide SQL query help popup, which explains (in this case useless) parameterized queries
 				$hide_help = <<<HTML
 					<script>
-						$('label[class=control-label][for=sql] a').remove();
+						$(document).ready(() => $('label[class=control-label][for=sql] a').remove());
 					</script>
 HTML;
 			}
