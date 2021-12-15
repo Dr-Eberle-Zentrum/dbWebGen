@@ -268,7 +268,7 @@ SQL;
 			);
 
 			$hide_help = '';
-			global $APP;
+			global $TABLES, $APP;
 			if(isset($TABLES[$APP['querypage_stored_queries_table']]['allow_store_query']) 
 				&& $TABLES[$APP['querypage_stored_queries_table']]['allow_store_query'] === false
 			) {
