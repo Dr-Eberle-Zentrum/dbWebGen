@@ -267,6 +267,19 @@ SQL;
 				array('data-min-width="550px"')
 			);
 
+			$hide_help = '';
+			global $APP;
+			if(isset($TABLES[$APP['querypage_stored_queries_table']]['allow_store_query']) 
+				&& $TABLES[$APP['querypage_stored_queries_table']]['allow_store_query'] === false
+			) {
+				// hide SQL query help popup, which explains (in this case useless) parameterized queries
+				$hide_help = <<<HTML
+					<script>
+						$('label[class=control-label][for=sql] a').remove();
+					</script>
+HTML;
+			}
+
 			$this->query_ui = <<<QUI
 				<div class="form-group">
 					<label class="control-label" for="$sql_field">$sql_label $sql_help</label>
@@ -275,6 +288,7 @@ SQL;
 				<div class="form-group">
 					<button class="btn btn-primary" name="submit" type="submit"><span class="glyphicon glyphicon-triangle-right"></span> $exec_label</button>
 				</div>
+				$hide_help
 QUI;
 		}
 
