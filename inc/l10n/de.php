@@ -64,7 +64,7 @@ HTML
 
         'chart.custom.settings' => <<<HTML
             <p>Erzeugt ein benutzerdefiniertes Google-Chart. Die einzubindenden Google-Chart-Pakete, der Name der Chart-Klasse sowie die Optionen müssen angegeben werden.</p>
-            <p>Die möglichen Chart-Typen und jeweiligs benötigten Spalten und möglichen Optionen sind der <a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery">Google-Charts-Dokumentation</a> zu entnehmen</p>
+            <p>Die möglichen Chart-Typen und jeweils benötigten Spalten und möglichen Optionen sind der <a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery">Google-Charts-Dokumentation</a> zu entnehmen</p>
             <div class="form-group">
                 <label>Google-Chart-Pakete</label>
                 <div>Geben Sie eine kommaseparierte Liste der einzubindenden Pakete an, z.B. <code>corechart</code>:</div>
@@ -83,7 +83,7 @@ HTML
             <ul style="padding-left:1.25em">
                 <li><code>world</code> - Gesamte Welt.</li>
                 <li>
-                  Kontinent oder Subkontinent, idenfiziert durch seinen
+                  Kontinent oder Subkontinent, identifiziert durch seinen
                   <a target="_blank" href="https://developers.google.com/chart/interactive/docs/gallery/geochart#Continent_Hierarchy">3-stelligen Code</a>, z.B. <code>011</code> für Westafrika.
                 </li>
                 <li>
@@ -188,7 +188,7 @@ HTML
                 <div class='checkbox'>Maximaler Zoomfaktor (leer für Standardwert): $7</div>
                 <div class='checkbox'>Lizenzangaben (HTML): $8</div>
                 <label class="control-label">Koordinatenreferenzsystem</label>
-                <p>Die Koordinaten im Abfrageergebnisses müssen ggf. in dieses Referenzsystem transformiert werden.</p>
+                <p>Die Koordinaten des Abfrageergebnisses müssen ggf. in dieses Referenzsystem transformiert werden.</p>
                 <div class='form-group'>$9</div>
             </div>
             <div class='form-group'>
@@ -201,7 +201,7 @@ HTML
 
         'chart.network-visjs.options-help' => 'Dieses JSON-Objekt anpassen, um benutzerdefinierte Netzwerkoptionen zu definieren (vgl. <a target="_blank" href="http://visjs.org/docs/network/#options">Dokumentation</a>).',
         'chart.network-visjs.nodequery-help' => <<<HTML
-            <p>SQL-Abfrage, die Informationen über Knoten liefert (optional). Die Spalten müssen wie folgt benannt sein::</p>
+            <p>SQL-Abfrage, die Informationen über Knoten liefert (optional). Die Spalten müssen wie folgt benannt sein:</p>
             <ol class='columns'>
                 <li><code>id</code>Knoten-ID (string oder integer)</li>
                 <li><code>label</code>Knotenname (string)</li>
@@ -307,7 +307,7 @@ HTML
                 <label>Beschriftung der Knotenspalte in der Ergebnistabelle:</label>
                 $4
             </div>
-            <div class="form-group"
+            <div class="form-group">
                 <label>Ergebnistabelle sortieren nach:</label>
                 $5
             </div>
@@ -439,7 +439,7 @@ HTML
         'error.missing-login-data' => 'Bitte geben Sie $1 und $2 ein.',
         'error.map-picker-wkt' => '<b>Fehler:</b> Der angegebene Wert <code>$1</code> ist ungültig und kann nicht dargestellt werden.',
         'error.map-picker-single-marker' => 'Sie müssen genau eine Markierung auf die Karte setzen.',
-        'error.edit-inline-form-id-missing' => 'ID von übergeordnetem Formlar fehlt.',
+        'error.edit-inline-form-id-missing' => 'ID von übergeordnetem Formular fehlt.',
         'error.sequence-name' => 'Konfigurationsfehler: Wert für <code>id_sequence_name</code> ist vermutlich ungültig.',
         'error.edit-update-rels-prep' => 'Vorbereiten der Aktualisierung der Beziehungen für Feld $1 ist gescheitert (Schritt $2).',
         'error.edit-update-rels-exec' => 'Ausführen der Aktualisierung der Beziehungen für Feld $1 ist gescheitert (Schritt $2).',
@@ -485,7 +485,7 @@ HTML
 
         'info.new-edit-update-rels-prep-problems' => 'Beziehung zu Datensatz $1 in Feld $2 konnten nicht aktualisiert werden (P).',
         'info.new-edit-update-rels-exec-problems' => 'Beziehung zu Datensatz $1 in Feld $2 konnten nicht aktualisiert werden (E).',
-        'info.new-edit-update-rels-inline-defaults' => 'Datensatz wurde gespeicher, aber der verknüpfte Datensatz $1 in Feld $2 konnte nicht gespeichert werden.',
+        'info.new-edit-update-rels-inline-defaults' => 'Datensatz wurde gespeichert, aber der verknüpfte Datensatz $1 in Feld $2 konnte nicht gespeichert werden.',
         'info.new-edit-update-rels-inline-prep' => 'Beziehungsdetails Feld $1 konnten für Datensatz $2 nicht aktualisiert werden (P).',
         'info.new-edit-update-rels-inline-exec' => 'Beziehungsdetails Feld $1 konnten für Datensatz $2 nicht aktualisiert werden (E).',
 
@@ -512,7 +512,7 @@ HTML
         'lookup-field.linkage-assoc-edit-tooltip' => 'Referenzierten $1-Datensatz bearbeiten',
         'lookup-field.linkage-assoc-delete-tooltip' => 'Beziehung zu diesem/r $1 entfernen',
         'lookup-field.linked-records-clipped-tooltip' => 'Text wegen Überlänge abgeschnitten. Klicke um gesamten Text einzublenden.',
-        'lookup-field.linked-record-no-display-value' => 'Für diesen refernzierten Datensatz konnte keine Anzeigewert ermittelt werden, daher wird sein Identifikationswert dargestellt',
+        'lookup-field.linked-record-no-display-value' => 'Für diesen referenzierten Datensatz konnte kein Anzeigewert ermittelt werden, daher wird sein Identifikationswert dargestellt',
         'lookup-field.max-async' => 'Es werden nur die ersten $1 Ergebnisse in der Auswahlliste angezeigt. Bitte verwenden Sie einen einschränkenderen Suchtext.',
         'lookup-field.linkage-details-missing' => 'Für alle verknüpften Datensätze in der folgenden Liste, die ein rotes <span class="glyphicon glyphicon-th-list"></span>-Symbol haben, müssen durch Klicken auf das Symbol erforderliche Verknüpfungsdetails eingegeben werden!',
 
@@ -564,7 +564,7 @@ HTML
         'plugin.csv.label.tabulator' => 'Verwende Tabulator als Feld-Trennzeichen',
         'plugin.csv.help.delimiter' => 'Zeichen, das als Feld-Trennzeichen verwendet wird.',
         'plugin.csv.label.enclosure' => 'Feld-Begrenzungszeichen',
-        'plugin.csv.help.enclosure' => 'Zeichen, das das den Feldinhalt begrenzt, v.a. wenn das Feld-Trennzeichen im Feldinhalt vorkommt.',
+        'plugin.csv.help.enclosure' => 'Zeichen, das den Feldinhalt begrenzt, v.a. wenn das Feld-Trennzeichen im Feldinhalt vorkommt.',
         'plugin.csv.label.escape' => 'Maskierungszeichen',
         'plugin.csv.help.escape' => 'Zeichen, das verwendet wird, um ein im Feldinhalt vorkommendes Feld-Begrenzungszeichen zu maskieren.',
         'plugin.csv.label.columns' => 'Import-Spalten',
@@ -584,16 +584,16 @@ HTML
                 Geben Sie hier Ihre SQL-Abfrage ein. Nur <code>SELECT</code>-Abfragen sind erlaubt.
             </p>
             <p>
-                <b>Parametrisierte Abfrage</b>: Sie können benannte Platzhalter mit vorbelegten Werten statt konkreten Wertden in Ihrer Abfrage verwenden. Ein Parameter wird wie folgt verwendet: <code>#{my_param|default_val}</code>, wobei <code>my_param</code> der Name des Parameters ist und <code>default_val</code> ist der vorbelegte Wert. Letzterer kann auch leer sein, aber das Trennzeichen <code>|</code> muss trotzdem gesetzt werden. Wenn der Parameter mit <code>#!{...}</code>, also mit einem Ausrufezeichen zwischen <code>#</code> und <code>{</code> markiert wird, dann muss dieser Parameter verpflichtend vom Benutzer oder über Standardwert gegeben sein, um die Abfrage ausführen zu können.
+                <b>Parametrisierte Abfrage</b>: Sie können benannte Platzhalter mit vorbelegten Werten statt konkreten Werten in Ihrer Abfrage verwenden. Ein Parameter wird wie folgt verwendet: <code>#{my_param|default_val}</code>, wobei <code>my_param</code> der Name des Parameters ist und <code>default_val</code> ist der vorbelegte Wert. Letzterer kann auch leer sein, aber das Trennzeichen <code>|</code> muss trotzdem gesetzt werden. Wenn der Parameter mit <code>#!{...}</code>, also mit einem Ausrufezeichen zwischen <code>#</code> und <code>{</code> markiert wird, dann muss dieser Parameter verpflichtend vom Benutzer oder über Standardwert gegeben sein, um die Abfrage ausführen zu können.
             </p>
             <p>
                 <b>Beispiel</b>: <code>select * from users where lastname = #{Name|Norris}</code>
             </p>
             <p>
-                Dem Parameter kann optional ein Label gegeben, werden, der dann in der Ausführungsansicht verwendet wird. Das Muster ist dann wie folgt: <code>#{my_param:label|default_val}</code>, also z.B. <code>#{a:Mindestalter der Person|18}</code>
+                Dem Parameter kann optional ein Label gegeben werden, der dann in der Ausführungsansicht verwendet wird. Das Muster ist dann wie folgt: <code>#{my_param:label|default_val}</code>, also z.B. <code>#{a:Mindestalter der Person|18}</code>
             </p>
             <p>
-                Wenn ein Parameter mehrmals vorkommt, so reicht es, diesen einmal vollständig wie oben beschrieben zu spezifizieren. Alle weitere Vorkommen sollten nur mit Paremetername ohne folgenden senkrechten Strich notiert sein, z.B. <code>#{p}</code> für Parmeter <code>p</code>.
+                Wenn ein Parameter mehrmals vorkommt, so reicht es, diesen einmal vollständig wie oben beschrieben zu spezifizieren. Alle weiteren Vorkommen sollten nur mit Paremetername ohne folgenden senkrechten Strich notiert sein, z.B. <code>#{p}</code> für Parameter <code>p</code>.
             </p>
             <p>
                 Expertenmodus: zusätzlich kann optional ein Dropdown-Feld aus einer Tabelle angegeben werden, das dann dem Benutzer in der Abfragenansicht angeboten wird, nach folgendem Muster: <code>#{Name||table:person,field:fullname}</code>. Hier werden aus der Tabelle <code>person</code> entsprechend den Projekteinstellungen für das Feld <code>fullname</code> eine Dropdown-Box angeboten zur Auswahl.
@@ -603,7 +603,7 @@ HTML
             </p>
 HTML
         ,
-        'querypage.store-settings-cache-expires' => 'Zwischenspeichern aktivieren. Erneuerungsintervall (Sekonden)',
+        'querypage.store-settings-cache-expires' => 'Zwischenspeichern aktivieren. Erneuerungsintervall (Sekunden)',
         'querypage.store-settings-allow-public' => 'Diese Visualisierung ist öffentlich (mit Vorsicht verwenden).',
         'querypage.store-button-save' => 'Speichern',
         'querypage.store-button-new' => 'Speichern als Neu',
@@ -611,7 +611,7 @@ HTML
         'querypage.store-description-placeholder' => 'Beschreibung',
         'querypage.store-title-placeholder' => 'Titel',
         'querypage.store-intro' => 'Geben Sie optional Titel und Beschreibung für die Abfrage an:',
-        'querypage.store-success' => 'Abfrage wurde gespeichert. Live-Visualisierung sichbar unter folgendem Link:',
+        'querypage.store-success' => 'Abfrage wurde gespeichert. Live-Visualisierung sichtbar unter folgendem Link:',
         'querypage.store-error' => 'Beim Speichern der Abfrage ist ein Fehler aufgetreten.',
         'querypage.store-button-label' => 'Speichern & Visualisierungs-Link erzeugen',
         'querypage.settings-head' => 'Einstellungen für Ergebnisvisualisierung',
