@@ -89,7 +89,7 @@
 		//--------------------------------------------------------------------------------------
 			$cols = array();
 			$this->column_infos = array();
-
+			
 			for($i=0; $i<$stmt->columnCount(); $i++) {
 				// type can be 'string', 'number', 'boolean', 'date', 'datetime', and 'timeofday'
 				$col_info = $stmt->getColumnMeta($i);
@@ -179,7 +179,7 @@
 		//--------------------------------------------------------------------------------------
 			$json = array();
 			$col_nr = 0;
-			foreach($row as $col_name => $value)
+			foreach($row as $value)
 				$json[] = $this->value_to_js($value, $this->column_infos[$col_nr++]);
 
 			return '[' . implode(', ', $json) . ']';
@@ -196,11 +196,7 @@
 
 			$data_array = '';
 			$row_nr = 0;
-			while($row = $query_result->fetch(PDO::FETCH_ASSOC)) {
-				// check for duplicate column names, because this will cause "invisible" error in the browser
-				if($row_nr == 0 && count($row) != count($columns))
-					proc_error(l10n('error.chart-duplicate-cols'));
-				// <<
+			while($row = $query_result->fetch(PDO::FETCH_NUM)) {
 				$data_array .= ($row_nr == 0 ? '' : ",\n") . $this->data_to_js($row, $row_nr++);
 			}
 			if($row_nr === 0) {

@@ -261,8 +261,14 @@ JS;
 		public /*string*/ function data_to_js(&$row, $row_nr) {
 		//--------------------------------------------------------------------------------------
 			$r = '';
-			if($row_nr === 0) // first row => render headers
-				$r .= json_encode(array_keys($row)) . ",\n";
+			
+			if($row_nr === 0) { // first row => render headers
+				$row_headers = [];
+				foreach($this->column_infos as $ci) {
+					$row_headers[] = $ci['name'];
+				}
+				$r .= json_encode($row) . ",\n";
+			}
 
 			return $r . json_encode(array_values($row), JSON_NUMERIC_CHECK) . ",\n";
 		}
