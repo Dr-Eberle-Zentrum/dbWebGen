@@ -103,7 +103,15 @@
 				$href = get_render_link_href($render_link, $record, $table_name);
 				if($href !== false) {
 					$btn_label = isset($render_link['btn_label']) ? $render_link['btn_label'] : '';
-					$addl_data .= "<a href='$href' title='{$render_link['title']}' class='btn btn-default'><span class='glyphicon glyphicon-{$render_link['icon']}'></span> $btn_label</a>";
+					$link_html = "<a href='$href' title='{$render_link['title']}' class='btn btn-default'><span class='glyphicon glyphicon-{$render_link['icon']}'></span> $btn_label</a>";
+					
+					if(!isset($render_link['view_insert_position'])
+						|| $render_link['view_insert_position'] == 'tail'
+					) {
+						$addl_data .= $link_html;
+					} else {
+						$addl_data = $link_html . $addl_data;
+					}
 				}
 			}
 		}

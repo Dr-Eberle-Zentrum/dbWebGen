@@ -627,6 +627,10 @@
 					A URL template that will be used in a sprintf() call. Each %s must be matched by a field name in the 'fields' parameter:
 				- field: string|array
 					Name of the field (or array of field names) whose value(s) will be used to replace the %s placeholders in href_format
+				- list_insert_position: string (optional; default: 'head')
+					Where to insert the icon relative to the default icons in MODE_LIST ('head' or 'tail')
+				- view_insert_position: string (optional; default: 'tail')
+					Where to insert the icon relative to the default icons in MODE_VIEW ('head' or 'tail')
 			Example: 
 				'render_links' => array(
 					array('icon' => 'eye-open', 'href_format' => 'uploads_images/%s', 'field' => 'filename', title => 'Show the damn file')

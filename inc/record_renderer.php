@@ -67,20 +67,6 @@
                 $table_body .= "<tr><td class='fit'><div class='hidden-print'>\n";
                 $action_icons = array();
 
-                if(isset($this->table['render_links']) 
-                    && is_allowed($this->table, MODE_LINK)
-                ) {
-                    foreach($this->table['render_links'] as $render_link) {
-                        if(!isset($render_link['modes']))
-                            $render_link['modes'] = [MODE_LIST, MODE_VIEW];
-                        if(isset($_GET['mode']) && !in_array($_GET['mode'], $render_link['modes']))
-                            continue;
-                        $href = get_render_link_href($render_link, $record, $this->table_name);
-                        if($href !== false)
-                            $action_icons[] = "<a href='$href'><span title='{$render_link['title']}' class='glyphicon glyphicon-{$render_link['icon']}'></span></a>";
-                    }
-                }
-
                 if(is_allowed($this->table, MODE_VIEW)) {
                     $action_icons[] = sprintf(
                         "<a href='?%s%s' data-purpose='view'><span title='%s' class='glyphicon glyphicon-zoom-in'></span></a>",
@@ -113,6 +99,29 @@
                         if($custom_action['mode'] == $_GET['mode']) {
                             // call custom action handler
                             $action_icons[] = $custom_action['handler']($this->table_name, $this->table, $record, $custom_action);
+                        }
+                    }
+                }
+
+                if(isset($this->table['render_links']) 
+                    && is_allowed($this->table, MODE_LINK)
+                ) {
+                    foreach($this->table['render_links'] as $render_link) {
+                        if(!isset($render_link['modes']))
+                            $render_link['modes'] = [MODE_LIST, MODE_VIEW];
+                        if(isset($_GET['mode']) && !in_array($_GET['mode'], $render_link['modes']))
+                            continue;
+                        $href = get_render_link_href($render_link, $record, $this->table_name);
+                        if($href !== false) {
+                            $link_html = "<a href='$href'><span title='{$render_link['title']}' class='glyphicon glyphicon-{$render_link['icon']}'></span></a>";
+                            if(!isset($render_link['list_insert_position'])
+                                || $render_link['list_insert_position'] == 'head'
+                            ) {
+                                array_unshift($action_icons, $link_html);
+                            } else {
+                                array_push($action_icons, $link_html);
+                            }
+                            
                         }
                     }
                 }
