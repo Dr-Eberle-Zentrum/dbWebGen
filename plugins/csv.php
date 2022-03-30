@@ -130,7 +130,7 @@ function plugin_csv_render_upload_form(
                         <span data-field="escape">$label_escape</span>
                     </label>
                     <div class="col-sm-1">
-                        <input type="text" maxlength="1" class="form-control" id="escape" name="escape" value='\' title="$label_escape" required>
+                        <input type="text" maxlength="1" class="form-control" id="escape" name="escape" value='"' title="$label_escape" required>
                     </div>
                     <div class="col-sm-offset-2 col-sm-10 help-block">$help_escape</div>
                 </div>
