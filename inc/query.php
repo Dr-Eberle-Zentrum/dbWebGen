@@ -664,11 +664,32 @@ HTML;
 				$css_class = 'result-column';
 			}
 
-			$this->viz_ui .= "<div class='col-sm-$size'>\n";
+			$this->viz_ui .= "<div id='viz-container' class='col-sm-$size'>\n";
 			if($this->view != QUERY_VIEW_RESULT)
 				$this->viz_ui .= "  <label for='chart_div'>".l10n('querypage.results-head')."</label>{$this->store_ui}\n";
 			$this->viz_ui .= "  <div class='$css_class' id='chart_div'></div>\n";
 			$this->viz_ui .= "</div>\n";
+
+			if($this->view == QUERY_VIEW_RESULT) {
+				$this->viz_ui .= <<<JS
+				<script>
+					$(document).on('keydown', event => {
+						// Toggle fullscreen/normal view of result visualization on Ctrl+Alt+F
+						if (event.ctrlKey && event.altKey && event.key == 'f') {
+							if ($('nav.navbar').hasClass('hidden')) {
+								$('#viz-container').prevAll().removeClass('hidden');
+								$('nav.navbar').removeClass('hidden');
+							}
+							else {
+								$('#viz-container').prevAll().addClass('hidden');
+								$('nav.navbar').addClass('hidden');
+							}								
+							adjust_div_full_height();
+						}
+					});
+				</script>
+JS;
+			}
 
 			$required_param_missing = false;
 			foreach($this->query_info['required'] as $param => $required) {
