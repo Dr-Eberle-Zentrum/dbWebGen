@@ -1512,8 +1512,6 @@ STR;
 				'columns' => $columns,
 				'expression' => $expression
 			];
-
-			debug_log($display);
 		}
 
 		if(!isset($display['columns']) || !is_array($display['columns']) || !isset($display['expression']))
