@@ -1459,46 +1459,52 @@ STR;
 			$columns = [];
 			$expression = "concat_ws(''";
 			foreach($pattern as $part) {
-				$expression .= ", coalesce((''";
 				$num_placeholders = preg_match_all(
 					'/(?<before>[^{]*)(?<placeholder>{(?<field>[^:}]+)(:(?<fk_table>[^:]+):(?<fk_other>[^:]+):(?<fk_self>[^}]+))?})(?<after>[^{]*)/',
 					$part, $match
 				);
-				for($i = 0; $i < $num_placeholders; $i++) {
-					/* 
-						Placeholder is:
-							{field:fk_table:fk_other:fk_self}   =>  (select fk_table.field from fk_table where fk_table.fk_other = %1)
-						or
-							{field}  =>  field
-					*/
-					foreach(['placeholder', 'before', 'after', 'field', 'fk_table', 'fk_other', 'fk_self'] as $group) {
-						${$group} = $match[$group][$i]; 
-					}
-					if($before != '') {
-						$expression .= " || '" . str_replace("'", "''", $before) . "'";
-					}
-
-					if($fk_table === '') {
-						// own field
-						$expression .= " || %" . (get_index_or_append($field, $columns) + 1);
-					}
-					else {
-						// foreign field
-						$expression .= sprintf(
-							' || (select %s from %s as %s where %s = %%%s)',
-							db_esc($field, '__sub__'), 
-							db_esc($fk_table),
-							db_esc('__sub__'),
-							db_esc($fk_other, '__sub__'),
-							get_index_or_append($fk_self, $columns) + 1
-						);
-					}
-
-					if($after != '') {
-						$expression .= " || '" . str_replace("'", "''", $after) . "'";
-					}
+				
+				if($num_placeholders == 0) {
+					$expression .= ", '" . str_replace("'", "''", $part) . "'";
 				}
-				$expression .= "), '')";
+				else {
+					$expression .= ", coalesce((''";
+					for($i = 0; $i < $num_placeholders; $i++) {
+						/* 
+							Placeholder is:
+								{field:fk_table:fk_other:fk_self}   =>  (select fk_table.field from fk_table where fk_table.fk_other = %1)
+							or
+								{field}  =>  field
+						*/
+						foreach(['placeholder', 'before', 'after', 'field', 'fk_table', 'fk_other', 'fk_self'] as $group) {
+							${$group} = $match[$group][$i]; 
+						}
+						if($before != '') {
+							$expression .= " || '" . str_replace("'", "''", $before) . "'";
+						}
+
+						if($fk_table === '') {
+							// own field
+							$expression .= " || %" . (get_index_or_append($field, $columns) + 1);
+						}
+						else {
+							// foreign field
+							$expression .= sprintf(
+								' || (select %s from %s as %s where %s = %%%s)',
+								db_esc($field, '__sub__'), 
+								db_esc($fk_table),
+								db_esc('__sub__'),
+								db_esc($fk_other, '__sub__'),
+								get_index_or_append($fk_self, $columns) + 1
+							);
+						}
+
+						if($after != '') {
+							$expression .= " || '" . str_replace("'", "''", $after) . "'";
+						}
+					}
+					$expression .= "), '')";
+				}
 			}
 			$expression .= ')';
 			
@@ -1506,6 +1512,8 @@ STR;
 				'columns' => $columns,
 				'expression' => $expression
 			];
+
+			debug_log($display);
 		}
 
 		if(!isset($display['columns']) || !is_array($display['columns']) || !isset($display['expression']))
