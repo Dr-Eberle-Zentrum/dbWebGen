@@ -2121,13 +2121,45 @@ END;
 	}
 
 	//------------------------------------------------------------------------------------------
+	function reorder_assoc_array(
+		$cur,   // current assoc array 
+		$order  // array conaining ordered (subset of) keys in $cur
+	) {
+	//------------------------------------------------------------------------------------------
+		$result = [];
+		// first copy ordered key/values to result array
+		foreach($order as $key) {
+			$result[$key] = $cur[$key];
+			// unset key in original array
+			unset($cur[$key]);
+		}
+		// ... then copy all remaining keys that were not given in $order
+		foreach($cur as $key => $value) {
+			$result[$key] = $value;
+		}
+		return $result;
+	}
+
+	//------------------------------------------------------------------------------------------
 	// called from engine.php
 	function run_default_initializations(
 		$settings_exist
 	) {
 	//------------------------------------------------------------------------------------------
-		if($settings_exist)	
+		if($settings_exist)	{
 			check_popup_hide_reverse_linkage();
+		
+			// apply field reordering fields in $TABLES
+			global $TABLES;
+			foreach($TABLES as &$table) {
+				if(isset($table['field_order'])) {
+					$table['fields'] = reorder_assoc_array(
+						$table['fields'], 
+						$table['field_order']
+					);
+				}
+			}
+		}
 	}
 
 	//------------------------------------------------------------------------------------------
