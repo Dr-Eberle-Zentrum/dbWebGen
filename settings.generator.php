@@ -540,7 +540,7 @@ SQL;
 			kcu.column_name,
 			ccu.table_name references_table,
 			ccu.column_name references_field,
-			(select column_name from information_schema.columns where table_name=ccu.table_name and table_schema=tc.table_schema and data_type in ('character varying', 'text') ORDER BY ordinal_position limit 1) display_field
+			(select column_name from information_schema.columns where table_name=ccu.table_name and table_schema=tc.table_schema and data_type in ('character', 'character varying', 'text') ORDER BY ordinal_position limit 1) display_field
 			FROM information_schema.table_constraints tc
 			LEFT outer JOIN information_schema.key_column_usage kcu
 			ON tc.constraint_catalog = kcu.constraint_catalog
