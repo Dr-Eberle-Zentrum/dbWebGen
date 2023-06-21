@@ -679,7 +679,7 @@ foreach($TABLES as $table_name => $table) {
 				from information_schema.columns 
 				where table_name = ? 
 				and table_schema = ? 
-				and data_type in ('character varying', 'text') 
+				and data_type in ('character', 'character varying', 'text') 
 				order by ordinal_position 
 				limit 1
 SQL;
