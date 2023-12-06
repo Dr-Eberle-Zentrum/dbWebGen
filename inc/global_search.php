@@ -243,7 +243,7 @@ HTML;
                 if($field_obj->is_included_in_global_search())
                     $where_conditions[] = $field_obj->get_global_search_condition($param_name, self::search_string_transformation($field), 't');
             }
-            unset($table);
+            unset($field);
 
             $sql = sprintf(
                 'SELECT %s FROM %s t WHERE %s LIMIT %s',
