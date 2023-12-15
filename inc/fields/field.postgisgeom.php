@@ -11,9 +11,13 @@
 			return $this->field['map_picker']['script'];
 		}
 		public function get_map_options($default = array()) {
+			global $APP;
+			$options = $default;
+			if(isset($APP['default_map_picker_options']))
+				$options = array_merge($options, $APP['default_map_picker_options']);
 			if(!$this->has_map_picker() || !isset($this->field['map_picker']['map_options']))
-				return $default;
-			return $this->field['map_picker']['map_options'];
+				return $options;
+			return array_merge($options, $this->field['map_picker']['map_options']);
 		}
 		public function get_draw_options($default = array()) {
 			if(!$this->has_map_picker() || !isset($this->field['map_picker']['draw_options']))
