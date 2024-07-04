@@ -583,6 +583,8 @@
 					* $table_name (string): Name of the current table
 					* $field_name (string): Name of the current field
 					* $record (hash array): The current raw data record from the DB to be prepared for display
+			- render_as_url: boolean (optional; default: false)
+				If the field is T_TEXT_LINE and this setting is true, then the field content will be rendered as a Hyperlink.
 
 		- sort: array (optional)
 			Used for default sorting of tables in MODE_LIST. Associative array with key := fieldname (or SQL expression) and value := {'asc', 'desc'}

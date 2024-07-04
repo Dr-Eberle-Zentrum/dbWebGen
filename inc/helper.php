@@ -904,7 +904,10 @@ STR;
 		if($cur_mode === MODE_GLOBALSEARCH) // global search uses record renderer, so we use MODE_LIST
 			$cur_mode = MODE_LIST;
 
-		if($field['type'] == T_ENUM && $val !== NULL) {
+		if($field['type'] == T_TEXT_LINE && isset($field['render_as_url']) && $field['render_as_url'] === true) {
+			$val = "<a href='$val'>" . $highlighter->highlight($val) . '</a>';
+		}
+		else if($field['type'] == T_ENUM && $val !== NULL) {
 			$val = $highlighter->highlight(html($field['values'][$val]));
 		}
 		else if($field['type'] == T_NUMBER && $val !== NULL) {
