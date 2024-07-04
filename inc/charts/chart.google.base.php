@@ -114,7 +114,9 @@
 							$col_info['js_type'] = 'datetime'; break;
 
 						case 'time': case 'timetz':
-							$col_info['js_type'] = 'timeofday'; break;
+							//timeofday is not processed properly by Google Viz, so we output as text
+							//$col_info['js_type'] = 'timeofday'; break;
+							$col_info['js_type'] = 'string'; break;
 
 						default:
 							$col_info['js_type'] = 'string';
