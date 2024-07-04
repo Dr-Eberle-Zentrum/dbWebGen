@@ -62,7 +62,10 @@
 		public function render_checkbox($name, $value, $checked_default = false, $css = '') {
 		//--------------------------------------------------------------------------------------
 			$checked_attr = $this-> is_checked_radio_or_checkbox($name, $value, $checked_default) ? 'checked' : '';
-			return "<input class='$css' type='checkbox' value='$value' id='$name' name='$name' $checked_attr>";
+			// need hidden field to submit POST value when not checked upon page submission
+			// -> required by is_checked_radio_or_checkbox() to detect on or off status
+			return "<input type='hidden' value='NOT-$value' id='hidden-$name' name='$name'>" . 
+				"<input class='$css' type='checkbox' value='$value' id='$name' name='$name' $checked_attr>";
 		}
 
 		//--------------------------------------------------------------------------------------
