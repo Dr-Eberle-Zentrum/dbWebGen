@@ -64,6 +64,12 @@
 		//--------------------------------------------------------------------------------------
 
 		//--------------------------------------------------------------------------------------
+		public function get_settings() {
+		//--------------------------------------------------------------------------------------
+			return $this->field;			
+		}
+		
+		//--------------------------------------------------------------------------------------
 		// whether to principally allow the set NULL check box next to the control, if the
 		// settings permit. override in subclasses to disallow, if needed
 		public function allow_setnull_box() {
@@ -197,7 +203,6 @@
 		//--------------------------------------------------------------------------------------
 			return $this->has_custom_placeholder() ? $this->field['placeholder'] : $default;
 		}
-
 		//--------------------------------------------------------------------------------------
 		public function /*string*/ render_control(
 			array $render_settings = null,

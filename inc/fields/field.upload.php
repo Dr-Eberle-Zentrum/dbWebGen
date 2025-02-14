@@ -25,6 +25,12 @@
 		}
 
 		//--------------------------------------------------------------------------------------
+		public function has_thumbnail() {
+		//--------------------------------------------------------------------------------------
+			return isset($this->field['thumbnail']);
+		}
+		
+		//--------------------------------------------------------------------------------------
 		protected function /*string*/ render_internal(&$output_buf) {
 		// render_settings: form_method, name_attr, id_attr
 		//--------------------------------------------------------------------------------------
@@ -40,6 +46,13 @@
 			);
 			if($_GET['mode'] == MODE_EDIT) {
 				$output_buf .= '<span class="help-block">' . l10n('upload-field.hint-empty') . '</span>';
+				// render thumbnail				
+				$filename = $this->get_submitted_value();
+				if($filename !== null
+					&& $this->has_thumbnail()
+				) {
+					$output_buf .= render_thumbnail($filename, $_POST, $this->get_settings(), true);
+				}				
 				if(!$this->is_required() && $this->get_submitted_value('') !== '' && $this->allow_remote_delete()) {
 					// this control's attributes are used in dbweb.js in init_file_selection_handler() and in new_edit.php ---> be careful!!!
 					$output_buf .= sprintf(

@@ -585,7 +585,14 @@
 					* $record (hash array): The current raw data record from the DB to be prepared for display
 			- render_as_url: boolean (optional; default: false)
 				If the field is T_TEXT_LINE and this setting is true, then the field content will be rendered as a Hyperlink.
-
+			- thumbnail: array (optional)
+				For T_UPLOAD fields, providing this array will display a fancybox thumbnail in MODE_VIEW. The following array keys can be provided:
+				- caption_field: string (optional)
+					The name of the field in the record that holds the caption to display below the image after the thumbnail is clicked
+				- max_width: string (optional; default: '300px')
+					Maximum width CSS setting for the thumbnail
+				- max_height: string (optional; default: '300px')
+					Maximum width CSS setting for the thumbnail
 		- sort: array (optional)
 			Used for default sorting of tables in MODE_LIST. Associative array with key := fieldname (or SQL expression) and value := {'asc', 'desc'}
 			e.g. [ 'lastname' => 'asc, 'firstname' => 'asc' ]

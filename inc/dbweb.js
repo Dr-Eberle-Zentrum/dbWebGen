@@ -57,6 +57,7 @@ $(window).load(function() {
     set_map_picker_handler();
     prepare_navigate_away_warning();
     init_remaining_chars_display();
+    init_fancybox();    
 });
 
 //------------------------------------------------------------------------------------------
@@ -795,4 +796,28 @@ function init_remaining_chars_display() {
             e.type === 'focusin' ? label.parent().show() : label.parent().hide();
         });
     })
+}
+
+//------------------------------------------------------------------------------------------
+function init_fancybox() {
+//------------------------------------------------------------------------------------------
+    Fancybox.bind("[data-fancybox]", {
+        Toolbar: {
+            display: {
+                left: [],            
+                middle: [
+                    "zoomIn",
+                    "zoomOut",
+                    "toggle1to1",
+                    "rotateCCW",
+                    "rotateCW",
+                    "flipX",
+                    "flipY",
+                    "fitX",
+                    "fitY",
+                ],
+                right: ["close"],
+            },
+        },
+    });
 }
