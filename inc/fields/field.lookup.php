@@ -534,7 +534,7 @@
 			else {
 				$linkage = $this->get_linkage_info();
 				$s = sprintf(
-					"(SELECT " . db_array_to_string_array_agg('%s', ' ') . "
+					"(SELECT " . db_array_to_string_array_agg('%s', "\n") . "
 					 FROM %s other, %s link
 					 WHERE link.%s = t.%s
 					 AND other.%s = link.%s)

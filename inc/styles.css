@@ -381,6 +381,11 @@ div.leaflet-control-layers-overlays label {
 	width: 100px
 }
 
+#global-search-method-button {
+	color:dimgray;
+	background-color: whitesmoke;
+}
+
 .scroll-top {
 	display: none;
 }

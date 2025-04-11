@@ -51,7 +51,7 @@
             $this->num_results = 0;
             $columns_backup = false; // later needed for SQLite - for reasons unknown
             while($record = $this->stmt->fetch(PDO::FETCH_ASSOC)) {
-                #debug_log($record);
+                //debug_log($record);
                 if($columns_backup === false) {
                     $columns_backup = array_keys($record);
                 }

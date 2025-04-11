@@ -837,16 +837,19 @@ class SearchResultHighlighter {
 //------------------------------------------------------------------------------------------
 	public $term_to_highlight;
 	protected $term_len;
+	protected $ignorecase;
 	protected static $transliterator = null;
 
 	//------------------------------------------------------------------------------------------
 	public function __construct(
 		$term_to_highlight, 	// must be an already transliterated search term (ASCII only)
-		$transliterator_rules 	// rules passed to Transliterator::createFromRules
+		$transliterator_rules, 	// rules passed to Transliterator::createFromRules
+		$ignorecase				// whether to ignore case (i.e. make lowercase)
 	) {
 		$this->term_to_highlight = $term_to_highlight;
 		$this->term_len = mb_strlen($this->term_to_highlight);
-		if(self::$transliterator === null) // Transliterator only available PHP >= 5.4.0, PECL intl >= 2.0.0
+		$this->ignorecase = $ignorecase;
+		if(self::$transliterator === null && $transliterator_rules !== '') // Transliterator only available PHP >= 5.4.0, PECL intl >= 2.0.0
 			self::$transliterator = class_exists('Transliterator') ? Transliterator::createFromRules($transliterator_rules) : null;
 	}
 
@@ -855,16 +858,20 @@ class SearchResultHighlighter {
 		$html,				// the HTML in which to highlight all occurrences of $this->term_to_highlight
 		$css_class = 'hl'	// the CSS class used to highlight occurrences
 	) {
-		if(self::$transliterator === null)
-			return $html;
+		//if(self::$transliterator === null)
+		//	return $html;
 		$result = '';
 		$source_len = mb_strlen($html);
 		$matched_term_chars = 0;
 		$source_match_startpos = 0;
 		$source_match_len = 0;
 		for($i = 0; $i < $source_len; $i++) {
-			$c = mb_substr($html, $i, 1);
-			$c_trans = mb_strtolower(self::$transliterator->transliterate($c));
+			$c = mb_substr($html, $i, 1); // original character
+			$c_trans = $c; // prepare for transliteration / lowercasing the character
+			if(self::$transliterator !== null)
+				$c_trans = self::$transliterator->transliterate($c_trans);
+			if($this->ignorecase)
+				$c_trans = mb_strtolower($c_trans);			
 			$c_trans_len = mb_strlen($c_trans); // note: single transliterated chars can be more than one char, e.g. transliterate('手') yields 'shou'
 			if($c_trans_len <= $this->term_len - $matched_term_chars && $c_trans === mb_substr($this->term_to_highlight, $matched_term_chars, $c_trans_len))	{
 				if($matched_term_chars == 0)

@@ -85,6 +85,23 @@
 				Rules to be used for PHP's Transliterator::createFromRules factory method.
 			- cache_ttl: int (optional) (default: 3600)
 				Number of seconds to cache each search result. Default is one hour. Note that this setting is only effective if $APP/cache_dir is set and valid. If you set this to 0, there will be no caching of global search results.
+		- text_search_methods: array (optional; default: none)
+			If this assoc array is provided, defines the search methods offered by (global) text search. Note that providing this setting wil override the $APP/search_string_transformation and global_search/transliterator_rules settings for the global search.
+			The array key is the identifier of the search method, e.g. 'exact', 'default', ...
+			The value is an array with the following keys (all mandatory):
+				- label: string
+					Label to display in the search box for this method
+				- tooltip: string
+					Tooltip to display when hovering over the search method in the search box
+				- sql_transformation: string
+					SQL expression to be used for transforming the search term. The placeholder %s must be used for the search term, and will be replaced with the search string
+				- transliterator_rules: string
+					Rules to be used for PHP's Transliterator::createFromRules factory method, that should correspond to the SQL transformation.
+				- ignorecase: bool
+					Whether to perform case insensitive search (true) or not (false)
+				- trim: bool
+					Whether to strip the search term of leading and trailing whitespace (true) or not (false)
+			If more than one method is provided, the user will be able to select the method in the search box. The first method in the array is the default one.			
 		- super_users: array (optional)
 			You may provide an array of user names here, who will be allowed to configure the dbWebGen settings using the settings wizard
 		- custom_query_data_provider: string (optional)
