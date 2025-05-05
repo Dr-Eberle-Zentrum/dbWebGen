@@ -239,6 +239,7 @@ SQL;
 
 		// if nextval from a sequence is the default value, make it not editable
 		if($field['editable']
+			&& $col['column_default'] !== null // otherwise preg_match will issue deprecated warning
 			&& preg_match('/^nextval\\(\'(.+)\'::regclass\\)$/', $col['column_default'], $matches)
 		) {
 			$field['editable'] = false;
