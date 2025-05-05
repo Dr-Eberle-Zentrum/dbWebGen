@@ -171,7 +171,7 @@ include 'inc/constants.php';
 include 'settings.template.php';
 
 // set schema
-db_exec('set search path to ' . $db_schema);
+db_exec('set search_path to ' . $db_schema);
 
 // fetch all tables in schema
 $tables_query = <<<SQL
