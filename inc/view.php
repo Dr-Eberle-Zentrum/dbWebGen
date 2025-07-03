@@ -244,9 +244,14 @@ HTML;
 				$css_null = 'null_field';
 			}
 
-			$table_html .= "<div class='form-group $css_null'><label class='col-sm-3 control-label'>{$field_label}</label>\n";
-
 			$val = prepare_field_display_val($table_name, $table, $record, $field_settings, $col, $val);
+
+			if($val === '') {
+				$empty_count++;
+				$css_null = 'null_field';
+			}
+
+			$table_html .= "<div class='form-group $css_null'><label class='col-sm-3 control-label'>{$field_label}</label>\n";
 
 			$style = '';
 			if(isset($field_settings[$col]['view_css']))
