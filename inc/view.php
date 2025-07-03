@@ -232,21 +232,20 @@ HTML;
 			if(isset($field_settings['view_hide']) && $field_settings['view_hide'] === true)
 				continue;
 				
-			$val = $record[$col];
+			$orig_val = $record[$col];
 			$table_html .= $form_tabs->new_tab_if_needed($col);
 
 			$field_label = get_field_label($field_settings, $record);
+			$display_val = prepare_field_display_val($table_name, $table, $record, $field_settings, $col, $orig_val);
 
 			# display null values?
 			$css_null = '';
-			if(!$APP['view_display_null_fields'] && $val === null) {
-				$empty_count++;
-				$css_null = 'null_field';
-			}
-
-			$val = prepare_field_display_val($table_name, $table, $record, $field_settings, $col, $val);
-
-			if($val === '') {
+			if(!$APP['view_display_null_fields'] && (
+				// either value is null
+				$orig_val === null
+				// or multi-linkage field with no linked records (potentially with custom render_func!)
+				|| (isset($field_settings['linkage']) && !$display_val)
+			)) {
 				$empty_count++;
 				$css_null = 'null_field';
 			}
@@ -257,7 +256,7 @@ HTML;
 			if(isset($field_settings[$col]['view_css']))
 				$style = sprintf(' style="%s"', $field_settings['view_css']);
 
-			$table_html .= "<div class='col-sm-9 column-value'$style>{$val}</div></div>\n";
+			$table_html .= "<div class='col-sm-9 column-value'$style>{$display_val}</div></div>\n";
 		}
 		unset($field_settings);
 
