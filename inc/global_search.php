@@ -353,7 +353,7 @@ HTML;
             $highlighter = new SearchResultHighlighter(
                 $transformed_search_term, 
                 self::transliterator_rules(),
-                $method === false ? true : $settings['ignorecase'],
+                $method === false ? true : $settings['ignorecase']
             );
             $rr = new RecordRenderer($table_name, $table, $relevant_fields, $stmt, false, false, $highlighter);
             $num_results = $rr->num_results();
