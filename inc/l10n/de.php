@@ -600,6 +600,9 @@ HTML
             <p>
                 Es ist auch möglich, Dropdowns mit Mehrfachauswahl als Parameter anzugeben. Der Parameter sieht dann z.B. wie folgt aus: <code>#{x||table:person,field:full_name|flags:multi|expr:person_name|op:in}</code>. Erklärung: <code>flags:multi</code> ermöglicht Mehrfachauswahl. <code>expr:person_name</code> bestimmt, dass die Mehrfachauswahl als Einschränkung auf das Feld <code>person_name</code> gemacht wird. Und <code>op:in</code> bestimmt, dass der SQL-Befehl <code>in</code> als Operator verwendet wird. Hier ist auch <code>not in</code> möglich.
             </p>
+            <p>
+                Wenn kein Dropdown angezeigt werden soll, kann mit <code>flags</code> auch ein Feldtyp und weitere Attribute für das Eingabefeld angegeben werden. Die Flags müssen Komma-separiert sein. Das erste Element muss der Elementtyp sein, und zwar <code>date</code>, <code>number</code> oder <code>text</code>. Weitere Elemente werden als Attribute für das Eingabefeld interpretiert. Beispiel: <code>#{Mindestalter|18||flags:number,min=1,step=1}</code> erzeugt ein ganzzahliges Feld mit Mindestwert 1.
+            </p>
 HTML
         ,
         'querypage.store-settings-cache-expires' => 'Zwischenspeichern aktivieren. Erneuerungsintervall (Sekunden)',

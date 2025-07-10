@@ -596,6 +596,9 @@ HTML
             <p>
                 <b>Dropdown Parameters</b>: It is possible to use one of the lookup fields defined for the database to generate a dropdown box, so the user can choose the parameter value by picking. The signature of a dropdown parameter is: <code>#{p||table:persons,field:relationship|flags:multi|expr:pers_rel|op:in}</code>. This example defines a parameter <code>p</code> without default value. It is fed by the lookup field relationship in table persons. <code>flags:multi</code> enables multiple selection. <code>expr:pers_rel</code> defines the SQL expression (typically the field) to test the picked values against, and <code>op:in</code> defines that the SQL operator used is <code>in</code>. Other set comparison operators can be used like <code>not in</code>, <code>>= any</code>, etc.
             </p>
+            <p>
+                If you do not want to display a dropdown, you can use <code>flags</code> to specify a field type and additional attributes for the input field. The flags must be comma-separated. The first element must be the element type, which can be <code>date</code>, <code>number</code>, or <code>text</code>. Additional elements are interpreted as attributes for the input field. Example: <code>#{MinimumAge|18||flags:number,min=1,step=1}</code> creates an integer field with a minimum value of 1.
+            </p>
 HTML
         ,
         'querypage.store-settings-cache-expires' => 'Enable caching of data. Cache expires after (seconds)',

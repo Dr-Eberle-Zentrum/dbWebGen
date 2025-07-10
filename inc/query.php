@@ -68,7 +68,7 @@
 				$this->view = $this->get_urlparam(QUERY_PARAM_VIEW, QUERY_VIEW_FULL);
 
 				// fill parameterized query info, if there are params
-				$this->query_info = $this->parse_param_query();
+				$this->query_info = $this->parse_param_query();				
 			}
 		}
 
@@ -625,13 +625,37 @@ JS;
 								);
 							}
 						}
-						$param_name = substr($param_name, 1);
-						$param_label = isset($this->query_info['labels'][":$param_name"]) &&
-						  $this->query_info['labels'][":$param_name"] != '' ?
-						  html($this->query_info['labels'][":$param_name"]) : $param_name;
-						if($control_html == '') {
+						$param_key = $param_name; // leading colon, e.g. :birthdate
+						$param_name = substr($param_name, 1); // without leading colon, e.g. birthdate
+						$param_label = isset($this->query_info['labels'][$param_key]) &&
+						  $this->query_info['labels'][$param_key] != '' ?
+						  html($this->query_info['labels'][$param_key]) : $param_name;
+						
+						if($control_html == '') { // no lookup field, render as input
+							$input_type = 'text'; // default input type
+							$input_attrs = '';
+							// input control other than text?							
+							if(isset($this->query_info['flags'][$param_key])
+							  && is_array($flags = $this->query_info['flags'][$param_key])
+							  && count($flags) > 0
+							)  {								 
+								// first element of array must contain <input> type date|number|text
+								if(!in_array($flags[0], ['date', 'number', 'text'])) {
+									proc_error("Invalid input type for parameter '$param_name': " . arr_str($this->query_info['flags'][$param_key]));
+								}
+								else {
+									$input_type = $flags[0];
+									// everything after the first element is an attribute of the input tag in the form attr=value									
+									if(count($flags) > 1) {
+										$input_attrs = array_slice($flags, 1);
+										$input_attrs = implode(' ', array_map(function($attr) {
+											return str_replace('=', '="', $attr) . '"';
+										}, $input_attrs));
+									}					
+								}
+							}
 							$param_value = unquote($param_value);
-							$control_html = "<input $required_attr id='$param_name' type='text' class='input-sm form-control' name='p:$param_name' value='$param_value' />";
+							$control_html = "<input $required_attr id='$param_name' type='$input_type' $input_attrs class='input-sm form-control' name='p:$param_name' value='$param_value' />";
 						}
 						$param_fields .= <<<HTML
 							<div class="form-group">

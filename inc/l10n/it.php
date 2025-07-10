@@ -598,6 +598,9 @@ HTML
             <p>
             È anche possibile specificare dropdown con selezione multipla come parametri. Il parametro sarà ad esempio il seguente: <code>#{x||table:person,field:full_name|flags:multi|expr:person_name|op:in}</code>. Spiegazione: <code>flags:multi</code> consente la selezione multipla. <code>expr:person_name</code> determina che la selezione multipla venga applicata come restrizione sul campo <code>person_name</code>. E <code>op:in</code> specifica che il comando SQL <code>in</code> venga utilizzato come operatore. Qui è anche possibile <code>not in</code>.
             </p>
+            <p>
+                Se non si desidera visualizzare un menu a discesa, è possibile specificare con <code>flags</code> anche un tipo di campo e altri attributi per il campo di input. I flag devono essere separati da virgole. Il primo elemento deve essere il tipo di elemento, ovvero <code>date</code>, <code>number</code> o <code>text</code>. Gli altri elementi vengono interpretati come attributi per il campo di input. Esempio: <code>#{Minima|18||flags:number,min=1,step=1}</code> genera un campo numerico intero con valore minimo 1.
+            </p>
 HTML
         ,
         'querypage.store-settings-cache-expires' => 'Abilita cache. Intervallo di aggiornamento (secondi)',
