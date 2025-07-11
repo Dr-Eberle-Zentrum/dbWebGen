@@ -647,9 +647,10 @@ function get_linked_item_html(
 	$field = $table['fields'][$field_name];
 	$linkage = &$field['linkage'];
 	$lookup = &$field['lookup'];
+	$is_reverse_only = safehash($linkage, 'reverse_only', false);
 
 	$detail_data_span = '';
-	if($can_edit) {
+	if($can_edit && !$is_reverse_only) {
 		$inline_url = '?' . http_build_query(array(
 			'inline' => $table_name,
 			'parent_form' => $parent_form,
@@ -675,7 +676,8 @@ function get_linked_item_html(
 		: l10n('lookup-field.record');
 
 	$edit_other_span = '';
-	if(is_lookup_allow_edit($lookup)
+	// TODO: only if allowed
+	if((is_lookup_allow_edit($lookup) || $is_reverse_only)
 		&& isset($TABLES[$lookup['table']])
 		&& is_allowed($TABLES[$lookup['table']], MODE_EDIT)
 	) {
@@ -701,10 +703,11 @@ function get_linked_item_html(
 		);
 	}
 
+	// TODO: remove could set FK in other table to NULL, if the field is not required
 	$item_div_format = <<<STR
 		<div class='table multiple-select-item' data-field='%s' data-id-other='%s' data-newly-added='%s'>
 			<div class='tr'>
-				<div class='td nowrap'><a role='button' onclick='remove_linked_item(this)' data-field='%s' data-id='%s' data-role='remove' title='%s'><span class='glyphicon glyphicon-remove-circle'></span></a>%s%s</div>
+				<div class='td nowrap'><a role='button' class='%s' onclick='remove_linked_item(this)' data-field='%s' data-id='%s' data-role='remove' title='%s'><span class='glyphicon glyphicon-remove-circle'></span></a>%s%s</div>
 				<div class='td full-width multiple-select-text'>%s</div>
 			</div>
 		</div>
@@ -713,6 +716,7 @@ STR;
 		unquote($field_name),
 		unquote($fk_other_value),
 		$has_already_existed ? 0 : 1,
+		$is_reverse_only ? 'hidden' : '',
 		unquote($field_name),
 		unquote($fk_other_value),
 		l10n('lookup-field.linkage-assoc-delete-tooltip', unquote($lookup_table_item_name)),

@@ -428,7 +428,7 @@ JS;
 				$render_settings['form_id'] = $form_id;
 				$html = sprintf(
 					"<div class='%s col-sm-%s %s'>%s</div>\n",
-					$field_obj->is_dropdown_hidden() ? 'invisible' : '',
+					$field_obj->is_dropdown_hidden() || $field_obj->is_reverse_only() ? 'invisible' : '',
 					$field_grouper->is_in_group() ? $field_grouper->get_width() : $field_obj->get_width(),
 					$field_grouper->is_in_group() && $field_grouper->has_space_top() ? '' : '',
 					$field_obj->render_control($render_settings)

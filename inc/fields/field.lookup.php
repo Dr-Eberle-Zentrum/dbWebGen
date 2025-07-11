@@ -68,9 +68,13 @@
 			return get_default($this->field['lookup']['default']);
 		}
 		//--------------------------------------------------------------------------------------
-		public function get_linkage_info() {
+		public function get_linkage_info($subsetting = null, $default_if_missing = null) {
 		//--------------------------------------------------------------------------------------
-			return $this->field['linkage'];
+			return is_string($subsetting) 
+				? (isset($this->field['linkage'][$subsetting])
+					? $this->field['linkage'][$subsetting]
+					: $default_if_missing) 
+				: $this->field['linkage'];
 		}
 		//--------------------------------------------------------------------------------------
 		public function get_linkage_table_name() {
@@ -155,6 +159,13 @@
 		public function /*bool*/ is_included_in_global_search() {
 		//--------------------------------------------------------------------------------------
 			return true;
+		}
+
+		//------------------------------------------------------------------------------------------
+		public function is_reverse_only() {
+		//------------------------------------------------------------------------------------------
+			return $this->get_cardinality() == CARDINALITY_MULTIPLE
+				&& $this->get_linkage_info('reverse_only', false);
 		}
 
 		//--------------------------------------------------------------------------------------
@@ -383,12 +394,11 @@
 			}
 			if($num_results !== null)
 				$num_results -= count($linked_items);
-
+		
 			$output_buf .= sprintf(
 				"<select %s class='form-control multiple-select-dropdown %s' id='%s_dropdown' data-table='%s' data-thistable='%s' data-fieldname='%s' data-placeholder='%s' %s %s %s data-lookuptype='multiple' %s title='%s' data-maxnum='%s' data-initialcount='%s'>\n",
 
-				$this->get_disabled_attr(),
-				//$this->get_required_attr(),
+				$this->get_disabled_attr(),				
 				$this->is_lookup_async($num_results) ? 'lookup-async' : '',
 				$this->get_control_id(),
 				$this->get_lookup_table_name(),
@@ -408,7 +418,8 @@
 			$this->linked_items_div = '';
 
 			// check whether additional fields can be set in the linkage table
-			$has_additional_editable_fields = has_additional_editable_fields($this->get_linkage_info());
+			$has_additional_editable_fields = has_additional_editable_fields($this->get_linkage_info())
+				&& !$this->is_reverse_only();
 
 			$table = &$TABLES[$this->table_name];
 
