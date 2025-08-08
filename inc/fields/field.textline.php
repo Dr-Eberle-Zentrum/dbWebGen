@@ -17,7 +17,7 @@
 				$this->get_control_id(),
 				$this->get_control_name(),
 				$this->get_maxlen_attr(),
-				unquote($this->get_submitted_value('')),
+				unquote($this->get_submitted_value($this->get_default_value(''))),
 				$this->get_focus_attr(),
 				unquote($this->get_custom_placeholder('')),
 				unquote($this->get_label()),

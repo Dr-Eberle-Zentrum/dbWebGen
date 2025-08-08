@@ -61,7 +61,7 @@
 				$this->get_focus_attr(),
 				unquote($this->get_custom_placeholder('')),
 				unquote($this->get_label()),
-				html($this->get_submitted_value('')),
+				html($this->get_submitted_value($this->get_default_value(''))),
 				$this->get_remaining_chars_display()
 			);
 			if($this->is_richtext()) {
