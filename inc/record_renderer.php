@@ -206,7 +206,7 @@ TABLE;
 
     		$t = "<div class='sort-search'>";
 
-    		if($field_name == $sort_field && $sort_dir == 'asc')
+    		if($field_name == $sort_field && starts_with('asc', strtolower($sort_dir)))
     			$t .= "<span class='glyphicon glyphicon-arrow-up'></span>";
     		else
     			$t .= sprintf(
@@ -215,7 +215,7 @@ TABLE;
                     l10n('record-renderer.sort-asc')
                 );
 
-    		if($field_name == $sort_field && $sort_dir == 'desc')
+    		if($field_name == $sort_field && starts_with('desc', strtolower($sort_dir)))
     			$t .= "<span class='glyphicon glyphicon-arrow-down'></span>";
     		else
                 $t .= sprintf(

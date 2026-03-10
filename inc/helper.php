@@ -1682,12 +1682,16 @@ function build_query($table_name, $table, $offset, $mode, $more_params, &$out_pa
 		}
 
 		if(count($order_by) == 0 && isset($table['sort']) && is_array($table['sort']) && count($table['sort']) > 0 ) {
+			$first_sort_field = true;
 			foreach($table['sort'] as $field_name => $dir) {
 				$order_by[] = sprintf(get_field_sort_expression($table['fields'][$field_name]), get_sort_field_name($table, $field_name)) . " $dir";
 
-				// fake the $_GET for later
-				$_GET['sort'] = $field_name;
-				$_GET['dir'] = $dir;
+				if($first_sort_field) {
+					// fake the $_GET for later
+					$_GET['sort'] = $field_name;
+					$_GET['dir'] = $dir;
+					$first_sort_field = false;
+				}
 			}
 		}
 
