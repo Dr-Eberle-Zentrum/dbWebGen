@@ -357,8 +357,12 @@ HTML;
             );
             $rr = new RecordRenderer($table_name, $table, $relevant_fields, $stmt, false, false, $highlighter);
             $num_results = $rr->num_results();
-            if($num_results == 0)
-                return ''; // don't render anything
+            if($num_results == 0) {
+                // if search is only for particular table, render no results message
+                if(isset($_GET['table']))
+                    return l10n('global-search.no-results');
+                return ''; // ... otherwise don't render anything
+            }
 
             if($num_results < self::max_results_to_display())
                 $num_msg = self::is_preview() ? '' : l10n('global-search.results-found-detail', $num_results);
